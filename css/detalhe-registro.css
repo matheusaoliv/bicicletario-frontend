@@ -1,0 +1,241 @@
+/* CSS institucional para o card Detalhe do Registro */
+#detalheRegistroCard.hidden {
+  display: none !important;
+}
+
+#detalheRegistroCard {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100%;
+  max-width: 440px;
+  margin: 36px auto 32px auto !important;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(25,118,210,0.11);
+  padding: 32px 32px 22px 32px;
+  min-width: 0;
+  z-index: 10;
+  position: relative;
+}
+
+#detalheRegistroCard * {
+  box-sizing: border-box;
+}
+
+.operacao-container #detalheRegistroCard,
+.main-content #detalheRegistroCard {
+  width: 100%;
+  max-width: 440px;
+  margin: 36px auto 32px auto !important;
+}
+
+.detalhe-registro-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(25,118,210,0.11);
+  padding: 32px 32px 22px 32px;
+  margin: 32px auto 36px auto;
+  max-width: 410px;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  animation: fadeinDetalhes 0.5s;
+  transition: box-shadow 0.2s;
+}
+.detalhe-card-header {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+.detalhe-foto-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 108px;
+}
+.foto-proprietario-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #e3eaf7;
+  box-shadow: 0 2px 8px #1976d21a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.foto-proprietario-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.detalhe-foto-btn {
+  width: 100%;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 8px 0;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.detalhe-foto-btn:hover {
+  background: #145ea8;
+}
+#detalheRegistroCard .detalhe-info-area {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 180px;
+}
+#detalheRegistroCard .detalhe-campo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 1.07em;
+  margin-bottom: 2px;
+}
+.detalhe-label {
+  font-weight: 600;
+  color: #1976d2;
+  margin-right: 2px;
+}
+.btn-edit-cpf {
+  margin-left: 8px;
+  background: #2980b9;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.98em;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.btn-edit-cpf:hover {
+  background: #18639a;
+}
+.detalhe-status-area {
+  margin: 10px 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.04em;
+}
+.status-dentro {
+  color: #198754;
+  background: #d1e7dd;
+  border-radius: 4px;
+  padding: 2px 10px;
+  font-weight: bold;
+}
+.status-fora {
+  color: #e67e22;
+  background: #fff3cd;
+  border-radius: 4px;
+  padding: 2px 10px;
+  font-weight: bold;
+}
+.detalhe-observacoes-area {
+  margin: 10px 0 14px 0;
+  display: flex;
+  flex-direction: column;
+}
+.detalhe-textarea {
+  border: 1.5px solid #c3e4e0;
+  border-radius: 7px;
+  background: #f8fafc;
+  font-size: 1.07em;
+  padding: 10px 14px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  transition: border 0.18s, box-shadow 0.18s;
+  outline: none;
+  margin-top: 2px;
+  width: 100%;
+  resize: vertical;
+  min-height: 38px;
+  max-height: 120px;
+}
+#detalheRegistroCard .detalhe-botoes-area {
+  display: flex;
+  flex-direction: row;
+  gap: 18px;
+  margin-top: 18px;
+  width: 100%;
+  justify-content: center;
+}
+#detalheRegistroCard .btn-confirmar, #detalheRegistroCard .btn-info, #detalheRegistroCard .btn-cancelar {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 180px;
+  font-size: 1.08em;
+  font-weight: 600;
+  padding: 12px 0;
+}
+.btn-confirmar {
+  background: #22b573;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.btn-confirmar:hover {
+  background: #1e9c61;
+}
+.btn-info {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 0;
+  font-size: 1.08em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.btn-info:hover {
+  background: #145ea8;
+}
+.btn-cancelar {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 0;
+  font-size: 1.08em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.btn-cancelar:hover {
+  background: #c0392b;
+}
+@media (max-width: 600px) {
+  .detalhe-registro-card {
+    padding: 18px 2vw 14px 2vw;
+    margin: 22px auto 24px auto;
+    max-width: 99vw;
+  }
+  .detalhe-card-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  .detalhe-foto-area {
+    min-width: 0;
+  }
+}
+@keyframes fadeinDetalhes {
+  from { opacity: 0; transform: translateY(32px); }
+  to { opacity: 1; transform: none; }
+}

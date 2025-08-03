@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Funcionário - Bicicletário</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background: linear-gradient(120deg, #e0f7fa 0%, #b2dfdb 100%), url('imagens/estacaojaperi.jpg') center center / cover no-repeat;
+        opacity: 0.23;
+        pointer-events: none;
+      }
+      .login-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        width: 100vw;
+        position: relative;
+        overflow: hidden;
+      }
+      .login-container::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background: url('imagens/estacaojaperi.jpg') center center / cover no-repeat;
+        opacity: 0.23;
+        pointer-events: none;
+      }
+      .login-container > * {
+        position: relative;
+        z-index: 1;
+      }
+      .login-box {
+        background: rgba(255,255,255,0.91);
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+        padding: 30px 34px 20px 34px;
+        margin: 48px 0 0 0;
+        max-width: 400px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      h2 {
+        color: #005f73;
+        text-align: center;
+        margin-bottom: 18px;
+      }
+      .input-group {
+        width: 100%;
+        margin-bottom: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      label {
+        font-weight: bold;
+        margin-bottom: 4px;
+        color: #333;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 95%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ade8f4;
+        background-color: #f8f9fa;
+        font-size: 1em;
+        margin-bottom: 2px;
+        transition: border-color 0.2s;
+      }
+      input:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,.13);
+      }
+      button[type="submit"], button[type="button"] {
+        background: #2a9d8f;
+        color: white;
+        border: none;
+        border-radius: 7px;
+        padding: 10px 16px;
+        font-size: 1em;
+        cursor: pointer;
+        width: 100%;
+        margin-bottom: 8px;
+        font-weight: bold;
+        transition: background 0.2s, transform 0.15s;
+      }
+      button[type="button"] {
+        background: #bbb;
+        color: #333;
+        margin-bottom: 0;
+      }
+      button[type="submit"]:hover {
+        background: #21867a;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.09);
+      }
+      button[type="button"]:hover {
+        background: #999;
+      }
+      #cadastroMensagem {
+        margin-top: 15px;
+        font-size: 0.95em;
+        text-align: center;
+      }
+      .form-funcionario {
+        width: 100%;
+        max-width: 380px;
+      }
+      .titulo-cadastro-funcionario {
+        font-size: 1.3em;
+        color: #005f73;
+        margin-bottom: 15px;
+        text-align: center;
+      }
+      .btn-cadastrar-funcionario {
+        width: 100%;
+        padding: 10px 0;
+        background: #2a9d8f;
+        color: white;
+        border: none;
+        border-radius: 7px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 18px;
+      }
+      .btn-cadastrar-funcionario:hover {
+        background: #21867a;
+      }
+      @media (max-width: 600px) {
+        .login-box {
+          padding: 18px 7px 14px 7px;
+        }
+      }
+    .input-group-mb18 {
+  margin-bottom: 18px;
+}
+</style>
+</head>
+<body>
+    <main class="login-container">
+  <div class="login-box">
+    <div style="display: flex; justify-content: center; margin-bottom: 18px;">
+      <button id="abaCadastro" type="button" class="btn-aba ativo">Cadastro</button>
+      <button id="abaLogin" type="button" class="btn-aba">Login</button>
+    </div>
+    <form id="cadastroFuncionarioForm" class="form-funcionario">
+      <h2 class="titulo-cadastro-funcionario">Cadastro de Novo Funcionário</h2>
+      <div class="input-group">
+        <label for="nomeFuncionario">Nome Completo:</label>
+        <input type="text" id="nomeFuncionario" name="nomeFuncionario" required>
+      </div>
+      <div class="input-group">
+        <label for="usuarioFuncionario">Nome de Usuário:</label>
+        <input type="text" id="usuarioFuncionario" name="usuarioFuncionario" required>
+      </div>
+      <div class="input-group input-group-mb18">
+        <label for="senhaFuncionario">Senha:</label>
+        <input type="password" id="senhaFuncionario" name="senhaFuncionario" required>
+      </div>
+      <div class="input-group">
+        <label for="emailFuncionario">E-mail (opcional):</label>
+        <input type="text" id="emailFuncionario" name="emailFuncionario">
+      </div>
+      <button type="submit">Cadastrar</button>
+      <div id="cadastroMensagem"></div>
+    </form>
+    <form id="loginFuncionarioForm" class="form-funcionario" style="display:none;">
+      <h2 class="titulo-cadastro-funcionario">Login de Funcionário</h2>
+      <div class="input-group">
+        <label for="usuarioLogin">Nome de Usuário:</label>
+        <input type="text" id="usuarioLogin" name="usuarioLogin" required>
+      </div>
+      <div class="input-group input-group-mb18">
+        <label for="senhaLogin">Senha:</label>
+        <input type="password" id="senhaLogin" name="senhaLogin" required>
+      </div>
+      <button type="submit">Entrar</button>
+      <div id="loginMensagem"></div>
+    </form>
+  </div>
+</main>
+<script>
+// Configuração da URL base da API
+const API_BASE_URL = 'http://bicicletario-backend-env.eba-sgkfpe9s.us-east-1.elasticbeanstalk.com';
+
+// Troca de abas
+const abaCadastro = document.getElementById('abaCadastro');
+const abaLogin = document.getElementById('abaLogin');
+const cadastroForm = document.getElementById('cadastroFuncionarioForm');
+const loginForm = document.getElementById('loginFuncionarioForm');
+abaCadastro.onclick = () => {
+  abaCadastro.classList.add('ativo'); abaLogin.classList.remove('ativo');
+  cadastroForm.style.display = 'block'; loginForm.style.display = 'none';
+};
+abaLogin.onclick = () => {
+  abaLogin.classList.add('ativo'); abaCadastro.classList.remove('ativo');
+  cadastroForm.style.display = 'none'; loginForm.style.display = 'block';
+};
+
+// Cadastro de Funcionário (API)
+cadastroForm.onsubmit = async function(event) {
+  event.preventDefault();
+  const nome_completo = document.getElementById('nomeFuncionario').value.trim();
+  const nome_usuario = document.getElementById('usuarioFuncionario').value.trim();
+  const senha = document.getElementById('senhaFuncionario').value;
+  const email = document.getElementById('emailFuncionario').value.trim();
+  const cadastroMensagem = document.getElementById('cadastroMensagem');
+  cadastroMensagem.textContent = '';
+
+  if (!nome_completo || !nome_usuario || !senha) {
+    cadastroMensagem.textContent = 'Por favor, preencha todos os campos obrigatórios.';
+    cadastroMensagem.style.color = '#b22222';
+    return;
+  }
+
+  // Validar comprimento mínimo da senha
+  if (senha.length < 6) {
+    cadastroMensagem.textContent = 'A senha deve ter pelo menos 6 caracteres.';
+    cadastroMensagem.style.color = '#b22222';
+    return;
+  }
+  try {
+    const resp = await fetch(`${API_BASE_URL}/api/funcionarios/cadastro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome_completo, nome_usuario, senha, email })
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      cadastroMensagem.textContent = data.mensagem;
+      cadastroMensagem.style.color = '#21867a';
+      cadastroForm.reset();
+    } else {
+      cadastroMensagem.textContent = data.erro || 'Erro ao cadastrar.';
+      cadastroMensagem.style.color = '#b22222';
+    }
+  } catch (e) {
+    cadastroMensagem.textContent = 'Erro de conexão com o servidor.';
+    cadastroMensagem.style.color = '#b22222';
+  }
+};
+
+// Login de Funcionário (API)
+loginForm.onsubmit = async function(event) {
+  event.preventDefault();
+  const nome_usuario = document.getElementById('usuarioLogin').value.trim();
+  const senha = document.getElementById('senhaLogin').value;
+  const loginMensagem = document.getElementById('loginMensagem');
+  loginMensagem.textContent = '';
+  if (!nome_usuario || !senha) {
+    loginMensagem.textContent = 'Preencha usuário e senha.';
+    loginMensagem.style.color = '#b22222';
+    return;
+  }
+  try {
+    const resp = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome_usuario, senha })
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      loginMensagem.textContent = data.mensagem;
+      loginMensagem.style.color = '#21867a';
+      sessionStorage.setItem('funcionarioLogado', JSON.stringify(data.funcionario));
+      if (data.token) {
+        sessionStorage.setItem('token', data.token);
+      }
+      setTimeout(() => {
+        window.location.href = 'cadastrobicicletario.html';
+      }, 700);
+    } else {
+      loginMensagem.textContent = data.erro || 'Erro ao fazer login.';
+      loginMensagem.style.color = '#b22222';
+    }
+  } catch (e) {
+    loginMensagem.textContent = 'Erro de conexão com o servidor.';
+    loginMensagem.style.color = '#b22222';
+  }
+};
+</script>
+<style>
+.btn-aba {
+  background: #eee;
+  color: #333;
+  border: none;
+  border-bottom: 2px solid #bbb;
+  border-radius: 7px 7px 0 0;
+  font-size: 1em;
+  font-weight: bold;
+  padding: 8px 24px;
+  margin: 0 5px 0 0;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-aba.ativo {
+  background: #2a9d8f;
+  color: #fff;
+  border-bottom: 2px solid #2a9d8f;
+}
+</style>
+</body>
+</html>
