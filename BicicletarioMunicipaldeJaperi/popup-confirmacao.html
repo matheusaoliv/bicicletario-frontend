@@ -1,0 +1,102 @@
+<!-- Popup de Confirmação Customizado com animação SVG -->
+<div id="popupConfirmacao" class="popup-confirmacao hidden">
+  <div class="popup-content">
+    <svg class="checkmark" viewBox="0 0 52 52">
+      <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+      <path class="checkmark-check" fill="none" d="M14 27l7 7 16-16"/>
+    </svg>
+    <div class="popup-mensagem" id="popupMensagem">Check-In Feito com Sucesso</div>
+    <button id="popupOkBtn" class="popup-ok-btn">OK</button>
+  </div>
+</div>
+<style>
+.popup-confirmacao {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.2s;
+}
+.popup-confirmacao.hidden { display: none; }
+.popup-content {
+  background: #fff;
+  border-radius: 28px;
+  padding: 36px 32px 28px 32px;
+  text-align: center;
+  min-width: 320px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.15);
+  position: relative;
+}
+.checkmark {
+  width: 72px;
+  height: 72px;
+  display: block;
+  margin: 0 auto 16px auto;
+}
+.checkmark-circle {
+  stroke: #22c55e;
+  stroke-width: 4;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: circle-anim 0.4s ease-out forwards;
+}
+.checkmark-check {
+  stroke: #22c55e;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: check-anim 0.3s 0.35s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+@keyframes circle-anim {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes check-anim {
+  to { stroke-dashoffset: 0; }
+}
+.popup-mensagem {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-bottom: 22px;
+  color: #222;
+}
+.popup-ok-btn {
+  background: #38bdf8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 36px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(56,189,248,0.08);
+}
+.popup-ok-btn:hover {
+  background: #0ea5e9;
+}
+</style>
+<script>
+// Função para mostrar o popup de confirmação
+function mostrarPopupConfirmacao(mensagem) {
+  const popup = document.getElementById('popupConfirmacao');
+  const msg = document.getElementById('popupMensagem');
+  msg.textContent = mensagem;
+  popup.classList.remove('hidden');
+  // Reinicia animação SVG
+  const circle = popup.querySelector('.checkmark-circle');
+  const check = popup.querySelector('.checkmark-check');
+  circle.style.animation = 'none';
+  check.style.animation = 'none';
+  void circle.offsetWidth; // trigger reflow
+  void check.offsetWidth;
+  circle.style.animation = null;
+  check.style.animation = null;
+}
+document.getElementById('popupOkBtn').onclick = function() {
+  document.getElementById('popupConfirmacao').classList.add('hidden');
+};
+</script>

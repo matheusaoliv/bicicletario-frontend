@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Bicicletário</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Roboto', Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(120deg, #e0f7fa 0%, #b2dfdb 100%), url('imagens/estacaojaperi.jpg') center center / cover no-repeat;
+  opacity: 0.23; /* Alta transparência */
+  pointer-events: none;
+}
+
+    .login-container {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.login-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url('imagens/estacaojaperi.jpg') center center / cover no-repeat;
+  opacity: 0.23;
+  pointer-events: none;
+}
+.login-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+    .login-box {
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  border-radius: 16px;
+  padding: 38px 32px 28px 32px;
+  max-width: 380px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+    .logo img {
+      width: 90px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 1.5em;
+      color: #005f73;
+      margin: 0 0 18px 0;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label {
+      font-weight: 500;
+      color: #333;
+    }
+    input[type="text"],
+    input[type="password"] {
+      width: 95%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ade8f4;
+      background-color: #f8f9fa;
+      font-size: 1em;
+      margin-bottom: 2px;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(0,123,255,.13);
+    }
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.97em;
+      color: #444;
+    }
+    button[type="submit"] {
+      margin-top: 10px;
+      padding: 12px 0;
+      background: #2a9d8f;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    button[type="submit"]:hover {
+      background: #21867a;
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.09);
+    }
+    .error-message {
+      color: #d32f2f;
+      background: #ffebee;
+      border-radius: 5px;
+      padding: 8px 12px;
+      margin-top: 10px;
+      font-size: 0.98em;
+      text-align: center;
+      display: none;
+      min-height: 24px;
+    }
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 18px 6vw 18px 6vw;
+        max-width: 98vw;
+      }
+      .logo img {
+  width: 60px;
+}
+@media (min-width: 481px) {
+  .logo img {
+    width: 90px;
+  }
+}
+    }
+  </style>
+</head>
+<body>
+  <main class="login-container">
+    <div class="login-box">
+      <div class="logo" style="display: flex; align-items: center; justify-content: center; gap: 18px;">
+  <img src="imagens/image.png" alt="Logo da Prefeitura de Japeri" style="width: 90px; height: auto;">
+  <img src="imagens/logobicicletario.png" alt="Logo do Bicicletário" style="width: 90px; height: auto;">
+</div>
+      <h1>Bicicletário - Acesso Restrito</h1>
+      <form id="loginForm" action="#" method="POST" autocomplete="off">
+        <div class="input-group">
+          <label for="username">Usuário:</label>
+          <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+        </div>
+        <div class="input-group">
+          <label for="password">Senha:</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit">Entrar</button>
+      </form>
+      <div style="margin-top: 18px; text-align: center;">
+  <a href="cadastro-funcionario.html" id="showCadastroBtn" style="background: #268378; color: white; border: none; border-radius: 7px; padding: 8px 16px; font-size: 1em; cursor: pointer; text-decoration: none;">Cadastrar Funcionário</a>
+</div>
+      <p class="error-message"></p>
+    </div>
+  </main>
+  <script>
+    // Configuração da URL base da API
+    const API_BASE_URL = 'http://bicicletario-backend-env.eba-sgkfpe9s.us-east-1.elasticbeanstalk.com';
+    
+    // Pegando os elementos do DOM uma vez para reutilização
+    const form = document.querySelector('form');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const errorMessageElement = document.querySelector('.error-message');
+
+    
+
+    // Função para mostrar mensagem de erro
+    function mostrarMensagemErro(mensagem) {
+      errorMessageElement.textContent = mensagem;
+      errorMessageElement.style.display = 'block'; // Exibe a mensagem de erro
+    }
+
+    // Função para limpar/esconder a mensagem de erro
+    function limparMensagemErro() {
+      errorMessageElement.textContent = ''; // Limpa o texto da mensagem
+      errorMessageElement.style.display = 'none'; // Esconde a mensagem de erro
+    }
+
+    // Função para validar o formulário
+    async function validarFormulario(event) {
+      event.preventDefault(); // Impede o envio do formulário
+
+      // Pegando os valores dos campos de usuário e senha e removendo espaços extras
+      const usuario = usernameInput.value.trim();
+      const senha = passwordInput.value.trim(); // Adicionado .trim() para a senha também
+
+      // Verificando se os campos estão vazios
+      if (!usuario || !senha) {
+        mostrarMensagemErro('Por favor, preencha todos os campos.');
+        if (!usuario) {
+          usernameInput.focus(); // Foca no campo de usuário se estiver vazio
+        } else {
+          passwordInput.focus(); // Foca no campo de senha se estiver vazio
+        }
+        return;
+      }
+
+      // Tentativa de autenticação com a API do servidor
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome_usuario: usuario, senha: senha })
+        });
+        const data = await response.json();
+
+        if (response.ok && data.token) {
+
+          limparMensagemErro();
+          sessionStorage.setItem('funcionarioLogado', JSON.stringify(data.funcionario));
+          sessionStorage.setItem('token', data.token);
+          sessionStorage.setItem('autenticado', 'true');
+
+          mostrarMensagemErro('Login bem-sucedido! Redirecionando...');
+          errorMessageElement.style.color = '#2a9d8f';
+
+          setTimeout(() => {
+            window.location.href = 'area-funcionario.html';
+          }, 1000);
+        } else {
+          mostrarMensagemErro(data.erro || 'Nome de usuário ou senha inválidos.');
+          usernameInput.focus();
+          usernameInput.select();
+          passwordInput.value = '';
+        }
+      } catch (error) {
+        console.error('Erro de conexão:', error);
+        mostrarMensagemErro('Erro de conexão com o servidor.');
+      }
+}
+
+// Adicionando o evento de envio ao formulário
+form.addEventListener('submit', validarFormulario);
+
+// Adicionando eventos para limpar a mensagem de erro ao digitar
+usernameInput.addEventListener('input', limparMensagemErro);
+passwordInput.addEventListener('input', limparMensagemErro);
+
+// Opcional: Limpar mensagem de erro ao focar nos campos também
+usernameInput.addEventListener('focus', limparMensagemErro);
+passwordInput.addEventListener('focus', limparMensagemErro);
+  </script>
+</body>
+</html>

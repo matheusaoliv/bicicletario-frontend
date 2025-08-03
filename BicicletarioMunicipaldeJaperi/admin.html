@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Administrador - Bicicletário</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="header">
+    <h1>Painel do Administrador</h1>
+    <nav>
+      <a href="area-funcionario.html">Painel de Controle</a>
+      <a href="#" id="logoutAdmin">Sair</a>
+    </nav>
+  </header>
+  <main>
+    <section id="adminLoginSection" class="admin-section">
+      <h2>Acesso Restrito</h2>
+      <form id="adminLoginForm">
+        <label for="adminName">Selecione seu nome:</label>
+        <select id="adminName" required>
+          <option value="">Selecione...</option>
+          <option value="Matheus Oliveira">Matheus Oliveira</option>
+          <option value="Wenderson">Wenderson</option>
+          <option value="Shaiene">Shaiene</option>
+          <option value="Joice">Joice</option>
+          <option value="Marcelo Damaceno">Marcelo Damaceno</option>
+        </select>
+        <label for="adminLogin">Login:</label>
+        <input type="text" id="adminLogin" required autocomplete="username">
+        <label for="adminSenha">Senha:</label>
+        <input type="password" id="adminSenha" required autocomplete="current-password">
+        <button type="submit">Entrar</button>
+      </form>
+      <div id="adminLoginMsg" class="msg"></div>
+    </section>
+    <section id="adminPanelSection" class="admin-section hidden">
+      <div class="admin-tabs">
+        <button class="tab-button active" data-tab="monitoramento">Monitoramento</button>
+        <button class="tab-button" data-tab="proprietarios">Proprietários</button>
+      </div>
+      
+      <div id="monitoramentoTab" class="tab-content active">
+        <h2>Monitoramento de Funcionários</h2>
+      <div id="orientacoes" class="orientacoes">
+        <h3>Orientações importantes sobre o uso do sistema do bicicletário:</h3>
+        <ol>
+          <li><b>Cadastro de nomes:</b> Insira nomes completos com atenção, sem abreviações e sem excesso de maiúsculas.<br><span class="exemplo">Exemplo: Luiz Eduardo da Silva</span></li>
+          <li><b>Encerramento do expediente:</b> Saia do usuário ao final do turno para garantir a segurança do sistema.</li>
+          <li><b>Check-in/Checkout:</b> Sempre registre entrada/saída no bicicletário correto.<br><span class="exemplo">Exemplo: Engenheiro Pedreira</span></li>
+          <li><b>Atenção à ortografia:</b> Revise os nomes no cadastro para evitar erros ortográficos.</li>
+        </ol>
+      </div>
+      <div id="monitoramento" class="monitoramento">
+        <!-- Aqui será exibido o monitoramento dos funcionários dinamicamente -->
+      </div>
+        <div class="admin-actions">
+          <button id="btnRelatorioDia">Imprimir Relatório do Dia</button>
+          <button id="btnRelatorioMes">Imprimir Relatório Mensal</button>
+          <button id="btnGerarRelatorioDia">Gerar Relatório do Dia (E-mail)</button>
+          <button id="btnGerarRelatorioMes">Gerar Relatório Mensal (E-mail)</button>
+          <button id="btnBackup">Backup do Sistema/Banco de Dados</button>
+        </div>
+      </div>
+      
+      <div id="proprietariosTab" class="tab-content">
+        <h2>Lista de Proprietários Cadastrados</h2>
+        <div class="search-container">
+          <input type="text" id="searchProprietarios" placeholder="Buscar por nome, CPF ou e-mail...">
+          <button id="btnBuscarProprietarios">Buscar</button>
+          <button id="btnListarTodos">Listar Todos</button>
+        </div>
+        <div id="proprietariosList" class="proprietarios-list">
+          <!-- Lista de proprietários será carregada aqui -->
+        </div>
+      </div>
+    </section>
+    <div id="adminMsg" class="msg"></div>
+    <!-- Modal para perguntar e gravar e-mail do ADM -->
+    <div id="modalEmail" class="modal hidden">
+      <div class="modal-content">
+        <h3>Informe seu e-mail para receber relatórios:</h3>
+        <input type="email" id="inputEmail" placeholder="seu@email.com">
+        <button id="btnSalvarEmail">Salvar e Continuar</button>
+      </div>
+    </div>
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>

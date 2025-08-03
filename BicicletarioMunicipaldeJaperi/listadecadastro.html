@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Acesso e Cadastros - Bicicletário</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/listadecadastro.css">
+  <style>
+    .lista-ocorrencias {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .lista-ocorrencias li {
+      margin-bottom: 10px;
+      background: #fff4e6;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 1.04em;
+      border-left: 4px solid #ff9800;
+    }
+    .lista-ocorrencias li strong {
+      color: #1976d2;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-container">
+      <img src="imagens/image.png" alt="Logo Prefeitura de Japeri" class="logo-japeri">
+    </div>
+    <h1>Prefeitura de Japeri - Bicicletário</h1>
+    <nav>
+      <a href="area-funcionario.html" class="btn">Área do Funcionário</a>
+      <a href="cadastrobicicletario.html" class="btn">Novo Cadastro</a>
+    </nav>
+  </header>
+
+  <h2 style="text-align:center; color:#1976d2; font-size:1.2em; margin-top:38px; margin-bottom:18px; font-weight:700;">Controle de Acesso</h2>
+  <div class="modern-search-bar" style="margin-bottom: 18px;">
+    <span class="search-icon">
+      <svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="9" cy="9" r="7" stroke="#007b8a" stroke-width="2"/>
+        <line x1="15.2" y1="15.2" x2="12.4" y2="12.4" stroke="#007b8a" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </span>
+    <input type="text" id="termoPesquisa" placeholder="Buscar por Nome, CPF, ID..." aria-label="Campo de busca de proprietário">
+    <button id="btnBuscar" class="search-btn-circle" title="Buscar" aria-label="Buscar proprietário">
+      <svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="9" cy="9" r="7" stroke="white" stroke-width="2"/>
+        <line x1="15.2" y1="15.2" x2="12.4" y2="12.4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+  <!-- Adicionada a mensagem de status da busca -->
+  <div id="mensagemStatusBusca" class="status-message">Digite um termo para buscar.</div>
+  <!-- Adicionada a div de resultados de busca -->
+  <div id="listaResultadosBusca"></div>
+  <!-- Container para o card Detalhe do Registro -->
+  <div id="detalheRegistroCardContainer"></div>
+
+  <div id="modalCartao" class="modal hidden">
+    <div class="modal-content modal-content-cartao">
+      <button type="button" class="close-btn" data-modal-id="modalCartao">&times;</button>
+      <div id="cartaoAcesso" class="cartao-acesso">
+        <h3 class="cartao-titulo">Cartão de Acesso - Bicicletário</h3>
+        <div class="cartao-foto-container">
+          <img id="cartaoFoto" src="imagens/default-user.png" alt="Foto do Proprietário" class="cartao-foto">
+        </div>
+        <p><strong>ID:</strong> <span id="cartaoId"></span></p>
+        <p><strong>Nome:</strong> <span id="cartaoNome"></span></p>
+        <p><strong>Bicicleta:</strong> <span id="cartaoBicicleta"></span></p>
+        <p class="cartao-footer-text">Apresente este cartão na entrada e saída.</p>
+      </div>
+      <div class="cartao-botoes">
+        <button type="button" id="btnImprimirCartao" class="btn edit" aria-label="Imprimir cartão de acesso">Imprimir</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/detalhe-registro.js"></script><!-- Detalhe do Registro: incluído antes do inline -->
+  <script>
+    // Configuração da URL base da API
+    const API_BASE_URL = 'https://bicicletario-backend.onrender.com';
+    document.addEventListener('DOMContentLoaded', function() {
+      const btnBuscar = document.getElementById('btnBuscar');
+      const termoPesquisaInput = document.getElementById('termoPesquisa');
+      const mensagemStatusBusca = document.getElementById('mensagemStatusBusca');
+      const listaResultadosBuscaDiv = document.getElementById('listaResultadosBusca');
+  
+      btnBuscar.addEventListener('click', function() {
+        const termo = termoPesquisaInput.value.trim();
+        if (termo) {
+          buscarProprietarios(termo);
+        } else {
+          alert('Por favor, digite um termo para a busca.');
+        }
+      });
+  
+      termoPesquisaInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') btnBuscar.click();
+      });
+  
+      async function buscarProprietarios(termo) {
+        try {
+          // Limpa resultados anteriores
+          listaResultadosBuscaDiv.innerHTML = '';
+          // Esconde o card de detalhe, se estiver aberto, mas não remove o HTML
+          const card = document.getElementById('detalheRegistroCard');
+          if (card) {
+            card.classList.remove('mostrar');
+            card.style.display = 'none';
+          }
+
+          const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+          if (!token) throw new Error('Token de autenticação não encontrado. Faça login novamente.');
+          const url = `${API_BASE_URL}/api/controle-acesso/buscar?termo=${encodeURIComponent(termo)}`;
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ erro: 'Erro desconhecido' }));
+            throw new Error(errorData.erro || 'Erro na busca');
+          }
+          const resultados = await response.json();
+          console.log('[DEBUG] Resultados da busca recebidos:', resultados);
+          if (false) {
+            if (response.status === 401 || response.status === 403) {
+              mensagemStatusBusca.textContent = 'Sessão expirada. Faça login novamente.';
+              mensagemStatusBusca.classList.remove('hidden');
+              setTimeout(() => window.location.href = 'login.html', 2000);
+              return;
+            }
+            // Erro já tratado acima
+          }
+          mensagemStatusBusca.classList.add('hidden');
+          if (!resultados || resultados.length === 0) {
+            mensagemStatusBusca.textContent = 'Nenhum resultado encontrado.';
+            mensagemStatusBusca.classList.remove('hidden');
+            return;
+          }
+          // Se só houver um resultado, exibe detalhes automaticamente
+          if (resultados.length === 1) {
+            window.exibirDetalheRegistroSeguro(resultados[0]);
+            return;
+          }
+          // Filtra para garantir que cada bicicleta apareça só uma vez (status mais atual)
+          const registrosPorBicicleta = {};
+          resultados.forEach(item => {
+            // Use o id da bicicleta como chave (pode adaptar para proprietário se necessário)
+            const id = item.bicicleta.id;
+            // Se ainda não existe, ou se este registro é mais recente, substitui
+            if (!registrosPorBicicleta[id] || (item.data_atualizacao && registrosPorBicicleta[id].data_atualizacao < item.data_atualizacao)) {
+              registrosPorBicicleta[id] = item;
+            }
+          });
+          const unicos = Object.values(registrosPorBicicleta);
+          // Agora separa por status
+          const dentro = unicos.filter(item => item.registro_entrada_atual)
+            .sort((a, b) => a.proprietario.nome_completo.localeCompare(b.proprietario.nome_completo));
+          const fora = unicos.filter(item => !item.registro_entrada_atual)
+            .sort((a, b) => a.proprietario.nome_completo.localeCompare(b.proprietario.nome_completo));
+          if (dentro.length > 0) {
+            const header = document.createElement('h4');
+            header.textContent = `Bicicletas DENTRO (${dentro.length})`;
+            listaResultadosBuscaDiv.appendChild(header);
+            dentro.forEach(item => {
+              const card = document.createElement('div');
+              card.className = 'resultado-card';
+              card.innerHTML = `
+                <p><strong>Proprietário:</strong> ${item.proprietario.nome_completo}</p>
+                <p><strong>CPF:</strong> ${item.proprietario.cpf}</p>
+                <p><strong>Bicicleta:</strong> ${item.bicicleta.marca} ${item.bicicleta.modelo}</p>
+                <p><strong>Status:</strong> <span class="status-dentro">DENTRO</span></p>
+              `;
+              card.addEventListener('click', () => {
+                console.log('[DEBUG] Card DENTRO clicado - item:', item);
+                console.log('[DEBUG] Verificando função exibirDetalheRegistroSeguro:', typeof window.exibirDetalheRegistroSeguro);
+                if (window.exibirDetalheRegistroSeguro) {
+                  window.exibirDetalheRegistroSeguro(item);
+                } else {
+                  console.error('[ERRO] Função exibirDetalheRegistroSeguro não encontrada');
+                }
+              });
+              listaResultadosBuscaDiv.appendChild(card);
+            });
+          }
+          if (fora.length > 0) {
+            const header = document.createElement('h4');
+            header.textContent = `Bicicletas FORA (${fora.length})`;
+            listaResultadosBuscaDiv.appendChild(header);
+            fora.forEach(item => {
+              const card = document.createElement('div');
+              card.className = 'resultado-card';
+              card.innerHTML = `
+                <p><strong>Proprietário:</strong> ${item.proprietario.nome_completo}</p>
+                <p><strong>CPF:</strong> ${item.proprietario.cpf}</p>
+                <p><strong>Bicicleta:</strong> ${item.bicicleta.marca} ${item.bicicleta.modelo}</p>
+                <p><strong>Status:</strong> <span class="status-fora">FORA</span></p>
+              `;
+              card.addEventListener('click', () => {
+                console.log('[DEBUG] Card FORA clicado - item:', item);
+                console.log('[DEBUG] Verificando função exibirDetalheRegistroSeguro:', typeof window.exibirDetalheRegistroSeguro);
+                if (window.exibirDetalheRegistroSeguro) {
+                  window.exibirDetalheRegistroSeguro(item);
+                } else {
+                  console.error('[ERRO] Função exibirDetalheRegistroSeguro não encontrada');
+                }
+              });
+              listaResultadosBuscaDiv.appendChild(card);
+            });
+          }
+        } catch (error) {
+          mensagemStatusBusca.textContent = `Erro: ${error.message}`;
+          mensagemStatusBusca.classList.remove('hidden');
+          if (error.message.includes('Sessão expirada')) {
+            setTimeout(() => window.location.href = 'login.html', 2500);
+          }
+        }
+      }
+      window.buscarProprietarios = buscarProprietarios;
+    });
+  </script>
+
+  <script src="js/detalhe-registro.js"></script><!-- Detalhe do Registro: incluído apenas uma vez -->
+  <!-- Popup de Confirmação Customizado -->
+  <div id="popupConfirmacao" class="popup-confirmacao hidden">
+    <div class="popup-content">
+      <svg class="checkmark" viewBox="0 0 52 52">
+        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="checkmark-check" fill="none" d="M14 27l7 7 16-16"/>
+      </svg>
+      <div class="popup-mensagem" id="popupMensagem">Check-In Feito com Sucesso</div>
+      <button id="popupOkBtn" class="popup-ok-btn">OK</button>
+    </div>
+  </div>
+  <script src="popup-confirmacao.js"></script>
+</body>
+</html>
