@@ -257,7 +257,7 @@
       <input type="tel" id="contato">
 
       <label for="endereco">Endereço:</label>
-      <input type="text" id="endereco" required>
+      <input type="text" id="endereco">
 
       <label for="numero_bike">Número de Identificação da Bicicleta (Chassi/Quadro):</label>
       <div style="display: flex; gap: 10px; align-items: center;">
@@ -557,14 +557,14 @@
     return;
   }
 
-  // Validação de e-mail
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  // Validação de e-mail (apenas se preenchido)
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     alert("Por favor, insira um e-mail válido.");
     return;
   }
 
-  // Validação de contato
-  if (!/^\(?\d{2}\)?[\s\-]?\d{4,5}[\-\s]?\d{4}$/.test(contato)) {
+  // Validação de contato (apenas se preenchido)
+  if (contato && !/^\(?\d{2}\)?[\s\-]?\d{4,5}[\-\s]?\d{4}$/.test(contato)) {
     alert("Por favor, insira um número de telefone válido.");
     return;
   }
@@ -575,10 +575,7 @@
     return;
   }
 
-  if (endereco.length < 5) {
-    alert("Por favor, insira um endereço válido.");
-    return;
-  }
+
 
   if (numero_bike.length < 4) {
     alert("Por favor, insira um número de identificação válido para a bicicleta.");
@@ -673,7 +670,7 @@
 
     function mostrarCartaoAcesso(cadastro, fotoBase64Data, fotoBikeBase64Data) {
       document.getElementById('modalCartao').style.display = 'flex';
-      const fotoPadrao = 'https://via.placeholder.com/150x150/cccccc/666666?text=Foto'; 
+      const fotoPadrao = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23ddd'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3EFoto%3C/text%3E%3C/svg%3E"; 
       const cartaoFotoEl = document.getElementById('cartaoFoto');
       const cartaoFotoBikeEl = document.getElementById('cartaoFotoBike');
 
