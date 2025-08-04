@@ -6,10 +6,12 @@ const API_BASE_URL = 'https://bicicletario-backend.onrender.com';
 
 const ADMINS = [
   "Matheus Oliveira",
-  "Wenderson",
-  "Shaiene",
-  "Joice",
-  "Marcelo Damaceno"
+  "Wenderson da silva soares",
+  "Joice barbosa nascimento",
+  "Marcelo damasceno de oliveira",
+  "Shaiene maiara ferreira de oliveira",
+  "Jorge luiz costa dos santos",
+  "Marcelo da silva rocha"
 ];
 
 const adminLoginSection = document.getElementById('adminLoginSection');
@@ -50,9 +52,13 @@ adminLoginForm.addEventListener('submit', async (e) => {
     }
     const nomeSelecionado = nome.trim();
     const nomeBanco = data.funcionario?.nome_completo?.trim() || data.nome_completo?.trim() || '';
+    // Verificar se o nome selecionado está contido no nome do banco ou vice-versa
+    const nomeB = nomeBanco.toLowerCase().trim();
+    const nomeS = nomeSelecionado.toLowerCase().trim();
+    
     if (
-      nomeBanco.toLowerCase() === nomeSelecionado.toLowerCase() ||
-      capitalizeNome(nomeBanco) === capitalizeNome(nomeSelecionado)
+      nomeB.includes(nomeS) || nomeS.includes(nomeB) ||
+      nomeB === nomeS
     ) {
       sessionStorage.setItem('token', data.token);
       sessionStorage.setItem('admin_nome', nome);
