@@ -1,9 +1,6 @@
 // Script para inserir o HTML do card Detalhe do Registro no container
 // Agora, só inicializa após o textarea estar realmente presente no DOM
 
-// Configuração da URL base da API
-const API_BASE_URL = 'https://bicicletario-backend.onrender.com';
-
 // Função segura: só chama exibirDetalheRegistro quando o campo existe
 document.addEventListener('DOMContentLoaded', () => {
   // Só carrega o card se NÃO estiver na área do funcionário
@@ -403,7 +400,7 @@ function atualizarFotoProprietario() {
   const container = document.getElementById('fotoProprietarioContainer');
   container.innerHTML = '';
   if (fotosProprietario.length === 0) {
-    container.innerHTML = '<img id="fotoProprietario" src="imagens/default-user.png" alt="Foto do Proprietário" />';
+    container.innerHTML = '<img id="fotoProprietario" src="https://via.placeholder.com/150x150/cccccc/666666?text=Foto" alt="Foto do Proprietário" />';
   } else {
     // Mostra a última foto como destaque
     const img = document.createElement('img');
