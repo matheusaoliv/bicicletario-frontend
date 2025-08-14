@@ -5,86 +5,296 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adicionar Bicicleta - Bicicletário</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { background: #2a9d8f; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { margin: 0; font-family: Arial, sans-serif; color: #1b1b1b; }
+
+        /* Layout de fundo em tela cheia */
+        .hero {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 24px;
+        }
+        .hero .bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.7);
+            pointer-events: none;
+        }
+        .hero .decor {
+            position: absolute;
+            right: 16px;
+            bottom: 16px;
+            width: clamp(96px, 15vw, 180px);
+            opacity: 0.9;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Card glassmorphism */
+        .login {
+            position: relative;
+            z-index: 3;
+            width: min(95vw, 760px);
+            padding: clamp(24px, 4vw, 40px);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-right-color: rgba(255, 255, 255, 0.35);
+            border-bottom-color: rgba(255, 255, 255, 0.35);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            justify-content: center;
+        }
+        .card-header .logo {
+            height: clamp(48px, 8vw, 72px);
+            width: auto;
+        }
+        .card-header h2 {
+            margin: 0;
+            font-size: clamp(1.4rem, 3.5vw, 2rem);
+            font-weight: 700;
+            color: #0f2f2a; /* tom esverdeado para combinar */
+            text-align: center;
+        }
+
+        /* Grid simples para grupos do formulário */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 720px) {
+            .form-grid.two-col {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #0f2f2a; }
+        input, select, textarea { width: 100%; padding: 12px 14px; border: none; border-radius: 8px; background: #ffffff; color: #1b1b1b; font-size: 14px; }
+        input[type="file"] { padding: 10px; background: #ffffffe6; }
+        small { color: #173f38; opacity: 0.9; }
+
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        button { background: #2a9d8f; color: #fff; padding: 12px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
         button:hover { background: #21867a; }
-        .message { margin-top: 15px; padding: 10px; border-radius: 4px; }
+        button:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .message { margin-top: 6px; padding: 10px; border-radius: 8px; }
         .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* Ajustes do datalist/auto-complete */
+        #buscar_proprietario { background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%232a9d8f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 12px center; padding-left: 40px; }
+
+        /* Ajustes do textarea */
+        textarea { min-height: 84px; resize: vertical; }
     </style>
+    <script src="../config-api.js"></script>
 </head>
 <body>
-    <h1>Adicionar Bicicleta a Proprietário Existente</h1>
-    
-    <form id="formBicicleta">
-        <div class="form-group">
-            <label for="proprietario_id">ID do Proprietário:</label>
-            <input type="number" id="proprietario_id" required>
-            <small>Jorge luan: 496 | Jose roberto: 178</small>
+    <section class="hero">
+        <img src="./imagens/estacaojaperi.jpg" alt="Fundo Estação Japeri" class="bg">
+        <img src="./imagens/image.png" alt="Decoração" class="decor">
+
+        <div class="login">
+            <div class="card-header">
+                <img src="./imagens/logobicicletario.png" alt="Logo Bicicletário" class="logo">
+                <h2>Adicionar Bicicleta</h2>
+            </div>
+
+            <form id="formBicicleta" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="buscar_proprietario">Buscar Proprietário (sem bicicleta)</label>
+                        <input type="text" id="buscar_proprietario" list="listaProprietariosSemBike" placeholder="Digite ao menos 2 letras do nome ou CPF">
+                        <datalist id="listaProprietariosSemBike"></datalist>
+                        <small>Apenas proprietários sem bicicleta aparecem nos resultados.</small>
+                    </div>
+                </div>
+
+                <div class="form-grid two-col">
+                    <div class="form-group">
+                        <label for="proprietario_id">ID do Proprietário</label>
+                        <input type="number" id="proprietario_id" required>
+                        <small>Ex.: Jorge Luan: 496 | Jose Roberto: 178</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="numero_bike">Número de Identificação da Bicicleta</label>
+                        <div class="actions">
+                            <input type="text" id="numero_bike" required style="flex:1;">
+                            <button type="button" id="gerar_numero_btn">Gerar Número</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid two-col">
+                    <div class="form-group">
+                        <label for="tipo_bike">Tipo de Bicicleta</label>
+                        <select id="tipo_bike" required>
+                            <option value="">Selecione o Tipo</option>
+                            <option value="Mountain Bike">Mountain Bike</option>
+                            <option value="Speed">Speed</option>
+                            <option value="Urbana">Urbana</option>
+                            <option value="Elétrica">Elétrica</option>
+                            <option value="Dobrável">Dobrável</option>
+                            <option value="Infantil">Infantil</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="marca">Marca</label>
+                        <input type="text" id="marca" required>
+                    </div>
+                </div>
+
+                <div class="form-grid two-col">
+                    <div class="form-group">
+                        <label for="modelo">Modelo</label>
+                        <input type="text" id="modelo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-grid two-col">
+                    <div class="form-group">
+                        <label for="fotoBicicleta">Foto da Bicicleta (opcional)</label>
+                        <input type="file" id="fotoBicicleta" accept="image/jpeg,image/png,image/jpg">
+                    </div>
+                    <div class="form-group">
+                        <label for="fotoDonoComBicicleta">Foto do Dono com Bicicleta (opcional)</label>
+                        <input type="file" id="fotoDonoComBicicleta" accept="image/jpeg,image/png,image/jpg">
+                    </div>
+                </div>
+
+                <div class="actions" style="justify-content: flex-end; margin-top: 6px;">
+                    <button type="submit">Adicionar Bicicleta</button>
+                </div>
+            </form>
+
+            <div id="message" class="message" aria-live="polite"></div>
         </div>
-        
-        <div class="form-group">
-            <label for="numero_bike">Número de Identificação da Bicicleta:</label>
-            <input type="text" id="numero_bike" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="tipo_bike">Tipo de Bicicleta:</label>
-            <select id="tipo_bike" required>
-                <option value="">Selecione o Tipo</option>
-                <option value="Mountain Bike">Mountain Bike</option>
-                <option value="Speed">Speed</option>
-                <option value="Urbana">Urbana</option>
-                <option value="Elétrica">Elétrica</option>
-                <option value="Dobrável">Dobrável</option>
-                <option value="Infantil">Infantil</option>
-                <option value="Outro">Outro</option>
-            </select>
-        </div>
-        
-        <div class="form-group">
-            <label for="marca">Marca:</label>
-            <input type="text" id="marca" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="modelo">Modelo:</label>
-            <input type="text" id="modelo" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="observacoes">Observações:</label>
-            <textarea id="observacoes" rows="3"></textarea>
-        </div>
-        
-        <button type="submit">Adicionar Bicicleta</button>
-    </form>
-    
-    <div id="message"></div>
-    
+    </section>
+
     <script>
-        const API_BASE_URL = 'https://bicicletario-backend.onrender.com';
-        
-        document.getElementById('formBicicleta').addEventListener('submit', async (e) => {
+        const API_BASE_URL = window.API_BASE_URL || 'https://bicicletario-backend.onrender.com';
+
+        const form = document.getElementById('formBicicleta');
+        const messageDiv = document.getElementById('message');
+        const submitButton = form.querySelector('button[type="submit"]');
+        const buscarInput = document.getElementById('buscar_proprietario');
+        const datalist = document.getElementById('listaProprietariosSemBike');
+        const proprietarioIdInput = document.getElementById('proprietario_id');
+        const gerarNumeroBtn = document.getElementById('gerar_numero_btn');
+        const numeroBikeInput = document.getElementById('numero_bike');
+
+        async function buscarProprietariosSemBike(termo) {
+            const token = sessionStorage.getItem('token');
+            if (!token) return [];
+            try {
+                const resp = await fetch(`${API_BASE_URL}/api/controle-acesso/buscar?termo=${encodeURIComponent(termo)}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (resp.status === 401) {
+                    window.location.href = 'login.html';
+                    return [];
+                }
+                if (!resp.ok) return [];
+                const data = await resp.json();
+                return (data || []).filter(item => item.status === 'SEM_BICICLETA');
+            } catch (_) {
+                return [];
+            }
+        }
+
+        let buscaTimeout = null;
+        buscarInput.addEventListener('input', () => {
+            const termo = buscarInput.value.trim();
+            datalist.innerHTML = '';
+            if (termo.length < 2) return;
+            clearTimeout(buscaTimeout);
+            buscaTimeout = setTimeout(async () => {
+                const resultados = await buscarProprietariosSemBike(termo);
+                datalist.innerHTML = '';
+                resultados.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = `${r.proprietario.nome_completo} (ID: ${r.proprietario.id})`;
+                    datalist.appendChild(opt);
+                });
+            }, 250);
+        });
+
+        function extrairIdDoTexto(texto) {
+            const m = texto.match(/ID:\s*(\d+)/);
+            return m ? parseInt(m[1], 10) : null;
+        }
+
+        function tentarPreencherId() {
+            const id = extrairIdDoTexto(buscarInput.value);
+            if (id) {
+                proprietarioIdInput.value = id;
+            }
+        }
+
+        buscarInput.addEventListener('change', tentarPreencherId);
+        buscarInput.addEventListener('blur', tentarPreencherId);
+
+        gerarNumeroBtn.addEventListener('click', () => {
+            numeroBikeInput.value = String(Date.now());
+        });
+
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const token = sessionStorage.getItem('token');
             if (!token) {
-                alert('Faça login primeiro');
+                window.location.href = 'login.html';
                 return;
             }
             
+            submitButton.disabled = true;
+
             const formData = new FormData();
-            formData.append('proprietario_id', document.getElementById('proprietario_id').value);
-            formData.append('numero_bike', document.getElementById('numero_bike').value);
-            formData.append('tipo_bike', document.getElementById('tipo_bike').value);
-            formData.append('marca', document.getElementById('marca').value);
-            formData.append('modelo', document.getElementById('modelo').value);
-            formData.append('observacoes', document.getElementById('observacoes').value);
-            
+            const proprietarioId = document.getElementById('proprietario_id').value;
+            const numeroBike = document.getElementById('numero_bike').value.trim();
+            const tipoBike = document.getElementById('tipo_bike').value;
+            const marca = document.getElementById('marca').value.trim();
+            const modelo = document.getElementById('modelo').value.trim();
+            const observacoes = document.getElementById('observacoes').value.trim();
+
+            formData.append('proprietario_id', proprietarioId);
+            formData.append('numero_bike', numeroBike);
+            formData.append('tipo_bike', tipoBike);
+            formData.append('marca', marca);
+            formData.append('modelo', modelo);
+            formData.append('observacoes', observacoes);
+
+            const fotoBicicleta = document.getElementById('fotoBicicleta').files[0];
+            if (fotoBicicleta) formData.append('fotoBicicleta', fotoBicicleta);
+            const fotoDonoComBicicleta = document.getElementById('fotoDonoComBicicleta').files[0];
+            if (fotoDonoComBicicleta) formData.append('fotoDonoComBicicleta', fotoDonoComBicicleta);
+
             try {
                 const response = await fetch(`${API_BASE_URL}/api/bicicletas`, {
                     method: 'POST',
@@ -94,17 +304,26 @@
                     body: formData
                 });
                 
-                const result = await response.json();
-                const messageDiv = document.getElementById('message');
-                
+                let result = null;
+                let fallbackText = '';
+                try {
+                    result = await response.json();
+                } catch (_) {
+                    fallbackText = await response.text();
+                }
+
                 if (response.ok) {
-                    messageDiv.innerHTML = `<div class="success">${result.mensagem}</div>`;
-                    document.getElementById('formBicicleta').reset();
+                    messageDiv.innerHTML = `<div class="success">${(result && result.mensagem) ? result.mensagem : 'Bicicleta adicionada com sucesso.'}</div>`;
+                    form.reset();
                 } else {
-                    messageDiv.innerHTML = `<div class="error">Erro: ${result.erro}</div>`;
+                    const erroServidor = (result && result.erro) ? result.erro : (fallbackText || `Erro HTTP ${response.status}`);
+                    const msg = response.status === 409 ? (result && result.erro ? result.erro : 'Número da bicicleta já existe.') : erroServidor;
+                    messageDiv.innerHTML = `<div class="error">Erro: ${msg}</div>`;
                 }
             } catch (error) {
-                document.getElementById('message').innerHTML = `<div class="error">Erro: ${error.message}</div>`;
+                messageDiv.innerHTML = `<div class="error">Erro: ${error.message}</div>`;
+            } finally {
+                submitButton.disabled = false;
             }
         });
     </script>

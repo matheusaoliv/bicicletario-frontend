@@ -200,6 +200,7 @@ canvas {
             <input type="date" id="filtroData" class="filtro-data-select" style="margin-right:12px;">
             <a href="listadecadastro.html">Controle de Acesso</a>
             <a href="cadastrobicicletario.html">Novo Cadastro</a>
+            <a href="adicionar-bicicleta.html">Adicionar Bicicleta</a>
             <a href="admin.html">Administração</a>
             <a href="#" id="logoutBtn">Sair</a>
             <div class="theme-switch-wrapper">
@@ -209,6 +210,7 @@ canvas {
                     <div class="slider"></div>
                 </label>
             </div>
+        </div>
         </div>
     </header>
 
@@ -345,15 +347,13 @@ canvas {
             <h3 class="card-title">Ranking de Usuários com Mais Entradas</h3>
             <ol id="rankingProprietarios" style="margin:0;padding-left:1.5em"></ol>
         </div>
+
+        <div class="card">
+            <h3 class="card-title">Ocorrências Recentes</h3>
+            <div id="ocorrenciasContainer">
+              <p>Carregando ocorrências...</p>
             </div>
         </div>
-        
-        <div class="card">
-    <h3 class="card-title">Ocorrências Recentes</h3>
-    <div id="ocorrenciasContainer">
-      <p>Carregando ocorrências...</p>
-    </div>
-</div>
 
 
     </main>
@@ -641,7 +641,6 @@ function renderizarRanking(ranking = []) {
 }
 
 
-// --- INÍCIO: Bloco de inicialização de gráficos e dashboard ---
 document.addEventListener('DOMContentLoaded', () => {
         // --- 1. AUTENTICAÇÃO, TEMA E LISTENERS ---
     const funcionario = JSON.parse(sessionStorage.getItem('funcionarioLogado') || 'null');
