@@ -260,8 +260,19 @@
         buscarInput.addEventListener('change', tentarPreencherId);
         buscarInput.addEventListener('blur', tentarPreencherId);
 
+        function gerarCodigoAlfanumericoUnico(tamanho = 10) {
+            const prefixo = 'JPR-';
+            const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let codigo = '';
+            for (let i = 0; i < tamanho; i++) {
+                codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+            }
+            const timestampPart = Date.now().toString().slice(-4);
+            return prefixo + codigo + timestampPart;
+        }
+
         gerarNumeroBtn.addEventListener('click', () => {
-            numeroBikeInput.value = String(Date.now());
+            numeroBikeInput.value = gerarCodigoAlfanumericoUnico();
         });
 
         form.addEventListener('submit', async (e) => {
