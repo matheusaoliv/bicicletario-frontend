@@ -140,7 +140,7 @@
                     <div class="form-group">
                         <label for="numero_bike">Número de Identificação da Bicicleta</label>
                         <div class="actions">
-                            <input type="text" id="numero_bike" required style="flex:1;">
+                            <input type="text" id="numero_bike" required style="flex:1;" pattern="JPR-[A-Z0-9]{14}" title="Use o formato JPR-XXXXXXXXXXXXXX (letras maiúsculas e números)">
                             <button type="button" id="gerar_numero_btn">Gerar Número</button>
                         </div>
                     </div>
@@ -271,8 +271,20 @@
             return prefixo + codigo + timestampPart;
         }
 
-        gerarNumeroBtn.addEventListener('click', () => {
+        function isNumeroBikeValido(valor) {
+            return /^JPR-[A-Z0-9]{14}$/.test(valor);
+        }
+
+        gerarNumeroBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
             numeroBikeInput.value = gerarCodigoAlfanumericoUnico();
+        }, true);
+
+        // Normaliza para maiúsculas ao sair do campo
+        numeroBikeInput.addEventListener('blur', () => {
+            if (numeroBikeInput.value) numeroBikeInput.value = numeroBikeInput.value.toUpperCase();
         });
 
         form.addEventListener('submit', async (e) => {
@@ -285,6 +297,11 @@
             }
             
             submitButton.disabled = true;
+
+            // Garante formato correto antes de enviar
+            if (!isNumeroBikeValido(numeroBikeInput.value)) {
+                numeroBikeInput.value = gerarCodigoAlfanumericoUnico();
+            }
 
             const formData = new FormData();
             const proprietarioId = document.getElementById('proprietario_id').value;
