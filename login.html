@@ -181,6 +181,8 @@ body::before {
       <p class="error-message"></p>
     </div>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabaseClient.js"></script>
   <script>
     // Configuração da URL base da API
     const API_BASE_URL = 'https://bicicletario-backend.onrender.com';
@@ -207,51 +209,42 @@ body::before {
 
     // Função para validar o formulário
     async function validarFormulario(event) {
-      event.preventDefault(); // Impede o envio do formulário
-
-      // Pegando os valores dos campos de usuário e senha e removendo espaços extras
+      event.preventDefault();
       const usuario = usernameInput.value.trim();
-      const senha = passwordInput.value.trim(); // Adicionado .trim() para a senha também
-
-      // Verificando se os campos estão vazios
+      const senha = passwordInput.value.trim();
       if (!usuario || !senha) {
         mostrarMensagemErro('Por favor, preencha todos os campos.');
         if (!usuario) {
-          usernameInput.focus(); // Foca no campo de usuário se estiver vazio
+          usernameInput.focus();
         } else {
-          passwordInput.focus(); // Foca no campo de senha se estiver vazio
+          passwordInput.focus();
         }
         return;
       }
-
-      // Tentativa de autenticação com a API do servidor
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome_usuario: usuario, senha: senha })
+        // Autenticação via Supabase Auth
+        const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+          email: usuario,
+          password: senha
         });
-        const data = await response.json();
-
-        if (response.ok && data.token) {
-
-          limparMensagemErro();
-          sessionStorage.setItem('funcionarioLogado', JSON.stringify(data.funcionario));
-          sessionStorage.setItem('token', data.token);
-          sessionStorage.setItem('autenticado', 'true');
-
-          mostrarMensagemErro('Login bem-sucedido! Redirecionando...');
-          errorMessageElement.style.color = '#2a9d8f';
-
-          setTimeout(() => {
-            window.location.href = 'area-funcionario.html';
-          }, 1000);
-        } else {
-          mostrarMensagemErro(data.erro || 'Nome de usuário ou senha inválidos.');
+        if (error || !data.session) {
+          mostrarMensagemErro(error?.message || 'Nome de usuário ou senha inválidos.');
           usernameInput.focus();
           usernameInput.select();
           passwordInput.value = '';
+          return;
         }
+        limparMensagemErro();
+        const token = data.session.access_token;
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('autenticado', 'true');
+        // Opcional: salvar dados do usuário
+        sessionStorage.setItem('usuarioSupabase', JSON.stringify(data.user));
+        mostrarMensagemErro('Login bem-sucedido! Redirecionando...');
+        errorMessageElement.style.color = '#2a9d8f';
+        setTimeout(() => {
+          window.location.href = 'area-funcionario.html';
+        }, 1000);
       } catch (error) {
         console.error('Erro de conexão:', error);
         mostrarMensagemErro('Erro de conexão com o servidor.');
