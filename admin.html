@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel do Administrador - Bicicletário</title>
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 </head>
 <body>
   <header class="header">
@@ -42,21 +44,33 @@
         <button class="tab-button active" data-tab="monitoramento">Monitoramento</button>
         <button class="tab-button" data-tab="proprietarios">Proprietários</button>
       </div>
-      
       <div id="monitoramentoTab" class="tab-content active">
         <h2>Monitoramento de Funcionários</h2>
-      <div id="orientacoes" class="orientacoes">
-        <h3>Orientações importantes sobre o uso do sistema do bicicletário:</h3>
-        <ol>
-          <li><b>Cadastro de nomes:</b> Insira nomes completos com atenção, sem abreviações e sem excesso de maiúsculas.<br><span class="exemplo">Exemplo: Luiz Eduardo da Silva</span></li>
-          <li><b>Encerramento do expediente:</b> Saia do usuário ao final do turno para garantir a segurança do sistema.</li>
-          <li><b>Check-in/Checkout:</b> Sempre registre entrada/saída no bicicletário correto.<br><span class="exemplo">Exemplo: Engenheiro Pedreira</span></li>
-          <li><b>Atenção à ortografia:</b> Revise os nomes no cadastro para evitar erros ortográficos.</li>
-        </ol>
-      </div>
-      <div id="monitoramento" class="monitoramento">
-        <!-- Aqui será exibido o monitoramento dos funcionários dinamicamente -->
-      </div>
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <canvas id="graficoProdutividade"></canvas>
+          </div>
+          <div class="col-md-6">
+            <canvas id="graficoRanking"></canvas>
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-md-12">
+            <canvas id="graficoFluxo"></canvas>
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-md-12">
+            <div id="tabelaMonitoramentoContainer">
+              <table id="tabelaMonitoramento" class="display" style="width:100%"></table>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-4">
+          <div class="col-md-12">
+            <div id="justificativasContainer"></div>
+          </div>
+        </div>
         <div class="admin-actions">
           <button id="btnRelatorioDia">Imprimir Relatório do Dia</button>
           <button id="btnRelatorioMes">Imprimir Relatório Mensal</button>
@@ -65,7 +79,6 @@
           <button id="btnBackup">Backup do Sistema/Banco de Dados</button>
         </div>
       </div>
-      
       <div id="proprietariosTab" class="tab-content">
         <h2>Lista de Proprietários Cadastrados</h2>
         <div class="search-container">
@@ -73,8 +86,13 @@
           <button id="btnBuscarProprietarios">Buscar</button>
           <button id="btnListarTodos">Listar Todos</button>
         </div>
-        <div id="proprietariosList" class="proprietarios-list">
-          <!-- Lista de proprietários será carregada aqui -->
+        <div id="proprietariosList" class="proprietarios-list"></div>
+        <div class="row mb-4">
+          <div class="col-md-12">
+            <div id="tabelaProprietariosContainer">
+              <table id="tabelaProprietarios" class="display" style="width:100%"></table>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -88,6 +106,10 @@
       </div>
     </div>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>
