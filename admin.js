@@ -46,6 +46,77 @@ const adminMsg = document.getElementById('adminMsg');
 
 // [removido] handler duplicado de logout; o handler ativo está definido abaixo.
 
+// Injeção de estilos e header responsivo fixo
+(function injectAdminUI() {
+  try {
+    // CSS global para responsividade e visual limpo
+    if (!document.getElementById('adminDynamicStyles')) {
+      const style = document.createElement('style');
+      style.id = 'adminDynamicStyles';
+      style.textContent = `
+:root { --admin-header-height: 64px; --admin-primary:#0d6efd; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { padding-top: var(--admin-header-height); background: #f8f9fa; }
+#adminHeader {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--admin-header-height);
+  background: #fff; border-bottom: 1px solid rgba(0,0,0,.08);
+  display: flex; align-items: center; z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+#adminHeader .wrap {
+  width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+#adminHeader h1 { font-size: 18px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#adminHeader nav { display: flex; gap: 12px; flex-wrap: wrap; }
+#adminHeader nav a {
+  color: var(--admin-primary); text-decoration: none; font-weight: 600;
+  padding: 6px 10px; border-radius: 6px;
+}
+#adminHeader nav a:hover { background: rgba(13,110,253,0.08); }
+#adminPanelSection, #adminLoginSection {
+  max-width: 1200px; margin: 12px auto; padding: 12px;
+}
+.tab-content { overflow-x: auto; }
+.table-responsive, .dataTables_wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; table-layout: auto; }
+th, td { word-break: break-word; white-space: normal; vertical-align: middle; }
+img { max-width: 100%; }
+.avatar-placeholder {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; background: #e9ecef; border-radius: 50%;
+}
+canvas { max-width: 100% !important; height: auto !important; }
+@media (max-width: 576px) {
+  :root { --admin-header-height: 72px; }
+  #adminHeader .wrap { flex-direction: column; align-items: flex-start; gap: 6px; padding: 6px 12px; }
+  #adminHeader nav { width: 100%; gap: 8px; }
+}
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Header no topo (somente se não existir)
+    if (!document.getElementById('adminHeader')) {
+      const header = document.createElement('header');
+      header.id = 'adminHeader';
+      header.innerHTML = `
+        <div class="wrap">
+          <h1>Painel do Administrador</h1>
+          <nav>
+            <a href="area-funcionario.html">Painel de Controle</a>
+            <a href="#" class="logout-admin-link">Sair</a>
+          </nav>
+        </div>
+      `;
+      document.body.insertBefore(header, document.body.firstChild);
+    }
+  } catch (e) {
+    // silencia erros de UI para não interromper o painel
+    console.warn('Falha ao injetar UI admin:', e);
+  }
+})();
 const modalEmail = document.getElementById('modalEmail');
 const inputEmail = document.getElementById('inputEmail');
 const btnSalvarEmail = document.getElementById('btnSalvarEmail');
@@ -249,7 +320,11 @@ async function carregarMonitoramento(token) {
       const btnDeslogar = `<button class='btn btn-sm btn-warning' onclick="deslogarFuncionario('${f.id}', '${(f.nome || '').replace(/'/g, '&#39;')}')">Deslogar</button>`;
       const fotoUrl = f.fotoUrl || '';
       const avatar = fotoUrl ? `<img src='${fotoUrl}' alt='Foto de ${f.nome}' style='width:36px;height:36px;border-radius:50%;object-fit:cover;'>` : '<span class="avatar-placeholder">👤</span>';
-      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? " <span class=\"badge bg-danger\">Alerta</span>" : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
+      const tempoParadoStr = (typeof f.tempoParadoMin === 'number') ? formatTempoParado(f.tempoParadoMin) : '-';
+      const alertaStr = (f.tempoParadoMin > 60) ? ' <span class="badge bg-danger">Alerta</span>' : '';
+      const totalMovStr = `${f.totalMovimentacoes} <small class="text-muted">(hoje: ${getMovHoje(f)})</small>`;
+      const ultimaMovStr = f.ultimaMov ? `${formatDateTimeExact(f.ultimaMov)} (${f.tipoUltimaMov})` : '-';
+      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${tempoParadoStr}${alertaStr}</td><td>${totalMovStr}</td><td>${ultimaMovStr}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
     });
     tabela.DataTable({ responsive: true, order: [[7, 'asc']] });
 
@@ -491,6 +566,46 @@ async function fetchComToken(url, options = {}) {
   });
 }
 
+// Helpers de formatação e auto-refresh
+function formatDateTimeExact(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  if (isNaN(d)) return typeof iso === 'string' ? iso : '-';
+  const pad = (n) => String(n).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const mm = pad(d.getMonth() + 1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const mi = pad(d.getMinutes());
+  const ss = pad(d.getSeconds());
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+}
+function formatTempoParado(min) {
+  if (min === null || min === undefined) return '-';
+  const h = Math.floor(min / 60);
+  const m = Math.floor(min % 60);
+  return (h > 0 ? `${h}h ` : '') + `${m}m`;
+}
+function getMovHoje(f) {
+  try {
+    const key = new Date().toISOString().slice(0, 10);
+    const obj = f.checkinsPorDia?.[key] || {};
+    return (obj.checkins || 0) + (obj.checkouts || 0);
+  } catch {
+    return 0;
+  }
+}
+let _monitoramentoIntervalId = null;
+function iniciarAutoRefresh() {
+  if (_monitoramentoIntervalId) return;
+  _monitoramentoIntervalId = setInterval(() => {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      carregarMonitoramento(token);
+    }
+  }, 30000); // 30s
+}
+
 // --- Funções para buscar e exibir monitoramento e proprietários ---
 
 async function carregarMonitoramento(token) {
@@ -615,7 +730,11 @@ async function carregarMonitoramento(token) {
       const btnDeslogar = `<button class='btn btn-sm btn-warning' onclick="deslogarFuncionario('${f.id}', '${(f.nome || '').replace(/'/g, '&#39;')}')">Deslogar</button>`;
       const fotoUrl = f.fotoUrl || '';
       const avatar = fotoUrl ? `<img src='${fotoUrl}' alt='Foto de ${f.nome}' style='width:36px;height:36px;border-radius:50%;object-fit:cover;'>` : '<span class="avatar-placeholder">👤</span>';
-      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? " <span class=\"badge bg-danger\">Alerta</span>" : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
+      const tempoParadoStr = (typeof f.tempoParadoMin === 'number') ? formatTempoParado(f.tempoParadoMin) : '-';
+      const alertaStr = (f.tempoParadoMin > 60) ? ' <span class="badge bg-danger">Alerta</span>' : '';
+      const totalMovStr = `${f.totalMovimentacoes} <small class="text-muted">(hoje: ${getMovHoje(f)})</small>`;
+      const ultimaMovStr = f.ultimaMov ? `${formatDateTimeExact(f.ultimaMov)} (${f.tipoUltimaMov})` : '-';
+      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${tempoParadoStr}${alertaStr}</td><td>${totalMovStr}</td><td>${ultimaMovStr}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
     });
     tabela.DataTable({ responsive: true, order: [[7, 'asc']] });
 
@@ -711,6 +830,7 @@ function mostrarPainelAdmin(token) {
   adminPanelSection?.classList.remove('hidden');
   carregarMonitoramento(token);
   carregarProprietarios(token);
+  iniciarAutoRefresh();
 }
 
 // Exibir painel automaticamente quando já autenticado (admin.html protegido)
@@ -1144,15 +1264,25 @@ if (adminLoginForm) {
 // [removido] Duplicatas simplificadas de editarFuncionario/excluirFuncionario (mantida a versão completa que utiliza API e validações)
 
 // --- Logout admin ---
-const logoutAdmin = document.getElementById('logoutAdmin');
-if (logoutAdmin) {
-  logoutAdmin.onclick = (e) => {
-    e.preventDefault();
-    sessionStorage.clear();
-    localStorage.removeItem('adminLogado');
-    window.location.href = 'admin-login.html';
-  };
+function bindLogoutLinks() {
+  const links = [
+    ...document.querySelectorAll('.logout-admin-link'),
+    ...[document.getElementById('logoutAdmin')].filter(Boolean)
+  ];
+  links.forEach(link => {
+    if (!link._logoutBound) {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        sessionStorage.clear();
+        localStorage.removeItem('adminLogado');
+        window.location.href = 'admin-login.html';
+      });
+      link._logoutBound = true;
+    }
+  });
 }
+document.addEventListener('DOMContentLoaded', bindLogoutLinks);
+bindLogoutLinks();
 
 // [removido] Duplicata de editar/salvar/excluir funcionário para manter uma única fonte de verdade
 
