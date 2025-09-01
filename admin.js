@@ -38,20 +38,27 @@ adminLoginForm.addEventListener('submit', async (e) => {
     return;
   }
   try {
-    // Login via Supabase Auth
-    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
-      email: login,
-      password: senha
+    // Login via backend próprio
+    const res = await fetch(`${API_BASE_URL}/api/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login, senha })
     });
-    if (error || !data.session) {
-      adminLoginMsg.textContent = error?.message || 'Login ou senha incorretos.';
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      adminLoginMsg.textContent = errorData.erro || 'Login ou senha incorretos.';
       return;
     }
-    const token = data.session.access_token;
+    const data = await res.json();
+    const token = data.token;
+    if (!token) {
+      adminLoginMsg.textContent = 'Token não recebido do backend.';
+      return;
+    }
     sessionStorage.setItem('token', token);
     sessionStorage.setItem('admin_nome', nome);
-    adminEmail = data.user.email;
-    adminNome = data.user.user_metadata?.nome_completo || nome;
+    adminEmail = data.email || login;
+    adminNome = nome;
     adminLoginSection.classList.add('hidden');
     adminPanelSection.classList.remove('hidden');
     adminMsg.textContent = 'Login de administrador realizado com sucesso!';
