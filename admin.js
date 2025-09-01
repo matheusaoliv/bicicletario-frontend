@@ -46,59 +46,105 @@ const adminMsg = document.getElementById('adminMsg');
 
 // [removido] handler duplicado de logout; o handler ativo está definido abaixo.
 
-// Injeção de estilos e header responsivo fixo
+// Injeção de estilos e normalização do header (cores da prefeitura), sem duplicar
 (function injectAdminUI() {
   try {
-    // CSS global para responsividade e visual limpo
+    // CSS global para responsividade e visual institucional
     if (!document.getElementById('adminDynamicStyles')) {
       const style = document.createElement('style');
       style.id = 'adminDynamicStyles';
       style.textContent = `
-:root { --admin-header-height: 64px; --admin-primary:#0d6efd; }
+:root { --admin-header-height: 64px; --municipal-left:#0aa04f; --municipal-right:#0d6efd; }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body { padding-top: var(--admin-header-height); background: #f8f9fa; }
-#adminHeader {
+
+/* Header institucional (aplica em header existente ou no #adminHeader injetado) */
+header.municipal-header, #adminHeader {
   position: fixed; top: 0; left: 0; right: 0; height: var(--admin-header-height);
-  background: #fff; border-bottom: 1px solid rgba(0,0,0,.08);
+  background: linear-gradient(90deg, var(--municipal-left), var(--municipal-right));
+  color: #fff;
   display: flex; align-items: center; z-index: 1000;
-  box-shadow: 0 2px 10px rgba(0,0,0,.04);
+  box-shadow: 0 2px 10px rgba(0,0,0,.12);
 }
-#adminHeader .wrap {
+header.municipal-header .wrap, #adminHeader .wrap {
   width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 16px;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
-#adminHeader h1 { font-size: 18px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#adminHeader nav { display: flex; gap: 12px; flex-wrap: wrap; }
-#adminHeader nav a {
-  color: var(--admin-primary); text-decoration: none; font-weight: 600;
-  padding: 6px 10px; border-radius: 6px;
+header.municipal-header h1, #adminHeader h1 { font-size: 18px; margin: 0; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+header.municipal-header nav, #adminHeader nav { display: flex; gap: 12px; flex-wrap: wrap; }
+header.municipal-header nav a, #adminHeader nav a {
+  color: #fff; text-decoration: none; font-weight: 600;
+  padding: 6px 10px; border-radius: 6px; transition: background .2s ease;
 }
-#adminHeader nav a:hover { background: rgba(13,110,253,0.08); }
-#adminPanelSection, #adminLoginSection {
-  max-width: 1200px; margin: 12px auto; padding: 12px;
-}
+header.municipal-header nav a:hover, #adminHeader nav a:hover { background: rgba(255,255,255,0.18); }
+
+#adminPanelSection, #adminLoginSection { max-width: 1200px; margin: 12px auto; padding: 12px; }
 .tab-content { overflow-x: auto; }
 .table-responsive, .dataTables_wrapper { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; table-layout: auto; }
 th, td { word-break: break-word; white-space: normal; vertical-align: middle; }
 img { max-width: 100%; }
-.avatar-placeholder {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; background: #e9ecef; border-radius: 50%;
-}
+.avatar-placeholder { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #e9ecef; border-radius: 50%; }
 canvas { max-width: 100% !important; height: auto !important; }
+
 @media (max-width: 576px) {
   :root { --admin-header-height: 72px; }
-  #adminHeader .wrap { flex-direction: column; align-items: flex-start; gap: 6px; padding: 6px 12px; }
-  #adminHeader nav { width: 100%; gap: 8px; }
+  header.municipal-header .wrap, #adminHeader .wrap { flex-direction: column; align-items: flex-start; gap: 6px; padding: 6px 12px; }
+  header.municipal-header nav, #adminHeader nav { width: 100%; gap: 8px; }
 }
       `;
       document.head.appendChild(style);
     }
 
-    // Header no topo (somente se não existir)
-    if (!document.getElementById('adminHeader')) {
+    // Se já existe um header na página, aplicar classe institucional e não criar outro
+    const pageHeader = document.querySelector('header');
+    const injectedHeader = document.getElementById('adminHeader');
+
+    if (pageHeader) {
+      pageHeader.classList.add('municipal-header');
+      // Se por acaso já tinha sido injetado um #adminHeader antes, remove para evitar duplicidade
+      if (injectedHeader && injectedHeader !== pageHeader) {
+        injectedHeader.remove();
+      }
+      // Garante que existe área de navegação com link de sair
+      let nav = pageHeader.querySelector('nav');
+      if (!nav) {
+        nav = document.createElement('nav');
+        pageHeader.appendChild(nav);
+      }
+      if (!nav.querySelector('.logout-admin-link') && !nav.querySelector('#logoutAdmin')) {
+        const aLogout = document.createElement('a');
+        aLogout.href = '#';
+        aLogout.className = 'logout-admin-link';
+        aLogout.textContent = 'Sair';
+        nav.appendChild(aLogout);
+      }
+      if (!nav.querySelector('a[href="area-funcionario.html"]')) {
+        const aPainel = document.createElement('a');
+        aPainel.href = 'area-funcionario.html';
+        aPainel.textContent = 'Painel de Controle';
+        nav.prepend(aPainel);
+      }
+      if (!pageHeader.querySelector('h1')) {
+        const h = document.createElement('h1');
+        h.textContent = 'Painel do Administrador';
+        const wrap = document.createElement('div');
+        wrap.className = 'wrap';
+        wrap.appendChild(h);
+        wrap.appendChild(nav);
+        // move conteúdo atual do header para dentro do wrap se necessário
+        pageHeader.innerHTML = '';
+        pageHeader.appendChild(wrap);
+      } else if (!pageHeader.querySelector('.wrap')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'wrap';
+        // move todos filhos para dentro do .wrap
+        while (pageHeader.firstChild) wrap.appendChild(pageHeader.firstChild);
+        pageHeader.appendChild(wrap);
+      }
+    } else {
+      // Caso não exista nenhum header, cria um com o visual institucional
       const header = document.createElement('header');
       header.id = 'adminHeader';
       header.innerHTML = `
@@ -113,7 +159,6 @@ canvas { max-width: 100% !important; height: auto !important; }
       document.body.insertBefore(header, document.body.firstChild);
     }
   } catch (e) {
-    // silencia erros de UI para não interromper o painel
     console.warn('Falha ao injetar UI admin:', e);
   }
 })();
