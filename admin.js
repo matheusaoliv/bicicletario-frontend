@@ -97,7 +97,7 @@ async function carregarMonitoramento(token) {
   const monitoramentoDiv = document.getElementById('monitoramentoTab');
   if (!monitoramentoDiv) return;
   // Removido: monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
-  // Se quiser, pode exibir um loading em um elemento próprio
+  // Exibe loading apenas em um elemento próprio
   const loadingDiv = document.getElementById('loadingMonitoramento');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando monitoramento...';
   try {
@@ -107,8 +107,13 @@ async function carregarMonitoramento(token) {
     if (!res.ok) throw new Error('Erro ao buscar monitoramento');
     const { funcionarios, ranking, fluxoPorDia, fluxoPorFuncionarioPorDia } = await res.json();
 
-    // Gráfico de produtividade (check-ins/check-outs por dia por funcionário)
-    const ctxProd = document.getElementById('graficoProdutividade').getContext('2d');
+    // Verificação defensiva para o canvas
+    const canvasProd = document.getElementById('graficoProdutividade');
+    if (!canvasProd) {
+      if (loadingDiv) loadingDiv.innerHTML = 'Erro: Canvas de produtividade não encontrado.';
+      return;
+    }
+    const ctxProd = canvasProd.getContext('2d');
     const dias = Object.keys(fluxoPorDia).sort();
     const datasetsProd = [];
     funcionarios.forEach(f => {
@@ -134,8 +139,21 @@ async function carregarMonitoramento(token) {
     if(window.graficoProdutividade) window.graficoProdutividade.destroy();
     window.graficoProdutividade = new Chart(ctxProd, {
       type: 'bar',
-      data: { labels: dias, datasets: datasetsProd },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { stacked: true }, y: { stacked: true } } }
+      data: {
+        labels: dias,
+        datasets: datasetsProd
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            stacked: true
+          },
+          y: {
+            stacked: true
+          }
+        }
+      }
     });
 
     // Gráfico de ranking
@@ -187,42 +205,44 @@ async function carregarMonitoramento(token) {
     justificativasDiv.innerHTML += justificativasHtml;
 
     if (loadingDiv) loadingDiv.innerHTML = '';
-  } catch (err) {
-    if (loadingDiv) loadingDiv.innerHTML = '';
-    monitoramentoDiv.querySelector('#tabelaMonitoramentoContainer').innerHTML = `<p class="erro">Erro ao carregar monitoramento: ${err.message}</p>`;
+  } catch (error) {
+    console.error('Erro ao carregar monitoramento:', error);
+    if (loadingDiv) loadingDiv.innerHTML = 'Erro ao carregar monitoramento.';
   }
 }
 
 async function carregarProprietarios(token) {
   const proprietariosDiv = document.getElementById('proprietariosTab');
-  proprietariosDiv.innerHTML = '<p>Carregando proprietários...</p>';
+  const loadingDiv = document.getElementById('loadingProprietarios');
+  if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
+  if (!proprietariosDiv) return;
   try {
     const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Erro HTTP ${res.status}: ${errorText}`);
+      let msg = `Erro ao buscar proprietários (status: ${res.status})`;
+      if (loadingDiv) loadingDiv.innerHTML = msg;
+      throw new Error(msg);
     }
     const proprietarios = await res.json();
-    let html = '<div class="lista-proprietarios">';
+    if (!Array.isArray(proprietarios) || proprietarios.length === 0) {
+      proprietariosDiv.innerHTML = '<p>Nenhum proprietário encontrado.</p>';
+      if (loadingDiv) loadingDiv.innerHTML = '';
+      return;
+    }
+    // Exemplo simples de exibição
+    let html = '<table><tr><th>Nome</th><th>Email</th></tr>';
     proprietarios.forEach(p => {
-      html += `<div class="proprietario-card"><h4>${p.nome_completo} (CPF: ${p.cpf})</h4>`;
-      (p.bicicletas||[]).forEach(b => {
-        html += `<div class="bicicleta-card"><b>Bicicleta:</b> ${b.numero_identificacao} - ${b.marca} ${b.modelo} (${b.tipo_bike})<br>`;
-        html += '<b>Histórico:</b><ul>';
-        (b.historico||[]).forEach(h => {
-          html += `<li>Entrada: ${h.data_hora_entrada || '-'} (${h.funcionario_entrada || '-'})<br>Saída: ${h.data_hora_saida || '-'} (${h.funcionario_saida || '-'})</li>`;
-        });
-        html += '</ul></div>';
-      });
-      html += '</div>';
+      html += `<tr><td>${p.nome || ''}</td><td>${p.email || ''}</td></tr>`;
     });
-    html += '</div>';
+    html += '</table>';
     proprietariosDiv.innerHTML = html;
-  } catch (err) {
-    proprietariosDiv.innerHTML = `<p class="erro">Erro ao carregar proprietários: ${err.message}</p>`;
-    console.error('Erro ao carregar proprietários:', err);
+    if (loadingDiv) loadingDiv.innerHTML = '';
+  } catch (error) {
+    console.error('Erro ao carregar proprietários:', error);
+    if (loadingDiv) loadingDiv.innerHTML = 'Erro ao carregar proprietários.';
+    if (proprietariosDiv) proprietariosDiv.innerHTML = '';
   }
 }
 
@@ -384,7 +404,7 @@ async function carregarMonitoramento(token) {
   const monitoramentoDiv = document.getElementById('monitoramentoTab');
   if (!monitoramentoDiv) return;
   // Removido: monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
-  // Se quiser, pode exibir um loading em um elemento próprio
+  // Exibe loading apenas em um elemento próprio
   const loadingDiv = document.getElementById('loadingMonitoramento');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando monitoramento...';
   try {
@@ -394,8 +414,13 @@ async function carregarMonitoramento(token) {
     if (!res.ok) throw new Error('Erro ao buscar monitoramento');
     const { funcionarios, ranking, fluxoPorDia, fluxoPorFuncionarioPorDia } = await res.json();
 
-    // Gráfico de produtividade (check-ins/check-outs por dia por funcionário)
-    const ctxProd = document.getElementById('graficoProdutividade').getContext('2d');
+    // Verificação defensiva para o canvas
+    const canvasProd = document.getElementById('graficoProdutividade');
+    if (!canvasProd) {
+      if (loadingDiv) loadingDiv.innerHTML = 'Erro: Canvas de produtividade não encontrado.';
+      return;
+    }
+    const ctxProd = canvasProd.getContext('2d');
     const dias = Object.keys(fluxoPorDia).sort();
     const datasetsProd = [];
     funcionarios.forEach(f => {
@@ -421,8 +446,21 @@ async function carregarMonitoramento(token) {
     if(window.graficoProdutividade) window.graficoProdutividade.destroy();
     window.graficoProdutividade = new Chart(ctxProd, {
       type: 'bar',
-      data: { labels: dias, datasets: datasetsProd },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { stacked: true }, y: { stacked: true } } }
+      data: {
+        labels: dias,
+        datasets: datasetsProd
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            stacked: true
+          },
+          y: {
+            stacked: true
+          }
+        }
+      }
     });
 
     // Gráfico de ranking
@@ -474,42 +512,44 @@ async function carregarMonitoramento(token) {
     justificativasDiv.innerHTML += justificativasHtml;
 
     if (loadingDiv) loadingDiv.innerHTML = '';
-  } catch (err) {
-    if (loadingDiv) loadingDiv.innerHTML = '';
-    monitoramentoDiv.querySelector('#tabelaMonitoramentoContainer').innerHTML = `<p class="erro">Erro ao carregar monitoramento: ${err.message}</p>`;
+  } catch (error) {
+    console.error('Erro ao carregar monitoramento:', error);
+    if (loadingDiv) loadingDiv.innerHTML = 'Erro ao carregar monitoramento.';
   }
 }
 
 async function carregarProprietarios(token) {
   const proprietariosDiv = document.getElementById('proprietariosTab');
-  proprietariosDiv.innerHTML = '<p>Carregando proprietários...</p>';
+  const loadingDiv = document.getElementById('loadingProprietarios');
+  if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
+  if (!proprietariosDiv) return;
   try {
     const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Erro HTTP ${res.status}: ${errorText}`);
+      let msg = `Erro ao buscar proprietários (status: ${res.status})`;
+      if (loadingDiv) loadingDiv.innerHTML = msg;
+      throw new Error(msg);
     }
     const proprietarios = await res.json();
-    let html = '<div class="lista-proprietarios">';
+    if (!Array.isArray(proprietarios) || proprietarios.length === 0) {
+      proprietariosDiv.innerHTML = '<p>Nenhum proprietário encontrado.</p>';
+      if (loadingDiv) loadingDiv.innerHTML = '';
+      return;
+    }
+    // Exemplo simples de exibição
+    let html = '<table><tr><th>Nome</th><th>Email</th></tr>';
     proprietarios.forEach(p => {
-      html += `<div class="proprietario-card"><h4>${p.nome_completo} (CPF: ${p.cpf})</h4>`;
-      (p.bicicletas||[]).forEach(b => {
-        html += `<div class="bicicleta-card"><b>Bicicleta:</b> ${b.numero_identificacao} - ${b.marca} ${b.modelo} (${b.tipo_bike})<br>`;
-        html += '<b>Histórico:</b><ul>';
-        (b.historico||[]).forEach(h => {
-          html += `<li>Entrada: ${h.data_hora_entrada || '-'} (${h.funcionario_entrada || '-'})<br>Saída: ${h.data_hora_saida || '-'} (${h.funcionario_saida || '-'})</li>`;
-        });
-        html += '</ul></div>';
-      });
-      html += '</div>';
+      html += `<tr><td>${p.nome || ''}</td><td>${p.email || ''}</td></tr>`;
     });
-    html += '</div>';
+    html += '</table>';
     proprietariosDiv.innerHTML = html;
-  } catch (err) {
-    proprietariosDiv.innerHTML = `<p class="erro">Erro ao carregar proprietários: ${err.message}</p>`;
-    console.error('Erro ao carregar proprietários:', err);
+    if (loadingDiv) loadingDiv.innerHTML = '';
+  } catch (error) {
+    console.error('Erro ao carregar proprietários:', error);
+    if (loadingDiv) loadingDiv.innerHTML = 'Erro ao carregar proprietários.';
+    if (proprietariosDiv) proprietariosDiv.innerHTML = '';
   }
 }
 
@@ -671,7 +711,7 @@ async function carregarMonitoramento(token) {
   const monitoramentoDiv = document.getElementById('monitoramentoTab');
   if (!monitoramentoDiv) return;
   // Removido: monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
-  // Se quiser, pode exibir um loading em um elemento próprio
+  // Exibe loading apenas em um elemento próprio
   const loadingDiv = document.getElementById('loadingMonitoramento');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando monitoramento...';
   try {
@@ -681,8 +721,13 @@ async function carregarMonitoramento(token) {
     if (!res.ok) throw new Error('Erro ao buscar monitoramento');
     const { funcionarios, ranking, fluxoPorDia, fluxoPorFuncionarioPorDia } = await res.json();
 
-    // Gráfico de produtividade (check-ins/check-outs por dia por funcionário)
-    const ctxProd = document.getElementById('graficoProdutividade').getContext('2d');
+    // Verificação defensiva para o canvas
+    const canvasProd = document.getElementById('graficoProdutividade');
+    if (!canvasProd) {
+      if (loadingDiv) loadingDiv.innerHTML = 'Erro: Canvas de produtividade não encontrado.';
+      return;
+    }
+    const ctxProd = canvasProd.getContext('2d');
     const dias = Object.keys(fluxoPorDia).sort();
     const datasetsProd = [];
     funcionarios.forEach(f => {
@@ -708,8 +753,21 @@ async function carregarMonitoramento(token) {
     if(window.graficoProdutividade) window.graficoProdutividade.destroy();
     window.graficoProdutividade = new Chart(ctxProd, {
       type: 'bar',
-      data: { labels: dias, datasets: datasetsProd },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { stacked: true }, y: { stacked: true } } }
+      data: {
+        labels: dias,
+        datasets: datasetsProd
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            stacked: true
+          },
+          y: {
+            stacked: true
+          }
+        }
+      }
     });
 
     // Gráfico de ranking
@@ -761,42 +819,44 @@ async function carregarMonitoramento(token) {
     justificativasDiv.innerHTML += justificativasHtml;
 
     if (loadingDiv) loadingDiv.innerHTML = '';
-  } catch (err) {
-    if (loadingDiv) loadingDiv.innerHTML = '';
-    monitoramentoDiv.querySelector('#tabelaMonitoramentoContainer').innerHTML = `<p class="erro">Erro ao carregar monitoramento: ${err.message}</p>`;
+  } catch (error) {
+    console.error('Erro ao carregar monitoramento:', error);
+    if (loadingDiv) loadingDiv.innerHTML = 'Erro ao carregar monitoramento.';
   }
 }
 
 async function carregarProprietarios(token) {
   const proprietariosDiv = document.getElementById('proprietariosTab');
-  proprietariosDiv.innerHTML = '<p>Carregando proprietários...</p>';
+  const loadingDiv = document.getElementById('loadingProprietarios');
+  if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
+  if (!proprietariosDiv) return;
   try {
     const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Erro HTTP ${res.status}: ${errorText}`);
+      let msg = `Erro ao buscar proprietários (status: ${res.status})`;
+      if (loadingDiv) loadingDiv.innerHTML = msg;
+      throw new Error(msg);
     }
     const proprietarios = await res.json();
-    let html = '<div class="lista-proprietarios">';
+    if (!Array.isArray(proprietarios) || proprietarios.length === 0) {
+      proprietariosDiv.innerHTML = '<p>Nenhum proprietário encontrado.</p>';
+      if (loadingDiv) loadingDiv.innerHTML = '';
+      return;
+    }
+    // Exemplo simples de exibição
+    let html = '<table><tr><th>Nome</th><th>Email</th></tr>';
     proprietarios.forEach(p => {
-      html += `<div class="proprietario-card"><h4>${p.nome_completo} (CPF: ${p.cpf})</h4>`;
-      (p.bicicletas||[]).forEach(b => {
-        html += `<div class="bicicleta-card"><b>Bicicleta:</b> ${b.numero_identificacao} - ${b.marca} ${b.modelo} (${b.tipo_bike})<br>`;
-        html += '<b>Histórico:</b><ul>';
-        (b.historico||[]).forEach(h => {
-          html += `<li>Entrada: ${h.data_hora_entrada || '-'} (${h.funcionario_entrada || '-'})<br>Saída: ${h.data_hora_saida || '-'} (${h.funcionario_saida || '-'})</li>`;
-        });
-        html += '</ul></div>';
-      });
-      html += '</div>';
+      html += `<tr><td>${p.nome || ''}</td><td>${p.email || ''}</td></tr>`;
     });
-    html += '</div>';
+    html += '</table>';
     proprietariosDiv.innerHTML = html;
-  } catch (err) {
-    proprietariosDiv.innerHTML = `<p class="erro">Erro ao carregar proprietários: ${err.message}</p>`;
-    console.error('Erro ao carregar proprietários:', err);
+    if (loadingDiv) loadingDiv.innerHTML = '';
+  } catch (error) {
+    console.error('Erro ao carregar proprietários:', error);
+    if (loadingDiv) loadingDiv.innerHTML = 'Erro ao carregar proprietários.';
+    if (proprietariosDiv) proprietariosDiv.innerHTML = '';
   }
 }
 
