@@ -39,7 +39,7 @@ adminLoginForm.addEventListener('submit', async (e) => {
   }
   try {
     // Login via backend próprio
-    const res = await fetch(`${API_BASE_URL}/api/admin/login`, {
+    const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ login, senha })
