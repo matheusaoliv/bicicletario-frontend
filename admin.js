@@ -79,11 +79,20 @@ header.municipal-header nav a, #adminHeader nav a {
 }
 header.municipal-header nav a:hover, #adminHeader nav a:hover { background: rgba(255,255,255,0.18); }
 
-#adminPanelSection, #adminLoginSection { max-width: 1200px; margin: 12px auto; padding: 12px; }
+/* Ocupa toda a largura útil da página */
+body > main { width: 100vw; max-width: 100vw; margin: 0 auto; padding: 12px; }
+#adminPanelSection, #adminLoginSection { width: 100%; max-width: 100vw; margin: 12px auto; padding: 12px; }
+
+/* Tabela e containers */
 .tab-content { overflow-x: auto; }
 .table-responsive, .dataTables_wrapper { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; table-layout: auto; }
 th, td { word-break: break-word; white-space: normal; vertical-align: middle; }
+#tabelaMonitoramento td, #tabelaMonitoramento th { font-size: .92rem; }
+/* Coluna Ações com quebra de linha para caber melhor */
+#tabelaMonitoramento td:nth-child(9) { white-space: normal; }
+#tabelaMonitoramento td:nth-child(9) .btn { margin: 2px 4px; }
+
 img { max-width: 100%; }
 .avatar-placeholder { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #e9ecef; border-radius: 50%; }
 canvas { max-width: 100% !important; height: auto !important; }
@@ -406,7 +415,7 @@ async function carregarMonitoramento(token) {
       const ultimaMovStr = f.ultimaMov ? `${formatDateTimeExact(f.ultimaMov)} (${f.tipoUltimaMov})` : '-';
       tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${tempoParadoStr}${alertaStr}</td><td>${totalMovStr}</td><td>${ultimaMovStr}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
     });
-    tabela.DataTable({ responsive: false, scrollX: true, autoWidth: false, order: [[7, 'asc']] });
+    tabela.DataTable({ responsive: false, scrollX: false, autoWidth: false, order: [[7, 'asc']] });
 
     // Justificativas de inatividade
     const justificativasDiv = document.getElementById('justificativasContainer');
@@ -816,7 +825,7 @@ async function carregarMonitoramento(token) {
       const ultimaMovStr = f.ultimaMov ? `${formatDateTimeExact(f.ultimaMov)} (${f.tipoUltimaMov})` : '-';
       tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${tempoParadoStr}${alertaStr}</td><td>${totalMovStr}</td><td>${ultimaMovStr}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
     });
-    tabela.DataTable({ responsive: false, scrollX: true, autoWidth: false, order: [[7, 'asc']] });
+    tabela.DataTable({ responsive: false, scrollX: false, autoWidth: false, order: [[7, 'asc']] });
 
     // Justificativas de inatividade
     const justificativasDiv = document.getElementById('justificativasContainer');
