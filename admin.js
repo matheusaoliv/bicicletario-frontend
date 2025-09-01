@@ -14,6 +14,25 @@ const ADMINS = [
   "Marcelo da silva rocha"
 ];
 
+// Listas de funcionários por local
+const FUNC_BICICLETARIO = [
+  'raiane carvalho de souza',
+  'ana paula dos santos',
+  'deniesth vidal duarte',
+  'alan pereira fiorani',
+  'eloa cristina marques do nascimento',
+  'matheus oliveira'
+];
+const FUNC_SECRETARIA = [
+  'matheus oliveira',
+  'marcelo da silva rocha',
+  'wenderson da silva soares',
+  'joice barbosa nascimento',
+  'marcelo damasceno de oliveira',
+  'shaiene maiara ferreira de oliveira',
+  'jorge luiz costa dos santos'
+];
+
 const adminLoginSection = document.getElementById('adminLoginSection');
 const adminPanelSection = document.getElementById('adminPanelSection');
 const adminLoginForm = document.getElementById('adminLoginForm');
@@ -184,12 +203,27 @@ async function carregarMonitoramento(token) {
     const tabela = $('#tabelaMonitoramento');
     if ($.fn.DataTable.isDataTable(tabela)) tabela.DataTable().destroy();
     tabela.empty();
-    tabela.append('<thead><tr><th>Nome</th><th>Status</th><th>Tempo Parado</th><th>Total Mov.</th><th>Última Movimentação</th><th>Ranking</th></tr></thead><tbody></tbody>');
+    tabela.append('<thead><tr><th>Nome</th><th>Local</th><th>Status</th><th>Tempo Parado</th><th>Total Mov.</th><th>Última Movimentação</th><th>Ranking</th><th>Ações</th></tr></thead><tbody></tbody>');
     funcionarios.forEach((f, idx) => {
+      const nomeLower = (f.nome || '').toLowerCase();
+      let local = '';
+      if (FUNC_BICICLETARIO.includes(nomeLower) && FUNC_SECRETARIA.includes(nomeLower)) {
+        local = 'Secretaria/Bicicletário';
+      } else if (FUNC_BICICLETARIO.includes(nomeLower)) {
+        local = 'Bicicletário';
+      } else if (FUNC_SECRETARIA.includes(nomeLower)) {
+        local = 'Secretaria';
+      } else {
+        local = 'Outro';
+      }
       const destaque = f.status === 'Parado' ? 'table-danger' : '';
-      tabela.append(`<tr class="${destaque}"><td>${f.nome}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? ' <span class=\'badge bg-danger\'>Alerta</span>' : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td></tr>`);
+      // Botões de ação
+      const isAdmin = FUNC_SECRETARIA.includes(nomeLower);
+      const btnEditar = `<button class='btn btn-sm btn-primary' onclick="editarFuncionario('${f.id}')">Editar</button>`;
+      const btnExcluir = isAdmin ? '' : `<button class='btn btn-sm btn-danger' onclick="excluirFuncionario('${f.id}', '${f.nome.replace(/'/g, '\'')}')">Excluir</button>`;
+      tabela.append(`<tr class="${destaque}"><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? ' <span class='badge bg-danger'>Alerta</span>' : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir}</td></tr>`);
     });
-    tabela.DataTable({ responsive: true, order: [[5, 'asc']] });
+    tabela.DataTable({ responsive: true, order: [[6, 'asc']] });
 
     // Justificativas de inatividade
     const justificativasDiv = document.getElementById('justificativasContainer');
@@ -211,7 +245,10 @@ async function carregarMonitoramento(token) {
 }
 
 async function carregarProprietarios(token) {
-  console.log('Token usado em carregarProprietarios:', token); // Log para depuração
+  // Busca o token do sessionStorage se não for passado
+  if (!token) {
+    token = sessionStorage.getItem('token');
+  }
   const proprietariosDiv = document.getElementById('proprietariosTab');
   const loadingDiv = document.getElementById('loadingProprietarios');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
@@ -501,12 +538,27 @@ async function carregarMonitoramento(token) {
     const tabela = $('#tabelaMonitoramento');
     if ($.fn.DataTable.isDataTable(tabela)) tabela.DataTable().destroy();
     tabela.empty();
-    tabela.append('<thead><tr><th>Nome</th><th>Status</th><th>Tempo Parado</th><th>Total Mov.</th><th>Última Movimentação</th><th>Ranking</th></tr></thead><tbody></tbody>');
+    tabela.append('<thead><tr><th>Nome</th><th>Local</th><th>Status</th><th>Tempo Parado</th><th>Total Mov.</th><th>Última Movimentação</th><th>Ranking</th><th>Ações</th></tr></thead><tbody></tbody>');
     funcionarios.forEach((f, idx) => {
+      const nomeLower = (f.nome || '').toLowerCase();
+      let local = '';
+      if (FUNC_BICICLETARIO.includes(nomeLower) && FUNC_SECRETARIA.includes(nomeLower)) {
+        local = 'Secretaria/Bicicletário';
+      } else if (FUNC_BICICLETARIO.includes(nomeLower)) {
+        local = 'Bicicletário';
+      } else if (FUNC_SECRETARIA.includes(nomeLower)) {
+        local = 'Secretaria';
+      } else {
+        local = 'Outro';
+      }
       const destaque = f.status === 'Parado' ? 'table-danger' : '';
-      tabela.append(`<tr class="${destaque}"><td>${f.nome}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? ' <span class=\'badge bg-danger\'>Alerta</span>' : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td></tr>`);
+      // Botões de ação
+      const isAdmin = FUNC_SECRETARIA.includes(nomeLower);
+      const btnEditar = `<button class='btn btn-sm btn-primary' onclick="editarFuncionario('${f.id}')">Editar</button>`;
+      const btnExcluir = isAdmin ? '' : `<button class='btn btn-sm btn-danger' onclick="excluirFuncionario('${f.id}', '${f.nome.replace(/'/g, '\'')}')">Excluir</button>`;
+      tabela.append(`<tr class="${destaque}"><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? ' <span class='badge bg-danger'>Alerta</span>' : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir}</td></tr>`);
     });
-    tabela.DataTable({ responsive: true, order: [[5, 'asc']] });
+    tabela.DataTable({ responsive: true, order: [[6, 'asc']] });
 
     // Justificativas de inatividade
     const justificativasDiv = document.getElementById('justificativasContainer');
@@ -528,7 +580,10 @@ async function carregarMonitoramento(token) {
 }
 
 async function carregarProprietarios(token) {
-  console.log('Token usado em carregarProprietarios:', token); // Log para depuração
+  // Busca o token do sessionStorage se não for passado
+  if (!token) {
+    token = sessionStorage.getItem('token');
+  }
   const proprietariosDiv = document.getElementById('proprietariosTab');
   const loadingDiv = document.getElementById('loadingProprietarios');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
@@ -818,12 +873,27 @@ async function carregarMonitoramento(token) {
     const tabela = $('#tabelaMonitoramento');
     if ($.fn.DataTable.isDataTable(tabela)) tabela.DataTable().destroy();
     tabela.empty();
-    tabela.append('<thead><tr><th>Nome</th><th>Status</th><th>Tempo Parado</th><th>Total Mov.</th><th>Última Movimentação</th><th>Ranking</th></tr></thead><tbody></tbody>');
+    tabela.append('<thead><tr><th>Nome</th><th>Local</th><th>Status</th><th>Tempo Parado</th><th>Total Mov.</th><th>Última Movimentação</th><th>Ranking</th><th>Ações</th></tr></thead><tbody></tbody>');
     funcionarios.forEach((f, idx) => {
+      const nomeLower = (f.nome || '').toLowerCase();
+      let local = '';
+      if (FUNC_BICICLETARIO.includes(nomeLower) && FUNC_SECRETARIA.includes(nomeLower)) {
+        local = 'Secretaria/Bicicletário';
+      } else if (FUNC_BICICLETARIO.includes(nomeLower)) {
+        local = 'Bicicletário';
+      } else if (FUNC_SECRETARIA.includes(nomeLower)) {
+        local = 'Secretaria';
+      } else {
+        local = 'Outro';
+      }
       const destaque = f.status === 'Parado' ? 'table-danger' : '';
-      tabela.append(`<tr class="${destaque}"><td>${f.nome}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? ' <span class=\'badge bg-danger\'>Alerta</span>' : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td></tr>`);
+      // Botões de ação
+      const isAdmin = FUNC_SECRETARIA.includes(nomeLower);
+      const btnEditar = `<button class='btn btn-sm btn-primary' onclick="editarFuncionario('${f.id}')">Editar</button>`;
+      const btnExcluir = isAdmin ? '' : `<button class='btn btn-sm btn-danger' onclick="excluirFuncionario('${f.id}', '${f.nome.replace(/'/g, '\'')}')">Excluir</button>`;
+      tabela.append(`<tr class="${destaque}"><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? ' <span class='badge bg-danger'>Alerta</span>' : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir}</td></tr>`);
     });
-    tabela.DataTable({ responsive: true, order: [[5, 'asc']] });
+    tabela.DataTable({ responsive: true, order: [[6, 'asc']] });
 
     // Justificativas de inatividade
     const justificativasDiv = document.getElementById('justificativasContainer');
@@ -845,7 +915,10 @@ async function carregarMonitoramento(token) {
 }
 
 async function carregarProprietarios(token) {
-  console.log('Token usado em carregarProprietarios:', token); // Log para depuração
+  // Busca o token do sessionStorage se não for passado
+  if (!token) {
+    token = sessionStorage.getItem('token');
+  }
   const proprietariosDiv = document.getElementById('proprietariosTab');
   const loadingDiv = document.getElementById('loadingProprietarios');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
@@ -896,4 +969,16 @@ if (logoutAdmin) {
     sessionStorage.clear();
     window.location.href = 'area-funcionario.html';
   };
+}
+
+// Funções para editar/excluir funcionário
+function editarFuncionario(id) {
+  alert('Função de edição de funcionário em desenvolvimento. ID: ' + id);
+  // Aqui pode abrir um modal para edição
+}
+function excluirFuncionario(id, nome) {
+  if (confirm('Tem certeza que deseja excluir o funcionário ' + nome + '? Essa ação não pode ser desfeita!')) {
+    // Aqui você pode fazer uma requisição para o backend para excluir
+    alert('Função de exclusão em desenvolvimento. ID: ' + id);
+  }
 }
