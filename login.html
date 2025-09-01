@@ -222,24 +222,25 @@ body::before {
         return;
       }
       try {
-        // Autenticação via Supabase Auth
-        const { data, error } = await window.supabaseClient.auth.signInWithPassword({
-          email: usuario,
-          password: senha
+        // Autenticação via API local
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome_usuario: usuario, senha })
         });
-        if (error || !data.session) {
-          mostrarMensagemErro(error?.message || 'Nome de usuário ou senha inválidos.');
+        const result = await response.json();
+        if (!response.ok) {
+          mostrarMensagemErro(result.erro || 'Nome de usuário ou senha inválidos.');
           usernameInput.focus();
           usernameInput.select();
           passwordInput.value = '';
           return;
         }
         limparMensagemErro();
-        const token = data.session.access_token;
+        const token = result.token;
         sessionStorage.setItem('token', token);
         sessionStorage.setItem('autenticado', 'true');
-        // Opcional: salvar dados do usuário
-        sessionStorage.setItem('usuarioSupabase', JSON.stringify(data.user));
+        sessionStorage.setItem('usuario', JSON.stringify(result.funcionario));
         mostrarMensagemErro('Login bem-sucedido! Redirecionando...');
         errorMessageElement.style.color = '#2a9d8f';
         setTimeout(() => {
