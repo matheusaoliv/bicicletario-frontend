@@ -129,6 +129,17 @@ canvas { max-width: 100% !important; height: auto !important; }
         `;
         document.head.appendChild(styleCols);
       }
+      // estilos do lightbox para fotos dos proprietários
+      if (!document.getElementById('propLightboxStyles')) {
+        const lb = document.createElement('style');
+        lb.id = 'propLightboxStyles';
+        lb.textContent = `
+.prop-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:2000}
+.prop-lightbox.open{display:flex}
+.prop-lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+        `;
+        document.head.appendChild(lb);
+      }
     }
 
     // Se já existe um header na página, aplicar classe institucional e não criar outro
@@ -469,26 +480,53 @@ async function carregarProprietarios(token) {
       if (loadingDiv) loadingDiv.innerHTML = '';
       return;
     }
-    // Exibição completa
-    let html = '<table class="table table-striped table-bordered"><thead><tr><th>Foto</th><th>Proprietário</th><th>Contato</th><th>Bicicleta</th><th>Check-in</th><th>Check-out</th></tr></thead><tbody>';
+    // Exibição completa com campos solicitados
+    let html = '<table class="table table-striped table-bordered"><thead><tr>'
+      + '<th>Foto</th><th>Proprietário</th><th>CPF</th><th>Endereço</th><th>Celular</th><th>E-mail</th><th>Bicicleta</th><th>Check-in</th><th>Check-out</th>'
+      + '</tr></thead><tbody>';
     proprietarios.forEach(p => {
       const foto = p.fotoUrl || p.foto || '';
-      const avatar = foto ? `<img src="${foto}" alt="Foto de ${p.nome || ''}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">` : '<span class="avatar-placeholder">👤</span>';
-      const contato = [p.email, p.telefone].filter(Boolean).join(' / ');
-      const bike = p.bicicleta ? [
-        p.bicicleta.modelo, p.bicicleta.cor, p.bicicleta.numeroSerie || p.bicicleta.serie || p.bicicleta.numero, p.bicicleta.placa
-      ].filter(Boolean).join(' | ') : (p.modeloBicicleta || p.dadosBicicleta || '-');
-      const checkinOper = p.checkin?.operador || p.checkin?.usuarioNome || p.operadorCheckin || '-';
-      const checkinHora = p.checkin?.dataHora || p.dataCheckin || '-';
-      const checkoutOper = p.checkout?.operador || p.checkout?.usuarioNome || p.operadorCheckout || '-';
-      const checkoutHora = p.checkout?.dataHora || p.dataCheckout || '-';
-      const checkinStr = (checkinOper !== '-' && checkinHora !== '-') ? `${checkinOper} em ${checkinHora}` : '-';
-      const checkoutStr = (checkoutOper !== '-' && checkoutHora !== '-') ? `${checkoutOper} em ${checkoutHora}` : '-';
+      const fotoCell = foto
+        ? `<a href="#" class="prop-foto" data-src="${foto}" title="Ver foto"><img src="${foto}" alt="Foto de ${p.nome || ''}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.12);"></a>`
+        : '<span class="avatar-placeholder">👤</span>';
+
+      const cpf = p.cpf || p.documento || '';
+      const endereco = p.endereco
+        || [p.logradouro, p.numero, p.bairro, p.cidade, p.uf].filter(Boolean).join(', ')
+        || '';
+      const celular = p.celular || p.telefoneCelular || p.telefone || '';
+      const email = p.email || '';
+
+      const b = p.bicicleta || {};
+      const bModelo = b.modelo || p.modeloBicicleta || '';
+      const bMarca = b.marca || '';
+      const bId = b.numeroIdentificacao || b.identificacao || b.numeroSerie || b.serie || b.numero || '';
+      const bTipo = b.tipo || b.categoria || '';
+      const bObs = b.caracteristicas || b.observacoes || b.observacao || b.caracteristicasDistintivas || '';
+
+      const bikeHtml = [ 
+        bModelo ? `<div><b>Modelo:</b> ${bModelo}</div>` : '',
+        bMarca ? `<div><b>Marca:</b> ${bMarca}</div>` : '',
+        bId ? `<div><b>ID:</b> ${bId}</div>` : '',
+        bTipo ? `<div><b>Tipo:</b> ${bTipo}</div>` : '',
+        bObs ? `<div><b>Características/Obs.:</b> ${bObs}</div>` : ''
+      ].filter(Boolean).join('');
+
+      const checkinOper = p.checkin?.operador || p.checkin?.usuarioNome || p.operadorCheckin || '';
+      const checkinHora = p.checkin?.dataHora || p.dataCheckin || '';
+      const checkoutOper = p.checkout?.operador || p.checkout?.usuarioNome || p.operadorCheckout || '';
+      const checkoutHora = p.checkout?.dataHora || p.dataCheckout || '';
+      const checkinStr = (checkinOper && checkinHora) ? `${checkinOper} em ${checkinHora}` : '-';
+      const checkoutStr = (checkoutOper && checkoutHora) ? `${checkoutOper} em ${checkoutHora}` : '-';
+
       html += `<tr>
-        <td>${avatar}</td>
+        <td>${fotoCell}</td>
         <td>${p.nome || ''}</td>
-        <td>${contato || ''}</td>
-        <td>${bike || ''}</td>
+        <td>${cpf}</td>
+        <td>${endereco}</td>
+        <td>${celular}</td>
+        <td>${email}</td>
+        <td>${bikeHtml || '-'}</td>
         <td>${checkinStr}</td>
         <td>${checkoutStr}</td>
       </tr>`;
@@ -699,6 +737,33 @@ function iniciarAutoRefresh() {
       carregarMonitoramento(token);
     }
   }, 30000); // 30s
+}
+
+// Lightbox simples para fotos dos proprietários
+function openPropLightbox(src) {
+  if (!src) return;
+  let box = document.getElementById('propLightbox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'propLightbox';
+    box.className = 'prop-lightbox';
+    box.innerHTML = `<img src="" alt="Foto do proprietário">`;
+    box.addEventListener('click', () => box.classList.remove('open'));
+    document.body.appendChild(box);
+  }
+  const img = box.querySelector('img');
+  img.src = src;
+  box.classList.add('open');
+}
+if (!window._boundPropFotoClick) {
+  document.addEventListener('click', function(e) {
+    const a = e.target.closest('.prop-foto');
+    if (a) {
+      e.preventDefault();
+      openPropLightbox(a.getAttribute('data-src') || a.querySelector('img')?.src);
+    }
+  });
+  window._boundPropFotoClick = true;
 }
 
 // --- Funções para buscar e exibir monitoramento e proprietários ---
