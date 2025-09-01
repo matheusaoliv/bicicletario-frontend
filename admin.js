@@ -95,6 +95,31 @@ canvas { max-width: 100% !important; height: auto !important; }
 }
       `;
       document.head.appendChild(style);
+      // estilos de redimensionamento de colunas e min-widths
+      if (!document.getElementById('adminTableResizeStyles')) {
+        const styleCols = document.createElement('style');
+        styleCols.id = 'adminTableResizeStyles';
+        styleCols.textContent = `
+#tabelaMonitoramento { table-layout: auto; }
+#tabelaMonitoramento th.resizable {
+  resize: horizontal;
+  overflow: auto;
+  cursor: col-resize;
+  min-width: 80px;
+}
+/* Larguras mínimas por coluna (th) e reflete em td por índice */
+#tabelaMonitoramento th.col-foto,   #tabelaMonitoramento td:nth-child(1) { min-width: 64px;  width: 64px; }
+#tabelaMonitoramento th.col-nome,   #tabelaMonitoramento td:nth-child(2) { min-width: 160px; }
+#tabelaMonitoramento th.col-local,  #tabelaMonitoramento td:nth-child(3) { min-width: 120px; }
+#tabelaMonitoramento th.col-status, #tabelaMonitoramento td:nth-child(4) { min-width: 110px; }
+#tabelaMonitoramento th.col-tempo,  #tabelaMonitoramento td:nth-child(5) { min-width: 140px; }
+#tabelaMonitoramento th.col-total,  #tabelaMonitoramento td:nth-child(6) { min-width: 160px; }
+#tabelaMonitoramento th.col-ultima, #tabelaMonitoramento td:nth-child(7) { min-width: 220px; }
+#tabelaMonitoramento th.col-ranking,#tabelaMonitoramento td:nth-child(8) { min-width: 90px;  text-align: center; }
+#tabelaMonitoramento th.col-acoes,  #tabelaMonitoramento td:nth-child(9) { min-width: 240px; }
+        `;
+        document.head.appendChild(styleCols);
+      }
     }
 
     // Se já existe um header na página, aplicar classe institucional e não criar outro
@@ -343,7 +368,17 @@ async function carregarMonitoramento(token) {
     const tabela = $('#tabelaMonitoramento');
     if ($.fn.DataTable.isDataTable(tabela)) tabela.DataTable().destroy();
     tabela.empty();
-    tabela.append('<thead><tr><th>Foto</th><th>Nome</th><th>Local</th><th>Status</th><th>Tempo Parado</th><th>Total Mov.</th><th>Última Movimentação</th><th>Ranking</th><th>Ações</th></tr></thead><tbody></tbody>');
+    tabela.append('<thead><tr>'
+      + '<th class="resizable col-foto">Foto</th>'
+      + '<th class="resizable col-nome">Nome</th>'
+      + '<th class="resizable col-local">Local</th>'
+      + '<th class="resizable col-status">Status</th>'
+      + '<th class="resizable col-tempo">Tempo Parado</th>'
+      + '<th class="resizable col-total">Total Mov.</th>'
+      + '<th class="resizable col-ultima">Última Movimentação</th>'
+      + '<th class="resizable col-ranking">Ranking</th>'
+      + '<th class="resizable col-acoes">Ações</th>'
+      + '</tr></thead><tbody></tbody>');
     funcionarios.forEach((f, idx) => {
       const nomeLower = (f.nome || '').toLowerCase();
       let local = '';
@@ -1055,7 +1090,17 @@ function renderTabelaFuncionarios(funcionarios, ranking) {
   const tabela = $('#tabelaMonitoramento');
   if ($.fn.DataTable.isDataTable(tabela)) tabela.DataTable().destroy();
   tabela.empty();
-  tabela.append('<thead><tr><th>Foto</th><th>Nome</th><th>Local</th><th>Status</th><th>Tempo Parado</th><th>Total Mov.</th><th>Última Movimentação</th><th>Ranking</th><th>Ações</th></tr></thead><tbody></tbody>');
+  tabela.append('<thead><tr>'
+    + '<th class="resizable col-foto">Foto</th>'
+    + '<th class="resizable col-nome">Nome</th>'
+    + '<th class="resizable col-local">Local</th>'
+    + '<th class="resizable col-status">Status</th>'
+    + '<th class="resizable col-tempo">Tempo Parado</th>'
+    + '<th class="resizable col-total">Total Mov.</th>'
+    + '<th class="resizable col-ultima">Última Movimentação</th>'
+    + '<th class="resizable col-ranking">Ranking</th>'
+    + '<th class="resizable col-acoes">Ações</th>'
+    + '</tr></thead><tbody></tbody>');
   funcionarios.forEach((f, idx) => {
     const nomeLower = (f.nome || '').toLowerCase();
     let local = '';
