@@ -44,15 +44,7 @@ const adminLoginForm = document.getElementById('adminLoginForm');
 const adminLoginMsg = document.getElementById('adminLoginMsg');
 const adminMsg = document.getElementById('adminMsg');
 
-// Logout funcional
-const logoutBtn = document.getElementById('logoutAdmin');
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    localStorage.removeItem('adminLogado');
-    window.location.href = 'admin-login.html';
-  });
-}
+// [removido] handler duplicado de logout; o handler ativo está definido abaixo.
 
 const modalEmail = document.getElementById('modalEmail');
 const inputEmail = document.getElementById('inputEmail');
@@ -62,55 +54,60 @@ let adminEmail = null;
 let adminNome = null;
 
 // --- Autenticação restrita ---
-adminLoginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  adminLoginMsg.textContent = '';
-  const nome = document.getElementById('adminName').value;
-  const login = document.getElementById('adminLogin').value.trim();
-  const senha = document.getElementById('adminSenha').value;
-  if (!ADMINS.includes(nome)) {
-    adminLoginMsg.textContent = 'Acesso restrito apenas para administradores.';
-    return;
-  }
-  try {
-    // Login via backend próprio
-    const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome_usuario: login, senha })
-    });
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      adminLoginMsg.textContent = errorData.erro || 'Login ou senha incorretos.';
+// O listener de login só é ativado na tela de login (admin-login.html)
+if (adminLoginForm) {
+  adminLoginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    adminLoginMsg.textContent = '';
+    const nome = document.getElementById('adminName').value;
+    const login = document.getElementById('adminLogin').value.trim();
+    const senha = document.getElementById('adminSenha').value;
+    if (!ADMINS.includes(nome)) {
+      adminLoginMsg.textContent = 'Acesso restrito apenas para administradores.';
       return;
     }
-    const data = await res.json();
-    const token = data.token;
-    if (!token) {
-      adminLoginMsg.textContent = 'Token não recebido do backend.';
-      return;
+    try {
+      // Login via backend próprio
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome_usuario: login, senha })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        adminLoginMsg.textContent = errorData.erro || 'Login ou senha incorretos.';
+        return;
+      }
+      const data = await res.json();
+      const token = data.token;
+      if (!token) {
+        adminLoginMsg.textContent = 'Token não recebido do backend.';
+        return;
+      }
+      sessionStorage.setItem('token', token);
+      sessionStorage.setItem('admin_nome', nome);
+      adminEmail = data.email || login;
+      adminNome = nome;
+      adminLoginSection?.classList.add('hidden');
+      adminPanelSection?.classList.remove('hidden');
+      adminMsg.textContent = 'Login de administrador realizado com sucesso!';
+      adminMsg.classList.add('sucesso');
+      // Checar se já tem e-mail salvo
+      adminEmail = localStorage.getItem('admin_email_' + nome);
+      if (!adminEmail) {
+        setTimeout(() => {
+          modalEmail.classList.remove('hidden');
+        }, 600);
+      } else {
+        mostrarPainelAdmin(token);
+      }
+      // Marca sessão logada
+      localStorage.setItem('adminLogado', '1');
+    } catch (err) {
+      adminLoginMsg.textContent = err.message || 'Falha no login.';
     }
-    sessionStorage.setItem('token', token);
-    sessionStorage.setItem('admin_nome', nome);
-    adminEmail = data.email || login;
-    adminNome = nome;
-    adminLoginSection.classList.add('hidden');
-    adminPanelSection.classList.remove('hidden');
-    adminMsg.textContent = 'Login de administrador realizado com sucesso!';
-    adminMsg.classList.add('sucesso');
-    // Checar se já tem e-mail salvo
-    adminEmail = localStorage.getItem('admin_email_' + nome);
-    if (!adminEmail) {
-      setTimeout(() => {
-        modalEmail.classList.remove('hidden');
-      }, 600);
-    } else {
-      mostrarPainelAdmin(token);
-    }
-  } catch (err) {
-    adminLoginMsg.textContent = err.message || 'Falha no login.';
-  }
-});
+  });
+}
 
 btnSalvarEmail.addEventListener('click', () => {
   const email = inputEmail.value.trim();
@@ -139,6 +136,8 @@ async function carregarMonitoramento(token) {
     });
     if (!res.ok) throw new Error('Erro ao buscar monitoramento');
     const { funcionarios, ranking, fluxoPorDia, fluxoPorFuncionarioPorDia } = await res.json();
+    // Guarda em memória para reuso (edição etc.)
+    window.ultimoMonitoramento = funcionarios;
 
     // Verificação defensiva para o canvas
     const canvasProd = document.getElementById('graficoProdutividade');
@@ -148,8 +147,13 @@ async function carregarMonitoramento(token) {
     }
     const ctxProd = canvasProd.getContext('2d');
     const dias = Object.keys(fluxoPorDia).sort();
+    // Apenas funcionários do bicicletário
+    const funcionariosBici = (funcionarios || []).filter(f => {
+      const nomeLower = (f.nome || '').toLowerCase();
+      return FUNC_BICICLETARIO.includes(nomeLower);
+    });
     const datasetsProd = [];
-    funcionarios.forEach(f => {
+    funcionariosBici.forEach(f => {
       const checkins = dias.map(d => f.checkinsPorDia[d]?.checkins || 0);
       const checkouts = dias.map(d => f.checkinsPorDia[d]?.checkouts || 0);
       datasetsProd.push({
@@ -195,9 +199,13 @@ async function carregarMonitoramento(token) {
     if (window.graficoRanking && typeof window.graficoRanking.destroy === 'function') {
       window.graficoRanking.destroy();
     }
+    const rankingBici = (ranking || []).filter(r => {
+      const nomeLower = (r.nome || '').toLowerCase();
+      return FUNC_BICICLETARIO.includes(nomeLower);
+    });
     window.graficoRanking = new Chart(ctxRank, {
       type: 'bar',
-      data: { labels: ranking.map(f => f.nome), datasets: [{ label: 'Movimentações', data: ranking.map(f => f.totalMovimentacoes), backgroundColor: 'rgba(75,192,192,0.7)' }] },
+      data: { labels: rankingBici.map(f => f.nome), datasets: [{ label: 'Movimentações', data: rankingBici.map(f => f.totalMovimentacoes), backgroundColor: 'rgba(75,192,192,0.7)' }] },
       options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } } }
     });
 
@@ -235,11 +243,13 @@ async function carregarMonitoramento(token) {
       const destaque = f.status === 'Parado' ? 'table-danger' : '';
       // Botões de ação
       const isAdmin = FUNC_SECRETARIA.includes(nomeLower);
-      const btnEditar = `<button class='btn btn-sm btn-primary' onclick="editarFuncionario('${f.id}')">Editar</button>`;
-      const btnExcluir = isAdmin ? '' : `<button class='btn btn-sm btn-danger' onclick="excluirFuncionario('${f.id}', '${f.nome.replace(/'/g, '\'')}')">Excluir</button>`;
+      const edicoes = parseInt(localStorage.getItem('edicoes_funcionario_' + f.id) || '0', 10);
+      const btnEditar = `<button class='btn btn-sm btn-primary' onclick="editarFuncionario('${f.id}')">Editar (${edicoes})</button>`;
+      const btnExcluir = isAdmin ? '' : `<button class='btn btn-sm btn-danger' onclick="excluirFuncionario('${f.id}', '${(f.nome || '').replace(/'/g, '&#39;')}')">Excluir</button>`;
+      const btnDeslogar = `<button class='btn btn-sm btn-warning' onclick="deslogarFuncionario('${f.id}', '${(f.nome || '').replace(/'/g, '&#39;')}')">Deslogar</button>`;
       const fotoUrl = f.fotoUrl || '';
       const avatar = fotoUrl ? `<img src='${fotoUrl}' alt='Foto de ${f.nome}' style='width:36px;height:36px;border-radius:50%;object-fit:cover;'>` : '<span class="avatar-placeholder">👤</span>';
-      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? " <span class=\"badge bg-danger\">Alerta</span>" : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir}</td></tr>`);
+      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? " <span class=\"badge bg-danger\">Alerta</span>" : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
     });
     tabela.DataTable({ responsive: true, order: [[7, 'asc']] });
 
@@ -295,12 +305,31 @@ async function carregarProprietarios(token) {
       if (loadingDiv) loadingDiv.innerHTML = '';
       return;
     }
-    // Exemplo simples de exibição
-    let html = '<table><tr><th>Nome</th><th>Email</th></tr>';
+    // Exibição completa
+    let html = '<table class="table table-striped table-bordered"><thead><tr><th>Foto</th><th>Proprietário</th><th>Contato</th><th>Bicicleta</th><th>Check-in</th><th>Check-out</th></tr></thead><tbody>';
     proprietarios.forEach(p => {
-      html += `<tr><td>${p.nome || ''}</td><td>${p.email || ''}</td></tr>`;
+      const foto = p.fotoUrl || p.foto || '';
+      const avatar = foto ? `<img src="${foto}" alt="Foto de ${p.nome || ''}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">` : '<span class="avatar-placeholder">👤</span>';
+      const contato = [p.email, p.telefone].filter(Boolean).join(' / ');
+      const bike = p.bicicleta ? [
+        p.bicicleta.modelo, p.bicicleta.cor, p.bicicleta.numeroSerie || p.bicicleta.serie || p.bicicleta.numero, p.bicicleta.placa
+      ].filter(Boolean).join(' | ') : (p.modeloBicicleta || p.dadosBicicleta || '-');
+      const checkinOper = p.checkin?.operador || p.checkin?.usuarioNome || p.operadorCheckin || '-';
+      const checkinHora = p.checkin?.dataHora || p.dataCheckin || '-';
+      const checkoutOper = p.checkout?.operador || p.checkout?.usuarioNome || p.operadorCheckout || '-';
+      const checkoutHora = p.checkout?.dataHora || p.dataCheckout || '-';
+      const checkinStr = (checkinOper !== '-' && checkinHora !== '-') ? `${checkinOper} em ${checkinHora}` : '-';
+      const checkoutStr = (checkoutOper !== '-' && checkoutHora !== '-') ? `${checkoutOper} em ${checkoutHora}` : '-';
+      html += `<tr>
+        <td>${avatar}</td>
+        <td>${p.nome || ''}</td>
+        <td>${contato || ''}</td>
+        <td>${bike || ''}</td>
+        <td>${checkinStr}</td>
+        <td>${checkoutStr}</td>
+      </tr>`;
     });
-    html += '</table>';
+    html += '</tbody></table>';
     proprietariosDiv.innerHTML = html;
     if (loadingDiv) loadingDiv.innerHTML = '';
   } catch (error) {
@@ -484,8 +513,12 @@ async function carregarMonitoramento(token) {
     }
     const ctxProd = canvasProd.getContext('2d');
     const dias = Object.keys(fluxoPorDia).sort();
+    const funcionariosBici = (funcionarios || []).filter(f => {
+      const nomeLower = (f.nome || '').toLowerCase();
+      return FUNC_BICICLETARIO.includes(nomeLower);
+    });
     const datasetsProd = [];
-    funcionarios.forEach(f => {
+    funcionariosBici.forEach(f => {
       const checkins = dias.map(d => f.checkinsPorDia[d]?.checkins || 0);
       const checkouts = dias.map(d => f.checkinsPorDia[d]?.checkouts || 0);
       datasetsProd.push({
@@ -532,9 +565,13 @@ async function carregarMonitoramento(token) {
     if (window.graficoRanking && typeof window.graficoRanking.destroy === 'function') {
       window.graficoRanking.destroy();
     }
+    const rankingBici = (ranking || []).filter(r => {
+      const nomeLower = (r.nome || '').toLowerCase();
+      return FUNC_BICICLETARIO.includes(nomeLower);
+    });
     window.graficoRanking = new Chart(ctxRank, {
       type: 'bar',
-      data: { labels: ranking.map(f => f.nome), datasets: [{ label: 'Movimentações', data: ranking.map(f => f.totalMovimentacoes), backgroundColor: 'rgba(75,192,192,0.7)' }] },
+      data: { labels: rankingBici.map(f => f.nome), datasets: [{ label: 'Movimentações', data: rankingBici.map(f => f.totalMovimentacoes), backgroundColor: 'rgba(75,192,192,0.7)' }] },
       options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } } }
     });
 
@@ -572,11 +609,13 @@ async function carregarMonitoramento(token) {
       const destaque = f.status === 'Parado' ? 'table-danger' : '';
       // Botões de ação
       const isAdmin = FUNC_SECRETARIA.includes(nomeLower);
-      const btnEditar = `<button class='btn btn-sm btn-primary' onclick="editarFuncionario('${f.id}')">Editar</button>`;
-      const btnExcluir = isAdmin ? '' : `<button class='btn btn-sm btn-danger' onclick="excluirFuncionario('${f.id}', '${f.nome.replace(/'/g, '\'')}')">Excluir</button>`;
+      const edicoes = parseInt(localStorage.getItem('edicoes_funcionario_' + f.id) || '0', 10);
+      const btnEditar = `<button class='btn btn-sm btn-primary' onclick="editarFuncionario('${f.id}')">Editar (${edicoes})</button>`;
+      const btnExcluir = isAdmin ? '' : `<button class='btn btn-sm btn-danger' onclick="excluirFuncionario('${f.id}', '${(f.nome || '').replace(/'/g, '&#39;')}')">Excluir</button>`;
+      const btnDeslogar = `<button class='btn btn-sm btn-warning' onclick="deslogarFuncionario('${f.id}', '${(f.nome || '').replace(/'/g, '&#39;')}')">Deslogar</button>`;
       const fotoUrl = f.fotoUrl || '';
       const avatar = fotoUrl ? `<img src='${fotoUrl}' alt='Foto de ${f.nome}' style='width:36px;height:36px;border-radius:50%;object-fit:cover;'>` : '<span class="avatar-placeholder">👤</span>';
-      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? " <span class=\"badge bg-danger\">Alerta</span>" : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir}</td></tr>`);
+      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? " <span class=\"badge bg-danger\">Alerta</span>" : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
     });
     tabela.DataTable({ responsive: true, order: [[7, 'asc']] });
 
@@ -632,12 +671,31 @@ async function carregarProprietarios(token) {
       if (loadingDiv) loadingDiv.innerHTML = '';
       return;
     }
-    // Exemplo simples de exibição
-    let html = '<table><tr><th>Nome</th><th>Email</th></tr>';
+    // Exibição completa
+    let html = '<table class="table table-striped table-bordered"><thead><tr><th>Foto</th><th>Proprietário</th><th>Contato</th><th>Bicicleta</th><th>Check-in</th><th>Check-out</th></tr></thead><tbody>';
     proprietarios.forEach(p => {
-      html += `<tr><td>${p.nome || ''}</td><td>${p.email || ''}</td></tr>`;
+      const foto = p.fotoUrl || p.foto || '';
+      const avatar = foto ? `<img src="${foto}" alt="Foto de ${p.nome || ''}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">` : '<span class="avatar-placeholder">👤</span>';
+      const contato = [p.email, p.telefone].filter(Boolean).join(' / ');
+      const bike = p.bicicleta ? [
+        p.bicicleta.modelo, p.bicicleta.cor, p.bicicleta.numeroSerie || p.bicicleta.serie || p.bicicleta.numero, p.bicicleta.placa
+      ].filter(Boolean).join(' | ') : (p.modeloBicicleta || p.dadosBicicleta || '-');
+      const checkinOper = p.checkin?.operador || p.checkin?.usuarioNome || p.operadorCheckin || '-';
+      const checkinHora = p.checkin?.dataHora || p.dataCheckin || '-';
+      const checkoutOper = p.checkout?.operador || p.checkout?.usuarioNome || p.operadorCheckout || '-';
+      const checkoutHora = p.checkout?.dataHora || p.dataCheckout || '-';
+      const checkinStr = (checkinOper !== '-' && checkinHora !== '-') ? `${checkinOper} em ${checkinHora}` : '-';
+      const checkoutStr = (checkoutOper !== '-' && checkoutHora !== '-') ? `${checkoutOper} em ${checkoutHora}` : '-';
+      html += `<tr>
+        <td>${avatar}</td>
+        <td>${p.nome || ''}</td>
+        <td>${contato || ''}</td>
+        <td>${bike || ''}</td>
+        <td>${checkinStr}</td>
+        <td>${checkoutStr}</td>
+      </tr>`;
     });
-    html += '</table>';
+    html += '</tbody></table>';
     proprietariosDiv.innerHTML = html;
     if (loadingDiv) loadingDiv.innerHTML = '';
   } catch (error) {
@@ -649,11 +707,19 @@ async function carregarProprietarios(token) {
 
 // --- Exibir abas e carregar dados após login ---
 function mostrarPainelAdmin(token) {
-  adminLoginSection.classList.add('hidden');
-  adminPanelSection.classList.remove('hidden');
+  adminLoginSection?.classList.add('hidden');
+  adminPanelSection?.classList.remove('hidden');
   carregarMonitoramento(token);
   carregarProprietarios(token);
 }
+
+// Exibir painel automaticamente quando já autenticado (admin.html protegido)
+document.addEventListener('DOMContentLoaded', () => {
+  const token = sessionStorage.getItem('token');
+  if (token && localStorage.getItem('adminLogado')) {
+    try { mostrarPainelAdmin(token); } catch {}
+  }
+});
 
 // --- Sistema de Abas ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -891,6 +957,12 @@ document.getElementById('btnSalvarEdicaoFuncionario').onclick = async function()
     });
     if (!res.ok) throw new Error('Erro ao salvar edição.');
     showToast('Funcionário editado com sucesso!', 'success');
+    // Incrementa contador de edições por funcionário
+    try {
+      const keyEd = 'edicoes_funcionario_' + id;
+      const atual = parseInt(localStorage.getItem(keyEd) || '0', 10) + 1;
+      localStorage.setItem(keyEd, String(atual));
+    } catch {}
     addHistoricoAlteracao(id, { descricao: `Edição: nome=${nome}, status=${status}, local=${local}` });
     document.getElementById('modalEditarFuncionario').classList.add('hidden');
     carregarMonitoramento(token);
@@ -941,6 +1013,32 @@ window.excluirFuncionario = async function(id, nome) {
     logarAcao('Excluir Funcionário', `ID: ${id}, Nome: ${nome}`);
   } catch (err) {
     showToast(err.message || 'Erro ao excluir funcionário.', 'error');
+  }
+};
+
+// Forçar logout do funcionário (troca de plantão)
+window.deslogarFuncionario = async function(id, nome) {
+  const token = sessionStorage.getItem('token');
+  try {
+    // Tenta endpoint dedicado, se existir
+    let res = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}/logout`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    // Fallback: atualiza status para Offline se endpoint não existir
+    if (res.status === 404) {
+      res = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Offline' })
+      });
+    }
+    if (!res.ok) throw new Error('Falha ao deslogar funcionário.');
+    showToast(`Funcionário ${nome || ''} deslogado com sucesso.`, 'success');
+    logarAcao('Deslogar Funcionário', `ID: ${id}, Nome: ${nome}`);
+    carregarMonitoramento(token);
+  } catch (err) {
+    showToast(err.message || 'Erro ao deslogar funcionário.', 'error');
   }
 };
 
@@ -1038,9 +1136,11 @@ function logarAcao(acao, detalhes) {
   registrarLogAuditoria(acao, detalhes);
 }
 // Exemplo: logar login
-adminLoginForm.addEventListener('submit', function() {
-  logarAcao('Login', 'Login realizado no painel admin');
-});
+if (adminLoginForm) {
+  adminLoginForm.addEventListener('submit', function() {
+    logarAcao('Login', 'Login realizado no painel admin');
+  });
+}
 // [removido] Duplicatas simplificadas de editarFuncionario/excluirFuncionario (mantida a versão completa que utiliza API e validações)
 
 // --- Logout admin ---
@@ -1056,21 +1156,7 @@ if (logoutAdmin) {
 
 // [removido] Duplicata de editar/salvar/excluir funcionário para manter uma única fonte de verdade
 
-// --- Guardar último monitoramento para edição ---
-const _carregarMonitoramento = carregarMonitoramento;
-carregarMonitoramento = async function(token) {
-  await _carregarMonitoramento(token);
-  // Guarda a lista de funcionários para edição
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/admin/monitoramento`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (res.ok) {
-      const { funcionarios } = await res.json();
-      window.ultimoMonitoramento = funcionarios;
-    }
-  } catch {}
-};
+// [removido] wrapper de carregarMonitoramento para evitar dupla requisição
 
 // --- Busca, filtros e exportação na tabela de funcionários ---
 $(document).ready(function() {
@@ -1078,28 +1164,30 @@ $(document).ready(function() {
   $('#buscaFuncionario').on('keyup', function() {
     $('#tabelaMonitoramento').DataTable().search(this.value).draw();
   });
-  // Filtros por local e status
+  // Filtros por local e status (colunas: Local=2, Status=3)
   $('#filtroLocal, #filtroStatus').on('change', function() {
-    let local = $('#filtroLocal').val();
-    let status = $('#filtroStatus').val();
-    let table = $('#tabelaMonitoramento').DataTable();
-    table.columns(1).search(local).columns(2).search(status).draw();
+    const localVal = $('#filtroLocal').val();
+    const statusVal = $('#filtroStatus').val();
+    const table = $('#tabelaMonitoramento').DataTable();
+    // Quando "Todos", limpa a busca
+    table.column(2).search(localVal && localVal !== 'Todos' ? localVal : '');
+    table.column(3).search(statusVal && statusVal !== 'Todos' ? statusVal : '');
+    table.draw();
   });
-  // Filtro por período (última movimentação)
+  // Filtro por período (Última Movimentação = coluna 6, formato "YYYY-MM-DD HH:mm (tipo)")
   $('#filtroDataInicio, #filtroDataFim').on('change', function() {
-    let inicio = $('#filtroDataInicio').val();
-    let fim = $('#filtroDataFim').val();
-    let table = $('#tabelaMonitoramento').DataTable();
+    const table = $('#tabelaMonitoramento').DataTable();
     table.draw();
   });
   // Custom filter para período
   $.fn.dataTable.ext.search.push(function(settings, data) {
-    let inicio = $('#filtroDataInicio').val();
-    let fim = $('#filtroDataFim').val();
-    let dataUltimaMov = data[5] ? data[5].split(' ')[0] : '';
+    const inicio = $('#filtroDataInicio').val();
+    const fim = $('#filtroDataFim').val();
+    const colUltima = data[6] || ''; // "YYYY-MM-DD HH:mm (tipo)"
+    const dataUltimaMov = colUltima ? colUltima.split(' ')[0] : '';
     if (!inicio && !fim) return true;
-    if (inicio && dataUltimaMov < inicio) return false;
-    if (fim && dataUltimaMov > fim) return false;
+    if (inicio && (!dataUltimaMov || dataUltimaMov < inicio)) return false;
+    if (fim && (!dataUltimaMov || dataUltimaMov > fim)) return false;
     return true;
   });
   // Exportação CSV
