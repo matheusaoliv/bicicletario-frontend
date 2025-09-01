@@ -94,9 +94,12 @@ btnSalvarEmail.addEventListener('click', () => {
 
 // --- Monitoramento de Funcionários ---
 async function carregarMonitoramento(token) {
-  const monitoramentoDiv = document.getElementById('monitoramentoTab'); // Corrigido o id
+  const monitoramentoDiv = document.getElementById('monitoramentoTab');
   if (!monitoramentoDiv) return;
-  monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
+  // Removido: monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
+  // Se quiser, pode exibir um loading em um elemento próprio
+  const loadingDiv = document.getElementById('loadingMonitoramento');
+  if (loadingDiv) loadingDiv.innerHTML = 'Carregando monitoramento...';
   try {
     const res = await fetch(`${API_BASE_URL}/api/admin/monitoramento`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -183,11 +186,10 @@ async function carregarMonitoramento(token) {
     justificativasHtml += '</ul>';
     justificativasDiv.innerHTML += justificativasHtml;
 
-    monitoramentoDiv.innerHTML = '';
-    document.getElementById('tabelaMonitoramentoContainer').style.display = 'block';
-    document.getElementById('justificativasContainer').style.display = 'block';
+    if (loadingDiv) loadingDiv.innerHTML = '';
   } catch (err) {
-    monitoramentoDiv.innerHTML = `<p class="erro">Erro ao carregar monitoramento: ${err.message}</p>`;
+    if (loadingDiv) loadingDiv.innerHTML = '';
+    monitoramentoDiv.querySelector('#tabelaMonitoramentoContainer').innerHTML = `<p class="erro">Erro ao carregar monitoramento: ${err.message}</p>`;
   }
 }
 
@@ -198,7 +200,10 @@ async function carregarProprietarios(token) {
     const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error('Erro ao buscar proprietários');
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Erro HTTP ${res.status}: ${errorText}`);
+    }
     const proprietarios = await res.json();
     let html = '<div class="lista-proprietarios">';
     proprietarios.forEach(p => {
@@ -217,6 +222,7 @@ async function carregarProprietarios(token) {
     proprietariosDiv.innerHTML = html;
   } catch (err) {
     proprietariosDiv.innerHTML = `<p class="erro">Erro ao carregar proprietários: ${err.message}</p>`;
+    console.error('Erro ao carregar proprietários:', err);
   }
 }
 
@@ -375,9 +381,12 @@ async function fetchComToken(url, options = {}) {
 // --- Funções para buscar e exibir monitoramento e proprietários ---
 
 async function carregarMonitoramento(token) {
-  const monitoramentoDiv = document.getElementById('monitoramentoTab'); // Corrigido o id
+  const monitoramentoDiv = document.getElementById('monitoramentoTab');
   if (!monitoramentoDiv) return;
-  monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
+  // Removido: monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
+  // Se quiser, pode exibir um loading em um elemento próprio
+  const loadingDiv = document.getElementById('loadingMonitoramento');
+  if (loadingDiv) loadingDiv.innerHTML = 'Carregando monitoramento...';
   try {
     const res = await fetch(`${API_BASE_URL}/api/admin/monitoramento`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -464,11 +473,10 @@ async function carregarMonitoramento(token) {
     justificativasHtml += '</ul>';
     justificativasDiv.innerHTML += justificativasHtml;
 
-    monitoramentoDiv.innerHTML = '';
-    document.getElementById('tabelaMonitoramentoContainer').style.display = 'block';
-    document.getElementById('justificativasContainer').style.display = 'block';
+    if (loadingDiv) loadingDiv.innerHTML = '';
   } catch (err) {
-    monitoramentoDiv.innerHTML = `<p class="erro">Erro ao carregar monitoramento: ${err.message}</p>`;
+    if (loadingDiv) loadingDiv.innerHTML = '';
+    monitoramentoDiv.querySelector('#tabelaMonitoramentoContainer').innerHTML = `<p class="erro">Erro ao carregar monitoramento: ${err.message}</p>`;
   }
 }
 
@@ -479,7 +487,10 @@ async function carregarProprietarios(token) {
     const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error('Erro ao buscar proprietários');
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Erro HTTP ${res.status}: ${errorText}`);
+    }
     const proprietarios = await res.json();
     let html = '<div class="lista-proprietarios">';
     proprietarios.forEach(p => {
@@ -498,6 +509,7 @@ async function carregarProprietarios(token) {
     proprietariosDiv.innerHTML = html;
   } catch (err) {
     proprietariosDiv.innerHTML = `<p class="erro">Erro ao carregar proprietários: ${err.message}</p>`;
+    console.error('Erro ao carregar proprietários:', err);
   }
 }
 
@@ -546,22 +558,22 @@ async function imprimirRelatorio(tipo) {
     const token = sessionStorage.getItem('token');
     adminMsg.textContent = `Gerando relatório ${tipo === 'mes' ? 'mensal' : 'diário'}...`;
     adminMsg.classList.remove('sucesso');
-
+    
     // Fazer requisição com token
     const res = await fetch(`${API_BASE_URL}/api/admin/relatorio?tipo=${tipo}`, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
-
+    
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       throw new Error(errorData.erro || 'Falha ao gerar relatório.');
     }
-
+    
     // Criar blob e download
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
     const hoje = new Date().toISOString().slice(0,10);
-
+    
     const a = document.createElement('a');
     a.href = url;
     a.download = `relatorio-${tipo}-${hoje}.csv`;
@@ -569,7 +581,7 @@ async function imprimirRelatorio(tipo) {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-
+    
     adminMsg.textContent = `Relatório ${tipo === 'mes' ? 'mensal' : 'diário'} gerado com sucesso!`;
     adminMsg.classList.add('sucesso');
   } catch (err) {
@@ -609,21 +621,21 @@ async function realizarBackup() {
     const token = sessionStorage.getItem('token');
     adminMsg.textContent = 'Realizando backup completo do sistema...';
     adminMsg.classList.remove('sucesso');
-
+    
     const res = await fetch(`${API_BASE_URL}/api/admin/backup`, {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token }
     });
-
+    
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       throw new Error(errorData.erro || 'Falha ao realizar backup.');
     }
-
+    
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
     const hoje = new Date().toISOString().slice(0,10);
-
+    
     const a = document.createElement('a');
     a.href = url;
     a.download = `backup-bicicletario-${hoje}.json`;
@@ -631,7 +643,7 @@ async function realizarBackup() {
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
-
+    
     adminMsg.textContent = `Backup completo realizado com sucesso! Arquivo salvo: backup-bicicletario-${hoje}.json`;
     adminMsg.classList.add('sucesso');
   } catch (err) {
@@ -656,9 +668,12 @@ async function fetchComToken(url, options = {}) {
 // --- Funções para buscar e exibir monitoramento e proprietários ---
 
 async function carregarMonitoramento(token) {
-  const monitoramentoDiv = document.getElementById('monitoramentoTab'); // Corrigido o id
+  const monitoramentoDiv = document.getElementById('monitoramentoTab');
   if (!monitoramentoDiv) return;
-  monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
+  // Removido: monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
+  // Se quiser, pode exibir um loading em um elemento próprio
+  const loadingDiv = document.getElementById('loadingMonitoramento');
+  if (loadingDiv) loadingDiv.innerHTML = 'Carregando monitoramento...';
   try {
     const res = await fetch(`${API_BASE_URL}/api/admin/monitoramento`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -745,11 +760,10 @@ async function carregarMonitoramento(token) {
     justificativasHtml += '</ul>';
     justificativasDiv.innerHTML += justificativasHtml;
 
-    monitoramentoDiv.innerHTML = '';
-    document.getElementById('tabelaMonitoramentoContainer').style.display = 'block';
-    document.getElementById('justificativasContainer').style.display = 'block';
+    if (loadingDiv) loadingDiv.innerHTML = '';
   } catch (err) {
-    monitoramentoDiv.innerHTML = `<p class="erro">Erro ao carregar monitoramento: ${err.message}</p>`;
+    if (loadingDiv) loadingDiv.innerHTML = '';
+    monitoramentoDiv.querySelector('#tabelaMonitoramentoContainer').innerHTML = `<p class="erro">Erro ao carregar monitoramento: ${err.message}</p>`;
   }
 }
 
@@ -760,7 +774,10 @@ async function carregarProprietarios(token) {
     const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error('Erro ao buscar proprietários');
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Erro HTTP ${res.status}: ${errorText}`);
+    }
     const proprietarios = await res.json();
     let html = '<div class="lista-proprietarios">';
     proprietarios.forEach(p => {
@@ -779,6 +796,7 @@ async function carregarProprietarios(token) {
     proprietariosDiv.innerHTML = html;
   } catch (err) {
     proprietariosDiv.innerHTML = `<p class="erro">Erro ao carregar proprietários: ${err.message}</p>`;
+    console.error('Erro ao carregar proprietários:', err);
   }
 }
 
