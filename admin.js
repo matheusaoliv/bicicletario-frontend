@@ -413,7 +413,7 @@ async function carregarMonitoramento(token) {
       const alertaStr = (f.tempoParadoMin > 60) ? ' <span class="badge bg-danger">Alerta</span>' : '';
       const totalMovStr = `${f.totalMovimentacoes} <small class="text-muted">(hoje: ${getMovHoje(f)})</small>`;
       const ultimaMovStr = f.ultimaMov ? `${formatDateTimeExact(f.ultimaMov)} (${f.tipoUltimaMov})` : '-';
-      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${tempoParadoStr}${alertaStr}</td><td>${totalMovStr}</td><td>${ultimaMovStr}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
+      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${formatStatus(f.status)}</td><td>${tempoParadoStr}${alertaStr}</td><td>${totalMovStr}</td><td>${ultimaMovStr}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
     });
     tabela.DataTable({ responsive: false, scrollX: false, autoWidth: false, order: [[7, 'asc']] });
 
@@ -675,6 +675,12 @@ function formatTempoParado(min) {
   const m = Math.floor(min % 60);
   return (h > 0 ? `${h}h ` : '') + `${m}m`;
 }
+function formatStatus(status) {
+  const s = (status || '').toString().toLowerCase();
+  if (s === 'parado') return 'ta em casa';
+  if (s === 'ativo') return 'trabalhando';
+  return status || '-';
+}
 function getMovHoje(f) {
   try {
     const key = new Date().toISOString().slice(0, 10);
@@ -823,7 +829,7 @@ async function carregarMonitoramento(token) {
       const alertaStr = (f.tempoParadoMin > 60) ? ' <span class="badge bg-danger">Alerta</span>' : '';
       const totalMovStr = `${f.totalMovimentacoes} <small class="text-muted">(hoje: ${getMovHoje(f)})</small>`;
       const ultimaMovStr = f.ultimaMov ? `${formatDateTimeExact(f.ultimaMov)} (${f.tipoUltimaMov})` : '-';
-      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${tempoParadoStr}${alertaStr}</td><td>${totalMovStr}</td><td>${ultimaMovStr}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
+      tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${formatStatus(f.status)}</td><td>${tempoParadoStr}${alertaStr}</td><td>${totalMovStr}</td><td>${ultimaMovStr}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
     });
     tabela.DataTable({ responsive: false, scrollX: false, autoWidth: false, order: [[7, 'asc']] });
 
@@ -1129,7 +1135,7 @@ function renderTabelaFuncionarios(funcionarios, ranking) {
     const btnExcluir = isAdmin ? '' : `<button class='btn btn-sm btn-danger' onclick="excluirFuncionario('${f.id}', '${f.nome.replace(/'/g, '\'')}')">Excluir</button>`;
     const fotoUrl = f.fotoUrl || '';
     const avatar = fotoUrl ? `<img src='${fotoUrl}' alt='Foto de ${f.nome}' style='width:36px;height:36px;border-radius:50%;object-fit:cover;'>` : '<span class="avatar-placeholder">👤</span>';
-    tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? " <span class=\"badge bg-danger\">Alerta</span>" : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir}</td></tr>`);
+    tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${formatStatus(f.status)}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? " <span class=\"badge bg-danger\">Alerta</span>" : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir}</td></tr>`);
   });
   tabela.DataTable({ responsive: true, order: [[7, 'asc']] });
 }
