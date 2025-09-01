@@ -96,8 +96,6 @@ btnSalvarEmail.addEventListener('click', () => {
 async function carregarMonitoramento(token) {
   const monitoramentoDiv = document.getElementById('monitoramentoTab');
   if (!monitoramentoDiv) return;
-  // Removido: monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
-  // Exibe loading apenas em um elemento próprio
   const loadingDiv = document.getElementById('loadingMonitoramento');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando monitoramento...';
   try {
@@ -136,7 +134,9 @@ async function carregarMonitoramento(token) {
         stack: f.nome
       });
     });
-    if(window.graficoProdutividade) window.graficoProdutividade.destroy();
+    if (window.graficoProdutividade && typeof window.graficoProdutividade.destroy === 'function') {
+      window.graficoProdutividade.destroy();
+    }
     window.graficoProdutividade = new Chart(ctxProd, {
       type: 'bar',
       data: {
@@ -155,28 +155,27 @@ async function carregarMonitoramento(token) {
         }
       }
     });
-
     // Gráfico de ranking
     const ctxRank = document.getElementById('graficoRanking').getContext('2d');
-    const nomesRanking = ranking.map(f => f.nome);
-    const movsRanking = ranking.map(f => f.totalMovimentacoes);
-    if(window.graficoRanking) window.graficoRanking.destroy();
+    if (window.graficoRanking && typeof window.graficoRanking.destroy === 'function') {
+      window.graficoRanking.destroy();
+    }
     window.graficoRanking = new Chart(ctxRank, {
       type: 'bar',
-      data: { labels: nomesRanking, datasets: [{ label: 'Movimentações', data: movsRanking, backgroundColor: 'rgba(75,192,192,0.7)' }] },
+      data: { labels: ranking.map(f => f.nome), datasets: [{ label: 'Movimentações', data: ranking.map(f => f.totalMovimentacoes), backgroundColor: 'rgba(75,192,192,0.7)' }] },
       options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } } }
     });
 
     // Gráfico de fluxo geral
     const ctxFluxo = document.getElementById('graficoFluxo').getContext('2d');
-    const checkinsFluxo = dias.map(d => fluxoPorDia[d]?.checkins || 0);
-    const checkoutsFluxo = dias.map(d => fluxoPorDia[d]?.checkouts || 0);
-    if(window.graficoFluxo) window.graficoFluxo.destroy();
+    if (window.graficoFluxo && typeof window.graficoFluxo.destroy === 'function') {
+      window.graficoFluxo.destroy();
+    }
     window.graficoFluxo = new Chart(ctxFluxo, {
       type: 'line',
       data: { labels: dias, datasets: [
-        { label: 'Check-ins', data: checkinsFluxo, borderColor: 'rgba(54,162,235,1)', backgroundColor: 'rgba(54,162,235,0.2)', fill: true },
-        { label: 'Check-outs', data: checkoutsFluxo, borderColor: 'rgba(255,99,132,1)', backgroundColor: 'rgba(255,99,132,0.2)', fill: true }
+        { label: 'Check-ins', data: dias.map(d => fluxoPorDia[d]?.checkins || 0), borderColor: 'rgba(54,162,235,1)', backgroundColor: 'rgba(54,162,235,0.2)', fill: true },
+        { label: 'Check-outs', data: dias.map(d => fluxoPorDia[d]?.checkouts || 0), borderColor: 'rgba(255,99,132,1)', backgroundColor: 'rgba(255,99,132,0.2)', fill: true }
       ] },
       options: { responsive: true }
     });
@@ -212,17 +211,27 @@ async function carregarMonitoramento(token) {
 }
 
 async function carregarProprietarios(token) {
+  console.log('Token usado em carregarProprietarios:', token); // Log para depuração
   const proprietariosDiv = document.getElementById('proprietariosTab');
   const loadingDiv = document.getElementById('loadingProprietarios');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
   if (!proprietariosDiv) return;
   try {
+    if (!token) {
+      if (loadingDiv) loadingDiv.innerHTML = 'Token de autenticação ausente. Faça login novamente.';
+      proprietariosDiv.innerHTML = '<p>Token ausente. Faça login novamente.</p>';
+      return;
+    }
     const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) {
       let msg = `Erro ao buscar proprietários (status: ${res.status})`;
+      if (res.status === 403) {
+        msg += ' - Acesso negado. Token inválido ou expirado. Faça login novamente.';
+      }
       if (loadingDiv) loadingDiv.innerHTML = msg;
+      proprietariosDiv.innerHTML = `<p>${msg}</p>`;
       throw new Error(msg);
     }
     const proprietarios = await res.json();
@@ -403,8 +412,6 @@ async function fetchComToken(url, options = {}) {
 async function carregarMonitoramento(token) {
   const monitoramentoDiv = document.getElementById('monitoramentoTab');
   if (!monitoramentoDiv) return;
-  // Removido: monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
-  // Exibe loading apenas em um elemento próprio
   const loadingDiv = document.getElementById('loadingMonitoramento');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando monitoramento...';
   try {
@@ -443,7 +450,9 @@ async function carregarMonitoramento(token) {
         stack: f.nome
       });
     });
-    if(window.graficoProdutividade) window.graficoProdutividade.destroy();
+    if (window.graficoProdutividade && typeof window.graficoProdutividade.destroy === 'function') {
+      window.graficoProdutividade.destroy();
+    }
     window.graficoProdutividade = new Chart(ctxProd, {
       type: 'bar',
       data: {
@@ -465,25 +474,25 @@ async function carregarMonitoramento(token) {
 
     // Gráfico de ranking
     const ctxRank = document.getElementById('graficoRanking').getContext('2d');
-    const nomesRanking = ranking.map(f => f.nome);
-    const movsRanking = ranking.map(f => f.totalMovimentacoes);
-    if(window.graficoRanking) window.graficoRanking.destroy();
+    if (window.graficoRanking && typeof window.graficoRanking.destroy === 'function') {
+      window.graficoRanking.destroy();
+    }
     window.graficoRanking = new Chart(ctxRank, {
       type: 'bar',
-      data: { labels: nomesRanking, datasets: [{ label: 'Movimentações', data: movsRanking, backgroundColor: 'rgba(75,192,192,0.7)' }] },
+      data: { labels: ranking.map(f => f.nome), datasets: [{ label: 'Movimentações', data: ranking.map(f => f.totalMovimentacoes), backgroundColor: 'rgba(75,192,192,0.7)' }] },
       options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } } }
     });
 
     // Gráfico de fluxo geral
     const ctxFluxo = document.getElementById('graficoFluxo').getContext('2d');
-    const checkinsFluxo = dias.map(d => fluxoPorDia[d]?.checkins || 0);
-    const checkoutsFluxo = dias.map(d => fluxoPorDia[d]?.checkouts || 0);
-    if(window.graficoFluxo) window.graficoFluxo.destroy();
+    if (window.graficoFluxo && typeof window.graficoFluxo.destroy === 'function') {
+      window.graficoFluxo.destroy();
+    }
     window.graficoFluxo = new Chart(ctxFluxo, {
       type: 'line',
       data: { labels: dias, datasets: [
-        { label: 'Check-ins', data: checkinsFluxo, borderColor: 'rgba(54,162,235,1)', backgroundColor: 'rgba(54,162,235,0.2)', fill: true },
-        { label: 'Check-outs', data: checkoutsFluxo, borderColor: 'rgba(255,99,132,1)', backgroundColor: 'rgba(255,99,132,0.2)', fill: true }
+        { label: 'Check-ins', data: dias.map(d => fluxoPorDia[d]?.checkins || 0), borderColor: 'rgba(54,162,235,1)', backgroundColor: 'rgba(54,162,235,0.2)', fill: true },
+        { label: 'Check-outs', data: dias.map(d => fluxoPorDia[d]?.checkouts || 0), borderColor: 'rgba(255,99,132,1)', backgroundColor: 'rgba(255,99,132,0.2)', fill: true }
       ] },
       options: { responsive: true }
     });
@@ -519,17 +528,27 @@ async function carregarMonitoramento(token) {
 }
 
 async function carregarProprietarios(token) {
+  console.log('Token usado em carregarProprietarios:', token); // Log para depuração
   const proprietariosDiv = document.getElementById('proprietariosTab');
   const loadingDiv = document.getElementById('loadingProprietarios');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
   if (!proprietariosDiv) return;
   try {
+    if (!token) {
+      if (loadingDiv) loadingDiv.innerHTML = 'Token de autenticação ausente. Faça login novamente.';
+      proprietariosDiv.innerHTML = '<p>Token ausente. Faça login novamente.</p>';
+      return;
+    }
     const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) {
       let msg = `Erro ao buscar proprietários (status: ${res.status})`;
+      if (res.status === 403) {
+        msg += ' - Acesso negado. Token inválido ou expirado. Faça login novamente.';
+      }
       if (loadingDiv) loadingDiv.innerHTML = msg;
+      proprietariosDiv.innerHTML = `<p>${msg}</p>`;
       throw new Error(msg);
     }
     const proprietarios = await res.json();
@@ -710,8 +729,6 @@ async function fetchComToken(url, options = {}) {
 async function carregarMonitoramento(token) {
   const monitoramentoDiv = document.getElementById('monitoramentoTab');
   if (!monitoramentoDiv) return;
-  // Removido: monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
-  // Exibe loading apenas em um elemento próprio
   const loadingDiv = document.getElementById('loadingMonitoramento');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando monitoramento...';
   try {
@@ -750,7 +767,9 @@ async function carregarMonitoramento(token) {
         stack: f.nome
       });
     });
-    if(window.graficoProdutividade) window.graficoProdutividade.destroy();
+    if (window.graficoProdutividade && typeof window.graficoProdutividade.destroy === 'function') {
+      window.graficoProdutividade.destroy();
+    }
     window.graficoProdutividade = new Chart(ctxProd, {
       type: 'bar',
       data: {
@@ -772,25 +791,25 @@ async function carregarMonitoramento(token) {
 
     // Gráfico de ranking
     const ctxRank = document.getElementById('graficoRanking').getContext('2d');
-    const nomesRanking = ranking.map(f => f.nome);
-    const movsRanking = ranking.map(f => f.totalMovimentacoes);
-    if(window.graficoRanking) window.graficoRanking.destroy();
+    if (window.graficoRanking && typeof window.graficoRanking.destroy === 'function') {
+      window.graficoRanking.destroy();
+    }
     window.graficoRanking = new Chart(ctxRank, {
       type: 'bar',
-      data: { labels: nomesRanking, datasets: [{ label: 'Movimentações', data: movsRanking, backgroundColor: 'rgba(75,192,192,0.7)' }] },
+      data: { labels: ranking.map(f => f.nome), datasets: [{ label: 'Movimentações', data: ranking.map(f => f.totalMovimentacoes), backgroundColor: 'rgba(75,192,192,0.7)' }] },
       options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } } }
     });
 
     // Gráfico de fluxo geral
     const ctxFluxo = document.getElementById('graficoFluxo').getContext('2d');
-    const checkinsFluxo = dias.map(d => fluxoPorDia[d]?.checkins || 0);
-    const checkoutsFluxo = dias.map(d => fluxoPorDia[d]?.checkouts || 0);
-    if(window.graficoFluxo) window.graficoFluxo.destroy();
+    if (window.graficoFluxo && typeof window.graficoFluxo.destroy === 'function') {
+      window.graficoFluxo.destroy();
+    }
     window.graficoFluxo = new Chart(ctxFluxo, {
       type: 'line',
       data: { labels: dias, datasets: [
-        { label: 'Check-ins', data: checkinsFluxo, borderColor: 'rgba(54,162,235,1)', backgroundColor: 'rgba(54,162,235,0.2)', fill: true },
-        { label: 'Check-outs', data: checkoutsFluxo, borderColor: 'rgba(255,99,132,1)', backgroundColor: 'rgba(255,99,132,0.2)', fill: true }
+        { label: 'Check-ins', data: dias.map(d => fluxoPorDia[d]?.checkins || 0), borderColor: 'rgba(54,162,235,1)', backgroundColor: 'rgba(54,162,235,0.2)', fill: true },
+        { label: 'Check-outs', data: dias.map(d => fluxoPorDia[d]?.checkouts || 0), borderColor: 'rgba(255,99,132,1)', backgroundColor: 'rgba(255,99,132,0.2)', fill: true }
       ] },
       options: { responsive: true }
     });
@@ -826,17 +845,27 @@ async function carregarMonitoramento(token) {
 }
 
 async function carregarProprietarios(token) {
+  console.log('Token usado em carregarProprietarios:', token); // Log para depuração
   const proprietariosDiv = document.getElementById('proprietariosTab');
   const loadingDiv = document.getElementById('loadingProprietarios');
   if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
   if (!proprietariosDiv) return;
   try {
+    if (!token) {
+      if (loadingDiv) loadingDiv.innerHTML = 'Token de autenticação ausente. Faça login novamente.';
+      proprietariosDiv.innerHTML = '<p>Token ausente. Faça login novamente.</p>';
+      return;
+    }
     const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) {
       let msg = `Erro ao buscar proprietários (status: ${res.status})`;
+      if (res.status === 403) {
+        msg += ' - Acesso negado. Token inválido ou expirado. Faça login novamente.';
+      }
       if (loadingDiv) loadingDiv.innerHTML = msg;
+      proprietariosDiv.innerHTML = `<p>${msg}</p>`;
       throw new Error(msg);
     }
     const proprietarios = await res.json();
