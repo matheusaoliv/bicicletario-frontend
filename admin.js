@@ -94,7 +94,8 @@ btnSalvarEmail.addEventListener('click', () => {
 
 // --- Monitoramento de Funcionários ---
 async function carregarMonitoramento(token) {
-  const monitoramentoDiv = document.getElementById('monitoramento');
+  const monitoramentoDiv = document.getElementById('monitoramentoTab'); // Corrigido o id
+  if (!monitoramentoDiv) return;
   monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
   try {
     const res = await fetch(`${API_BASE_URL}/api/admin/monitoramento`, {
@@ -374,7 +375,8 @@ async function fetchComToken(url, options = {}) {
 // --- Funções para buscar e exibir monitoramento e proprietários ---
 
 async function carregarMonitoramento(token) {
-  const monitoramentoDiv = document.getElementById('monitoramento');
+  const monitoramentoDiv = document.getElementById('monitoramentoTab'); // Corrigido o id
+  if (!monitoramentoDiv) return;
   monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
   try {
     const res = await fetch(`${API_BASE_URL}/api/admin/monitoramento`, {
@@ -654,7 +656,8 @@ async function fetchComToken(url, options = {}) {
 // --- Funções para buscar e exibir monitoramento e proprietários ---
 
 async function carregarMonitoramento(token) {
-  const monitoramentoDiv = document.getElementById('monitoramento');
+  const monitoramentoDiv = document.getElementById('monitoramentoTab'); // Corrigido o id
+  if (!monitoramentoDiv) return;
   monitoramentoDiv.innerHTML = '<p>Carregando monitoramento...</p>';
   try {
     const res = await fetch(`${API_BASE_URL}/api/admin/monitoramento`, {
