@@ -33,11 +33,27 @@ const FUNC_SECRETARIA = [
   'jorge luiz costa dos santos'
 ];
 
+// Proteção de acesso ao painel admin
+if (!localStorage.getItem('adminLogado')) {
+  window.location.href = 'admin-login.html';
+}
+
 const adminLoginSection = document.getElementById('adminLoginSection');
 const adminPanelSection = document.getElementById('adminPanelSection');
 const adminLoginForm = document.getElementById('adminLoginForm');
 const adminLoginMsg = document.getElementById('adminLoginMsg');
 const adminMsg = document.getElementById('adminMsg');
+
+// Logout funcional
+const logoutBtn = document.getElementById('logoutAdmin');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    localStorage.removeItem('adminLogado');
+    window.location.href = 'admin-login.html';
+  });
+}
+
 const modalEmail = document.getElementById('modalEmail');
 const inputEmail = document.getElementById('inputEmail');
 const btnSalvarEmail = document.getElementById('btnSalvarEmail');
@@ -833,13 +849,7 @@ function renderTabelaFuncionarios(funcionarios, ranking) {
   tabela.DataTable({ responsive: true, order: [[7, 'asc']] });
 }
 
-// Sobrescreve carregarMonitoramento para usar renderTabelaFuncionarios
-async function carregarMonitoramento(token) {
-  // ...existing code...
-  // Substitua a renderização da tabela por:
-  renderTabelaFuncionarios(funcionarios, ranking);
-  // ...existing code...
-}
+// [removido] Duplicata de carregarMonitoramento eliminada para evitar sobrescrita incorreta
 
 // Função de edição de funcionário
 window.editarFuncionario = async function(id) {
@@ -1031,119 +1041,20 @@ function logarAcao(acao, detalhes) {
 adminLoginForm.addEventListener('submit', function() {
   logarAcao('Login', 'Login realizado no painel admin');
 });
-// Logar edição e exclusão de funcionário
-window.editarFuncionario = function(id) {
-  const funcionario = window.ultimoMonitoramento?.find(f => f.id === id);
-  if (!funcionario) {
-    alert('Funcionário não encontrado.');
-    return;
-  }
-  // Preenche o modal com os dados atuais
-  document.getElementById('editFuncionarioId').value = funcionario.id;
-  document.getElementById('editFuncionarioNome').value = funcionario.nome;
-  document.getElementById('editFuncionarioStatus').value = funcionario.status;
-  document.getElementById('editFuncionarioLocal').value = funcionario.local || '';
-  document.getElementById('modalEditarFuncionario').classList.remove('hidden');
-  logarAcao('Editar Funcionário', `ID: ${id}`);
-};
-
-window.excluirFuncionario = async function(id, nome) {
-  if (!confirm(`Tem certeza que deseja excluir o funcionário ${nome}? Essa ação não pode ser desfeita!`)) return;
-  const token = sessionStorage.getItem('token');
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error('Erro ao excluir funcionário.');
-    adminMsg.textContent = 'Funcionário excluído com sucesso!';
-    adminMsg.classList.add('sucesso');
-    carregarMonitoramento(token);
-    logarAcao('Excluir Funcionário', `ID: ${id}, Nome: ${nome}`);
-  } catch (err) {
-    adminMsg.textContent = err.message || 'Erro ao excluir funcionário.';
-    adminMsg.classList.remove('sucesso');
-  }
-};
+// [removido] Duplicatas simplificadas de editarFuncionario/excluirFuncionario (mantida a versão completa que utiliza API e validações)
 
 // --- Logout admin ---
 const logoutAdmin = document.getElementById('logoutAdmin');
 if (logoutAdmin) {
-  logoutAdmin.onclick = () => {
+  logoutAdmin.onclick = (e) => {
+    e.preventDefault();
     sessionStorage.clear();
-    window.location.href = 'area-funcionario.html';
+    localStorage.removeItem('adminLogado');
+    window.location.href = 'admin-login.html';
   };
 }
 
-// --- Função para editar funcionário ---
-window.editarFuncionario = function(id) {
-  const funcionario = window.ultimoMonitoramento?.find(f => f.id === id);
-  if (!funcionario) {
-    alert('Funcionário não encontrado.');
-    return;
-  }
-  // Preenche o modal com os dados atuais
-  document.getElementById('editFuncionarioId').value = funcionario.id;
-  document.getElementById('editFuncionarioNome').value = funcionario.nome;
-  document.getElementById('editFuncionarioStatus').value = funcionario.status;
-  document.getElementById('editFuncionarioLocal').value = funcionario.local || '';
-  document.getElementById('modalEditarFuncionario').classList.remove('hidden');
-};
-
-// --- Função para salvar edição ---
-document.getElementById('btnSalvarEdicaoFuncionario').onclick = async function() {
-  const id = document.getElementById('editFuncionarioId').value;
-  const nome = document.getElementById('editFuncionarioNome').value.trim();
-  const status = document.getElementById('editFuncionarioStatus').value;
-  const local = document.getElementById('editFuncionarioLocal').value;
-  const fotoUrl = document.getElementById('editFuncionarioFoto').value.trim();
-  const token = sessionStorage.getItem('token');
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}`, {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, status, local, fotoUrl })
-    });
-    if (!res.ok) throw new Error('Erro ao salvar edição.');
-    showToast('Funcionário editado com sucesso!', 'success');
-    addHistoricoAlteracao(id, { descricao: `Edição: nome=${nome}, status=${status}, local=${local}` });
-    document.getElementById('modalEditarFuncionario').classList.add('hidden');
-    carregarMonitoramento(token);
-    logarAcao('Editar Funcionário', `ID: ${id}, Nome: ${nome}`);
-  } catch (err) {
-    showToast(err.message || 'Erro ao editar funcionário.', 'error');
-  }
-};
-
-document.getElementById('btnCancelarEdicaoFuncionario').onclick = function() {
-  document.getElementById('modalEditarFuncionario').classList.add('hidden');
-};
-
-// --- Função para excluir funcionário ---
-window.excluirFuncionario = async function(id, nome) {
-  const token = sessionStorage.getItem('token');
-  // Buscar movimentações recentes
-  const resMov = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}/movimentacoes?dias=7`, { headers: { 'Authorization': `Bearer ${token}` } });
-  if (resMov.ok) {
-    const movs = await resMov.json();
-    if (Array.isArray(movs) && movs.length > 0) {
-      return showToast('Não é possível excluir: funcionário possui movimentações nos últimos 7 dias.', 'error');
-    }
-  }
-  if (!confirm(`Tem certeza que deseja excluir o funcionário ${nome}? Essa ação não pode ser desfeita!`)) return;
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error('Erro ao excluir funcionário.');
-    showToast('Funcionário excluído com sucesso!', 'success');
-    carregarMonitoramento(token);
-    logarAcao('Excluir Funcionário', `ID: ${id}, Nome: ${nome}`);
-  } catch (err) {
-    showToast(err.message || 'Erro ao excluir funcionário.', 'error');
-  }
-};
+// [removido] Duplicata de editar/salvar/excluir funcionário para manter uma única fonte de verdade
 
 // --- Guardar último monitoramento para edição ---
 const _carregarMonitoramento = carregarMonitoramento;

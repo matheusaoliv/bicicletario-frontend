@@ -13,20 +13,20 @@
       <h1>Painel do Administrador</h1>
       <nav>
         <a href="area-funcionario.html">Painel de Controle</a>
-        <a href="#" id="logoutAdmin">Sair</a>
+        <!-- Botão Sair removido na tela de login -->
       </nav>
     </div>
   </header>
   <div class="container">
     <div class="form-box login">
-      <form action="#">
+      <form id="loginForm" action="#">
         <h1>Login</h1>
         <div class="input-box">
-          <input type="text" placeholder="Usuário" required />
+          <input type="text" id="loginUser" placeholder="Usuário" required />
           <i class="bx bxs-user"></i>
         </div>
         <div class="input-box">
-          <input type="password" placeholder="Senha" required />
+          <input type="password" id="loginPass" placeholder="Senha" required />
           <i class="bx bxs-lock-alt"></i>
         </div>
         <div class="forgot-link">
