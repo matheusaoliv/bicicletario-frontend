@@ -406,7 +406,7 @@ async function carregarMonitoramento(token) {
       const ultimaMovStr = f.ultimaMov ? `${formatDateTimeExact(f.ultimaMov)} (${f.tipoUltimaMov})` : '-';
       tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${tempoParadoStr}${alertaStr}</td><td>${totalMovStr}</td><td>${ultimaMovStr}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
     });
-    tabela.DataTable({ responsive: true, order: [[7, 'asc']] });
+    tabela.DataTable({ responsive: false, scrollX: true, autoWidth: false, order: [[7, 'asc']] });
 
     // Justificativas de inatividade
     const justificativasDiv = document.getElementById('justificativasContainer');
@@ -816,7 +816,7 @@ async function carregarMonitoramento(token) {
       const ultimaMovStr = f.ultimaMov ? `${formatDateTimeExact(f.ultimaMov)} (${f.tipoUltimaMov})` : '-';
       tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${f.status}</td><td>${tempoParadoStr}${alertaStr}</td><td>${totalMovStr}</td><td>${ultimaMovStr}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir} ${btnDeslogar}</td></tr>`);
     });
-    tabela.DataTable({ responsive: true, order: [[7, 'asc']] });
+    tabela.DataTable({ responsive: false, scrollX: true, autoWidth: false, order: [[7, 'asc']] });
 
     // Justificativas de inatividade
     const justificativasDiv = document.getElementById('justificativasContainer');
