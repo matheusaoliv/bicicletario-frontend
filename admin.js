@@ -447,99 +447,8 @@ async function carregarMonitoramento(token) {
   }
 }
 
-async function carregarProprietarios(token) {
-  // Busca o token do sessionStorage se não for passado
-  if (!token) {
-    token = sessionStorage.getItem('token');
-  }
-  const proprietariosDiv = document.getElementById('proprietariosTab');
-  const loadingDiv = document.getElementById('loadingProprietarios');
-  if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
-  if (!proprietariosDiv) return;
-  try {
-    if (!token) {
-      if (loadingDiv) loadingDiv.innerHTML = 'Token de autenticação ausente. Faça login novamente.';
-      proprietariosDiv.innerHTML = '<p>Token ausente. Faça login novamente.</p>';
-      return;
-    }
-    const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) {
-      let msg = `Erro ao buscar proprietários (status: ${res.status})`;
-      if (res.status === 403) {
-        msg += ' - Acesso negado. Token inválido ou expirado. Faça login novamente.';
-      }
-      if (loadingDiv) loadingDiv.innerHTML = msg;
-      proprietariosDiv.innerHTML = `<p>${msg}</p>`;
-      throw new Error(msg);
-    }
-    const proprietarios = await res.json();
-    if (!Array.isArray(proprietarios) || proprietarios.length === 0) {
-      proprietariosDiv.innerHTML = '<p>Nenhum proprietário encontrado.</p>';
-      if (loadingDiv) loadingDiv.innerHTML = '';
-      return;
-    }
-    // Exibição completa com campos solicitados
-    let html = '<table class="table table-striped table-bordered"><thead><tr>'
-      + '<th>Foto</th><th>Proprietário</th><th>CPF</th><th>Endereço</th><th>Celular</th><th>E-mail</th><th>Bicicleta</th><th>Check-in</th><th>Check-out</th>'
-      + '</tr></thead><tbody>';
-    proprietarios.forEach(p => {
-      const foto = p.fotoUrl || p.foto || '';
-      const fotoCell = foto
-        ? `<a href="#" class="prop-foto" data-src="${foto}" title="Ver foto"><img src="${foto}" alt="Foto de ${p.nome || ''}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.12);"></a>`
-        : '<span class="avatar-placeholder">👤</span>';
-
-      const cpf = p.cpf || p.documento || '';
-      const endereco = p.endereco
-        || [p.logradouro, p.numero, p.bairro, p.cidade, p.uf].filter(Boolean).join(', ')
-        || '';
-      const celular = p.celular || p.telefoneCelular || p.telefone || '';
-      const email = p.email || '';
-
-      const b = p.bicicleta || {};
-      const bModelo = b.modelo || p.modeloBicicleta || '';
-      const bMarca = b.marca || '';
-      const bId = b.numeroIdentificacao || b.identificacao || b.numeroSerie || b.serie || b.numero || '';
-      const bTipo = b.tipo || b.categoria || '';
-      const bObs = b.caracteristicas || b.observacoes || b.observacao || b.caracteristicasDistintivas || '';
-
-      const bikeHtml = [ 
-        bModelo ? `<div><b>Modelo:</b> ${bModelo}</div>` : '',
-        bMarca ? `<div><b>Marca:</b> ${bMarca}</div>` : '',
-        bId ? `<div><b>ID:</b> ${bId}</div>` : '',
-        bTipo ? `<div><b>Tipo:</b> ${bTipo}</div>` : '',
-        bObs ? `<div><b>Características/Obs.:</b> ${bObs}</div>` : ''
-      ].filter(Boolean).join('');
-
-      const checkinOper = p.checkin?.operador || p.checkin?.usuarioNome || p.operadorCheckin || '';
-      const checkinHora = p.checkin?.dataHora || p.dataCheckin || '';
-      const checkoutOper = p.checkout?.operador || p.checkout?.usuarioNome || p.operadorCheckout || '';
-      const checkoutHora = p.checkout?.dataHora || p.dataCheckout || '';
-      const checkinStr = (checkinOper && checkinHora) ? `${checkinOper} em ${checkinHora}` : '-';
-      const checkoutStr = (checkoutOper && checkoutHora) ? `${checkoutOper} em ${checkoutHora}` : '-';
-
-      html += `<tr>
-        <td>${fotoCell}</td>
-        <td>${p.nome || ''}</td>
-        <td>${cpf}</td>
-        <td>${endereco}</td>
-        <td>${celular}</td>
-        <td>${email}</td>
-        <td>${bikeHtml || '-'}</td>
-        <td>${checkinStr}</td>
-        <td>${checkoutStr}</td>
-      </tr>`;
-    });
-    html += '</tbody></table>';
-    proprietariosDiv.innerHTML = html;
-    if (loadingDiv) loadingDiv.innerHTML = '';
-  } catch (error) {
-    console.error('Erro ao carregar proprietários:', error);
-    if (loadingDiv) loadingDiv.innerHTML = 'Erro ao carregar proprietários.';
-    if (proprietariosDiv) proprietariosDiv.innerHTML = '';
-  }
-}
+// SUBSTITUIR implementação antiga (primeira) de carregarProprietarios por stub para evitar uso
+// async function carregarProprietarios(token) { /* substituída por versão em cards no final do arquivo */ }
 
 // --- Exibir abas e carregar dados após login ---
 function mostrarPainelAdmin(token) {
@@ -868,7 +777,17 @@ async function carregarMonitoramento(token) {
     const tabela = $('#tabelaMonitoramento');
     if ($.fn.DataTable.isDataTable(tabela)) tabela.DataTable().destroy();
     tabela.empty();
-    tabela.append('<thead><tr><th>Foto</th><th>Nome</th><th>Local</th><th>Status</th><th>Tempo Parado</th><th>Total Mov.</th><th>Última Movimentação</th><th>Ranking</th><th>Ações</th></tr></thead><tbody></tbody>');
+    tabela.append('<thead><tr>'
+      + '<th class="resizable col-foto">Foto</th>'
+      + '<th class="resizable col-nome">Nome</th>'
+      + '<th class="resizable col-local">Local</th>'
+      + '<th class="resizable col-status">Status</th>'
+      + '<th class="resizable col-tempo">Tempo Parado</th>'
+      + '<th class="resizable col-total">Total Mov.</th>'
+      + '<th class="resizable col-ultima">Última Movimentação</th>'
+      + '<th class="resizable col-ranking">Ranking</th>'
+      + '<th class="resizable col-acoes">Ações</th>'
+      + '</tr></thead><tbody></tbody>');
     funcionarios.forEach((f, idx) => {
       const nomeLower = (f.nome || '').toLowerCase();
       let local = '';
@@ -917,521 +836,457 @@ async function carregarMonitoramento(token) {
   }
 }
 
-async function carregarProprietarios(token) {
-  // Busca o token do sessionStorage se não for passado
-  if (!token) {
-    token = sessionStorage.getItem('token');
+// Removida a implementação em cards; nova versão em tabela conforme especificação do usuário
+(function initProprietariosTabela(){
+  window._proprietariosEnhanced = false;
+  const MAX_BIKE_CHARS = 260;
+  function prepararBikesHtml(raw){
+    if(raw.length <= MAX_BIKE_CHARS) return raw;
+    const preview = raw.slice(0, MAX_BIKE_CHARS) + '...';
+    const id = 'bxp_' + Math.random().toString(36).slice(2);
+    return `<div class="bike-preview" data-full="${raw.replace(/"/g,'&quot;')}"><span class="bike-short" id="${id}">${preview}</span> <button class="btn btn-sm btn-link p-0 btn-expand-bike" data-target="${id}" type="button">ver mais</button></div>`;
   }
-  const proprietariosDiv = document.getElementById('proprietariosTab');
-  const loadingDiv = document.getElementById('loadingProprietarios');
-  if (loadingDiv) loadingDiv.innerHTML = 'Carregando proprietários...';
-  if (!proprietariosDiv) return;
-  try {
-    if (!token) {
-      if (loadingDiv) loadingDiv.innerHTML = 'Token de autenticação ausente. Faça login novamente.';
-      proprietariosDiv.innerHTML = '<p>Token ausente. Faça login novamente.</p>';
-      return;
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.btn-expand-bike');
+    if(btn){
+      const targetId = btn.getAttribute('data-target');
+      const span = document.getElementById(targetId);
+      if(!span) return;
+      const wrap = span.closest('.bike-preview');
+      const full = wrap?.getAttribute('data-full');
+      if(!full) return;
+      const expanded = wrap.classList.toggle('expanded');
+      if(expanded){ span.textContent = full; btn.textContent='ver menos'; }
+      else { span.textContent = full.slice(0, MAX_BIKE_CHARS) + '...'; btn.textContent='ver mais'; }
     }
-    const res = await fetch(`${API_BASE_URL}/api/admin/proprietarios`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) {
-      let msg = `Erro ao buscar proprietários (status: ${res.status})`;
-      if (res.status === 403) {
-        msg += ' - Acesso negado. Token inválido ou expirado. Faça login novamente.';
-      }
-      if (loadingDiv) loadingDiv.innerHTML = msg;
-      proprietariosDiv.innerHTML = `<p>${msg}</p>`;
-      throw new Error(msg);
-    }
-    const proprietarios = await res.json();
-    if (!Array.isArray(proprietarios) || proprietarios.length === 0) {
-      proprietariosDiv.innerHTML = '<p>Nenhum proprietário encontrado.</p>';
-      if (loadingDiv) loadingDiv.innerHTML = '';
-      return;
-    }
-    // Exibição completa
-    let html = '<table class="table table-striped table-bordered"><thead><tr><th>Foto</th><th>Proprietário</th><th>Contato</th><th>Bicicleta</th><th>Check-in</th><th>Check-out</th></tr></thead><tbody>';
-    proprietarios.forEach(p => {
-      const foto = p.fotoUrl || p.foto || '';
-      const avatar = foto ? `<img src="${foto}" alt="Foto de ${p.nome || ''}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;">` : '<span class="avatar-placeholder">👤</span>';
-      const contato = [p.email, p.telefone].filter(Boolean).join(' / ');
-      const bike = p.bicicleta ? [
-        p.bicicleta.modelo, p.bicicleta.cor, p.bicicleta.numeroSerie || p.bicicleta.serie || p.bicicleta.numero, p.bicicleta.placa
-      ].filter(Boolean).join(' | ') : (p.modeloBicicleta || p.dadosBicicleta || '-');
-      const checkinOper = p.checkin?.operador || p.checkin?.usuarioNome || p.operadorCheckin || '-';
-      const checkinHora = p.checkin?.dataHora || p.dataCheckin || '-';
-      const checkoutOper = p.checkout?.operador || p.checkout?.usuarioNome || p.operadorCheckout || '-';
-      const checkoutHora = p.checkout?.dataHora || p.dataCheckout || '-';
-      const checkinStr = (checkinOper !== '-' && checkinHora !== '-') ? `${checkinOper} em ${checkinHora}` : '-';
-      const checkoutStr = (checkoutOper !== '-' && checkoutHora !== '-') ? `${checkoutOper} em ${checkoutHora}` : '-';
-      html += `<tr>
-        <td>${avatar}</td>
-        <td>${p.nome || ''}</td>
-        <td>${contato || ''}</td>
-        <td>${bike || ''}</td>
-        <td>${checkinStr}</td>
-        <td>${checkoutStr}</td>
-      </tr>`;
-    });
-    html += '</tbody></table>';
-    proprietariosDiv.innerHTML = html;
-    if (loadingDiv) loadingDiv.innerHTML = '';
-  } catch (error) {
-    console.error('Erro ao carregar proprietários:', error);
-    if (loadingDiv) loadingDiv.innerHTML = 'Erro ao carregar proprietários.';
-    if (proprietariosDiv) proprietariosDiv.innerHTML = '';
-  }
-}
-
-// --- Exibir abas e carregar dados após login ---
-function mostrarPainelAdmin(token) {
-  adminLoginSection?.classList.add('hidden');
-  adminPanelSection?.classList.remove('hidden');
-  carregarMonitoramento(token);
-  carregarProprietarios(token);
-  iniciarAutoRefresh();
-}
-
-// Exibir painel automaticamente quando já autenticado (admin.html protegido)
-document.addEventListener('DOMContentLoaded', () => {
-  const token = sessionStorage.getItem('token');
-  if (token && localStorage.getItem('adminLogado')) {
-    try { mostrarPainelAdmin(token); } catch {}
-  }
-});
-
-// --- Sistema de Abas ---
-document.addEventListener('DOMContentLoaded', () => {
-  const tabButtons = document.querySelectorAll('.tab-button');
-  const tabContents = document.querySelectorAll('.tab-content');
-
-  tabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const tabName = button.getAttribute('data-tab');
-
-      // Remove active de todos os botões e conteúdos
-      tabButtons.forEach(btn => btn.classList.remove('active'));
-      tabContents.forEach(content => content.classList.remove('active'));
-
-      // Adiciona active ao botão clicado e conteúdo correspondente
-      button.classList.add('active');
-      document.getElementById(tabName + 'Tab').classList.add('active');
-
-      // Carrega dados da aba se necessário
-      if (tabName === 'proprietarios') {
-        carregarProprietarios();
-      }
-    });
   });
-});
-
-// --- Relatórios e Backup ---
-document.getElementById('btnRelatorioDia').onclick = () => imprimirRelatorio('dia');
-document.getElementById('btnRelatorioMes').onclick = () => imprimirRelatorio('mes');
-document.getElementById('btnGerarRelatorioDia').onclick = () => gerarRelatorio('dia');
-document.getElementById('btnGerarRelatorioMes').onclick = () => gerarRelatorio('mes');
-document.getElementById('btnBackup').onclick = realizarBackup;
-
-async function imprimirRelatorio(tipo) {
-  try {
-    const token = sessionStorage.getItem('token');
-    adminMsg.textContent = `Gerando relatório ${tipo === 'mes' ? 'mensal' : 'diário'}...`;
-    adminMsg.classList.remove('sucesso');
-    
-    // Fazer requisição com token
-    const res = await fetch(`${API_BASE_URL}/api/admin/relatorio?tipo=${tipo}`, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.erro || 'Falha ao gerar relatório.');
+  window.carregarProprietarios = function(token){
+    token = token || sessionStorage.getItem('token');
+    const proprietariosDiv = document.getElementById('proprietariosList');
+    if(!proprietariosDiv) return;
+    proprietariosDiv.innerHTML = '<div>Carregando proprietários...</div>';
+    if(!token){ proprietariosDiv.innerHTML = '<p>Token ausente. Faça login.</p>'; return; }
+    const termo=(document.getElementById('searchProprietarios')?.value||'').trim();
+    const url = new URL(`${API_BASE_URL}/api/admin/proprietarios`);
+    if(termo) url.searchParams.set('termo', termo);
+    fetch(url.toString(), { headers:{ Authorization:'Bearer '+token }})
+      .then(r=>{ if(!r.ok) throw new Error('Erro '+r.status); return r.json(); })
+      .then(proprietarios=>{
+        if(!Array.isArray(proprietarios) || !proprietarios.length){ proprietariosDiv.innerHTML='<p>Nenhum proprietário encontrado.</p>'; return; }
+        let html = '<div class="table-responsive"><table id="tabelaProprietariosFull" class="table table-striped table-bordered align-middle" style="min-width:1200px"><thead><tr>'
+          + '<th>Foto</th><th>Nome</th><th>Endereço</th><th>Celular</th><th>E-mail</th><th>CPF</th><th>Bicicletas</th><th>Check-in</th><th>Check-out</th>'
+          + '</tr></thead><tbody>';
+        proprietarios.forEach(p => {
+          const fotoPrincipal = p.fotoUrl || p.foto || p.foto_proprietario_url || '';
+          const fotoExtra = p.foto_proprietario_extra_url || '';
+          const temExtra = !!fotoExtra;
+          let fotoCell;
+          if (fotoPrincipal) {
+            // Monta bloco com principal + (opcional) extra
+            let principalImg = `<a href="#" class="prop-foto me-1" data-src="${fotoPrincipal}" title="Ver foto principal"><img src="${fotoPrincipal}" alt="Foto principal de ${(p.nome||'').replace(/"/g,'&quot;')}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.12);"></a>`;
+            let extraImg = temExtra ? `<a href="#" class="prop-foto" data-src="${fotoExtra}" title="Ver foto extra"><img src="${fotoExtra}" alt="Foto extra de ${(p.nome||'').replace(/"/g,'&quot;')}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.12);"></a>` : '';
+            let btnExtra = `<button type="button" class="btn btn-sm btn-${temExtra?'outline-secondary':'secondary'} btn-add-foto-extra mt-1" data-prop="${p.id}" title="${temExtra?'Substituir foto extra':'Adicionar foto extra'}">${temExtra?'Substituir Foto Extra':'Adicionar Foto Extra'}</button>`;
+            let badge = temExtra ? '<span class="badge bg-info ms-1 mt-1">2 fotos</span>' : '';
+            fotoCell = `<div class="d-flex align-items-center flex-wrap" style="gap:4px 6px;max-width:110px">${principalImg}${extraImg}<div class="w-100"></div>${btnExtra}${badge}</div>`;
+          } else {
+            // Sem foto principal ainda
+            let btnExtra = `<button type="button" class="btn btn-sm btn-secondary btn-add-foto-extra" data-prop="${p.id}" title="Adicionar foto">Adicionar Foto</button>`;
+            fotoCell = `<div>${btnExtra}</div>`;
+          }
+          const nome = p.nome || '';
+          const endereco = p.endereco || [p.logradouro, p.numero, p.bairro, p.cidade, p.uf].filter(Boolean).join(', ') || '';
+          const celular = p.celular || p.telefoneCelular || p.telefone || p.telefone1 || '';
+          const email = p.email || '';
+          const cpf = p.cpf || p.documento || '';
+          let bikes = Array.isArray(p.bicicletas) ? p.bicicletas : (p.bicicleta ? [p.bicicleta] : []);
+          let bikesHtmlRaw = bikes.map(b => {
+            const modelo = b.modelo || b.modeloBicicleta || b.modelo_bike || '';
+            const marca = b.marca || b.marca_bike || '';
+            const id = b.numeroIdentificacao || b.identificacao || b.numeroSerie || b.serie || b.numero || b.numero_identificacao || '';
+            const tipo = b.tipo || b.categoria || b.tipo_bike || '';
+            const obs = b.caracteristicas || b.observacoes || b.observacao || b.caracteristicasDistintivas || b.observacoes_bike || '';
+            return [
+              modelo ? `<div><b>Modelo:</b> ${modelo}</div>` : '',
+              marca ? `<div><b>Marca:</b> ${marca}</div>` : '',
+              id ? `<div><b>ID:</b> ${id}</div>` : '',
+              tipo ? `<div><b>Tipo:</b> ${tipo}</div>` : '',
+              obs ? `<div><b>Características/Obs.:</b> ${obs}</div>` : ''
+            ].filter(Boolean).join('');
+          }).join('<hr>');
+          const bikesHtml = bikesHtmlRaw ? prepararBikesHtml(bikesHtmlRaw) : '-';
+          const checkinOper = p.checkin?.operador || p.checkin?.usuarioNome || p.operadorCheckin || p.funcionario_entrada || '';
+          const checkinHora = p.checkin?.dataHora || p.dataCheckin || p.data_hora_entrada || '';
+          const checkoutOper = p.checkout?.operador || p.checkout?.usuarioNome || p.operadorCheckout || p.funcionario_saida || '';
+          const checkoutHora = p.checkout?.dataHora || p.dataCheckout || p.data_hora_saida || '';
+          const checkinStr = (checkinOper && checkinHora)
+            ? `<div><b>Funcionário:</b> ${checkinOper}</div><div><b>Data/Hora:</b> ${formatDateTimeExact(checkinHora)}</div>`
+            : '-';
+          const checkoutStr = (checkoutOper && checkoutHora)
+            ? `<div><b>Funcionário:</b> ${checkoutOper}</div><div><b>Data/Hora:</b> ${formatDateTimeExact(checkoutHora)}</div>`
+            : '-';
+          html += `<tr>
+            <td>${fotoCell}</td>
+            <td>${nome}</td>
+            <td>${endereco}</td>
+            <td>${celular}</td>
+            <td>${email}</td>
+            <td>${cpf}</td>
+            <td>${bikesHtml}</td>
+            <td>${checkinStr}</td>
+            <td>${checkoutStr}</td>
+          </tr>`;
+        });
+        html += '</tbody></table></div>';
+        proprietariosDiv.innerHTML = html;
+        // Inicializa DataTable se disponível
+        if(window.jQuery && jQuery.fn.DataTable){
+          const table = jQuery('#tabelaProprietariosFull');
+          if(jQuery.fn.DataTable.isDataTable(table)) table.DataTable().destroy();
+          table.DataTable({
+            pageLength: 25,
+            lengthMenu: [10,25,50,100],
+            order: [[1,'asc']],
+            responsive: false,
+            scrollX: true,
+            autoWidth: false,
+            dom: 'Bfrtip',
+            buttons: [
+              { extend:'copy', text:'Copiar' },
+              { extend:'csv', text:'CSV' },
+              { extend:'excel', text:'Excel' },
+              { extend:'print', text:'Imprimir' },
+              { extend:'colvis', text:'Colunas' }
+            ],
+            language:{
+              url:'https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
+            }
+          });
+        }
+      })
+      .catch(err=>{ console.error('Erro proprietarios:', err); proprietariosDiv.innerHTML='<p>Erro ao carregar proprietários.</p>'; });
+    if(!window._bindBuscaPropsTabela){
+      const input=document.getElementById('searchProprietarios');
+      const btnBuscar=document.getElementById('btnBuscarProprietarios');
+      const btnTodos=document.getElementById('btnListarTodos');
+      const btnExport=document.getElementById('btnExportarProprietarios');
+      if(btnBuscar) btnBuscar.addEventListener('click', ()=>carregarProprietarios());
+      if(btnTodos) btnTodos.addEventListener('click', ()=>{ if(input) input.value=''; carregarProprietarios(); });
+      if(input) input.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); carregarProprietarios(); }});
+      if(btnExport && !btnExport._bound){
+        btnExport.addEventListener('click', ()=>{
+          const tableEl = document.querySelector('#tabelaProprietariosFull');
+          if(!tableEl){ alert('Tabela não carregada'); return; }
+          let csv = 'Nome,Endereco,Celular,Email,CPF,Bicicletas,Checkin,Checkout\n';
+          [...tableEl.querySelectorAll('tbody tr')].forEach(tr=>{
+            const tds = tr.querySelectorAll('td');
+            const getTxt = (i)=> (tds[i]?.innerText||'').replace(/\n+/g,' ').replace(/\s+/g,' ').trim();
+            const linha = [1,2,3,4,5,6,7,8].map(i=> '"'+getTxt(i).replace(/"/g,'""')+'"').join(',');
+            csv += linha + '\n';
+          });
+            const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href=url; a.download='proprietarios.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        });
+        btnExport._bound = true;
+      }
+      window._bindBuscaPropsTabela = true;
     }
-    
-    // Criar blob e download
-    const blob = await res.blob();
+  };
+})();
+
+// =============================================================================
+// FUNCIONALIDADES DE GERENCIAMENTO DE BLOQUEIOS
+// =============================================================================
+
+// Variáveis globais para bloqueios
+let proprietariosBloqueados = JSON.parse(localStorage.getItem('proprietariosBloqueados') || '[]');
+let bloqueiosPendentes = JSON.parse(localStorage.getItem('bloqueiosPendentes') || '[]');
+let logsAuditoria = JSON.parse(localStorage.getItem('logsAuditoria') || '[]');
+
+// Função para renderizar bloqueios pendentes
+function renderizarBloqueiosPendentes() {
+    const container = document.getElementById('listaBloqueiosPendentes');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (!bloqueiosPendentes || bloqueiosPendentes.length === 0) {
+        container.innerHTML = '<p class="text-muted">Nenhuma solicitação de bloqueio pendente.</p>';
+        return;
+    }
+
+    const lista = document.createElement('div');
+    lista.className = 'list-group';
+
+    bloqueiosPendentes.forEach((nome, idx) => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item d-flex justify-content-between align-items-center';
+        item.innerHTML = `
+            <div>
+                <h6 class="mb-1">${nome}</h6>
+                <small class="text-muted">Solicitado por funcionário em ${new Date().toLocaleDateString('pt-BR')}</small>
+            </div>
+            <div>
+                <button onclick="confirmarBloqueio(${idx})" class="btn btn-danger btn-sm me-2">
+                    <i class="bx bx-block"></i> Confirmar Bloqueio
+                </button>
+                <button onclick="rejeitarBloqueio(${idx})" class="btn btn-outline-secondary btn-sm">
+                    <i class="bx bx-x"></i> Rejeitar
+                </button>
+            </div>
+        `;
+        lista.appendChild(item);
+    });
+
+    container.appendChild(lista);
+}
+
+// Função para renderizar proprietários bloqueados
+function renderizarProprietariosBloqueados() {
+    const container = document.getElementById('listaProprietariosBloqueados');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (!proprietariosBloqueados || proprietariosBloqueados.length === 0) {
+        container.innerHTML = '<p class="text-muted">Nenhum proprietário bloqueado.</p>';
+        return;
+    }
+
+    const lista = document.createElement('div');
+    lista.className = 'list-group';
+
+    proprietariosBloqueados.forEach((nome, idx) => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item d-flex justify-content-between align-items-center';
+        item.innerHTML = `
+            <div>
+                <h6 class="mb-1">${nome}</h6>
+                <small class="text-muted">Bloqueado em ${new Date().toLocaleDateString('pt-BR')}</small>
+            </div>
+            <div>
+                <button onclick="desbloquearProprietario(${idx})" class="btn btn-success btn-sm">
+                    <i class="bx bx-check"></i> Desbloquear
+                </button>
+            </div>
+        `;
+        lista.appendChild(item);
+    });
+
+    container.appendChild(lista);
+}
+
+// Função para confirmar bloqueio
+function confirmarBloqueio(idx) {
+    const nome = bloqueiosPendentes[idx];
+    if (!nome) return;
+
+    const confirmacao = confirm(`Confirmar bloqueio do proprietário "${nome}"?`);
+    if (!confirmacao) return;
+
+    // Adiciona à lista de bloqueados
+    proprietariosBloqueados.push(nome.toLowerCase());
+
+    // Remove da lista pendente
+    bloqueiosPendentes.splice(idx, 1);
+
+    // Adiciona log de auditoria
+    const adminLogado = localStorage.getItem('adminLogado');
+    logsAuditoria.push({
+        data: new Date().toISOString(),
+        admin: adminLogado || 'Admin',
+        acao: 'Bloqueio Confirmado',
+        detalhes: `Proprietário "${nome}" foi bloqueado`
+    });
+
+    // Salva no localStorage
+    localStorage.setItem('proprietariosBloqueados', JSON.stringify(proprietariosBloqueados));
+    localStorage.setItem('bloqueiosPendentes', JSON.stringify(bloqueiosPendentes));
+    localStorage.setItem('logsAuditoria', JSON.stringify(logsAuditoria));
+
+    // Atualiza as visualizações
+    renderizarBloqueiosPendentes();
+    renderizarProprietariosBloqueados();
+    renderizarLogsAuditoria();
+
+    alert(`Bloqueio confirmado para "${nome}"`);
+}
+
+// Função para rejeitar bloqueio
+function rejeitarBloqueio(idx) {
+    const nome = bloqueiosPendentes[idx];
+    if (!nome) return;
+
+    const confirmacao = confirm(`Rejeitar solicitação de bloqueio do proprietário "${nome}"?`);
+    if (!confirmacao) return;
+
+    // Remove da lista pendente
+    bloqueiosPendentes.splice(idx, 1);
+
+    // Adiciona log de auditoria
+    const adminLogado = localStorage.getItem('adminLogado');
+    logsAuditoria.push({
+        data: new Date().toISOString(),
+        admin: adminLogado || 'Admin',
+        acao: 'Bloqueio Rejeitado',
+        detalhes: `Solicitação de bloqueio do proprietário "${nome}" foi rejeitada`
+    });
+
+    // Salva no localStorage
+    localStorage.setItem('bloqueiosPendentes', JSON.stringify(bloqueiosPendentes));
+    localStorage.setItem('logsAuditoria', JSON.stringify(logsAuditoria));
+
+    // Atualiza as visualizações
+    renderizarBloqueiosPendentes();
+    renderizarLogsAuditoria();
+
+    alert(`Solicitação de bloqueio rejeitada para "${nome}"`);
+}
+
+// Função para desbloquear proprietário
+function desbloquearProprietario(idx) {
+    const nome = proprietariosBloqueados[idx];
+    if (!nome) return;
+
+    const confirmacao = confirm(`Desbloquear o proprietário "${nome}"?`);
+    if (!confirmacao) return;
+
+    // Remove da lista de bloqueados
+    proprietariosBloqueados.splice(idx, 1);
+
+    // Adiciona log de auditoria
+    const adminLogado = localStorage.getItem('adminLogado');
+    logsAuditoria.push({
+        data: new Date().toISOString(),
+        admin: adminLogado || 'Admin',
+        acao: 'Proprietário Desbloqueado',
+        detalhes: `Proprietário "${nome}" foi desbloqueado`
+    });
+
+    // Salva no localStorage
+    localStorage.setItem('proprietariosBloqueados', JSON.stringify(proprietariosBloqueados));
+    localStorage.setItem('logsAuditoria', JSON.stringify(logsAuditoria));
+
+    // Atualiza as visualizações
+    renderizarProprietariosBloqueados();
+    renderizarLogsAuditoria();
+
+    alert(`Proprietário "${nome}" foi desbloqueado`);
+}
+
+// Função para renderizar logs de auditoria
+function renderizarLogsAuditoria() {
+    const tabela = document.getElementById('tabelaAuditoria');
+    if (!tabela) return;
+
+    // Se já existe uma instância do DataTable, destroi primeiro
+    if ($.fn.DataTable.isDataTable('#tabelaAuditoria')) {
+        $('#tabelaAuditoria').DataTable().destroy();
+    }
+
+    const tbody = tabela.querySelector('tbody');
+    tbody.innerHTML = '';
+
+    logsAuditoria.forEach(log => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${new Date(log.data).toLocaleString('pt-BR')}</td>
+            <td>${log.admin}</td>
+            <td>${log.acao}</td>
+            <td>${log.detalhes}</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Inicializa DataTable
+    $('#tabelaAuditoria').DataTable({
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
+        },
+        order: [[0, 'desc']], // Ordena por data decrescente
+        pageLength: 10
+    });
+}
+
+// Função para exportar lista de bloqueados
+function exportarListaBloqueados() {
+    if (!proprietariosBloqueados || proprietariosBloqueados.length === 0) {
+        alert('Não há proprietários bloqueados para exportar.');
+        return;
+    }
+
+    const csv = 'Nome,Data Bloqueio\n' +
+                proprietariosBloqueados.map(nome => `"${nome}","${new Date().toLocaleDateString('pt-BR')}"`).join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
-    const hoje = new Date().toISOString().slice(0,10);
-    
     const a = document.createElement('a');
     a.href = url;
-    a.download = `relatorio-${tipo}-${hoje}.csv`;
+    a.download = `proprietarios-bloqueados-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    
-    adminMsg.textContent = `Relatório ${tipo === 'mes' ? 'mensal' : 'diário'} gerado com sucesso!`;
-    adminMsg.classList.add('sucesso');
-  } catch (err) {
-    adminMsg.textContent = 'Erro ao gerar relatório: ' + (err.message || 'Erro desconhecido');
-    adminMsg.classList.remove('sucesso');
-    adminMsg.style.color = 'red';
-  }
 }
 
-async function gerarRelatorio(tipo) {
-  if (!adminEmail) {
-    modalEmail.classList.remove('hidden');
-    return;
-  }
-  try {
-    const token = sessionStorage.getItem('token');
-    adminMsg.textContent = 'Gerando relatório...';
-    const res = await fetch(`${API_BASE_URL}/api/admin/gerar-relatorio`, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ tipo, email: adminEmail })
-    });
-    if (!res.ok) throw new Error('Falha ao gerar relatório.');
-    adminMsg.textContent = 'Relatório gerado e enviado para todos os administradores!';
-    adminMsg.classList.add('sucesso');
-  } catch (err) {
-    adminMsg.textContent = err.message || 'Erro ao gerar relatório.';
-    adminMsg.classList.remove('sucesso');
-  }
-}
-
-async function realizarBackup() {
-  try {
-    const token = sessionStorage.getItem('token');
-    adminMsg.textContent = 'Realizando backup completo do sistema...';
-    adminMsg.classList.remove('sucesso');
-    
-    const res = await fetch(`${API_BASE_URL}/api/admin/backup`, {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.erro || 'Falha ao realizar backup.');
+// Event listeners para a aba de bloqueios
+document.addEventListener('DOMContentLoaded', function() {
+    // Adiciona event listener para o botão de exportar bloqueados
+    const btnExportarBloqueados = document.getElementById('btnExportarBloqueados');
+    if (btnExportarBloqueados) {
+        btnExportarBloqueados.addEventListener('click', exportarListaBloqueados);
     }
-    
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const hoje = new Date().toISOString().slice(0,10);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `backup-bicicletario-${hoje}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-    
-    adminMsg.textContent = `Backup completo realizado com sucesso! Arquivo salvo: backup-bicicletario-${hoje}.json`;
-    adminMsg.classList.add('sucesso');
-  } catch (err) {
-    adminMsg.textContent = 'Erro ao realizar backup: ' + (err.message || 'Erro desconhecido');
-    adminMsg.classList.remove('sucesso');
-    adminMsg.style.color = 'red';
-  }
-}
 
-// Função utilitária para obter histórico de alterações do funcionário
-function getHistoricoAlteracoes(id) {
-  const historico = JSON.parse(localStorage.getItem('historico_funcionario_' + id) || '[]');
-  return historico;
-}
+    // Adiciona event listener para o botão de exportar auditoria
+    const btnExportarAuditoria = document.getElementById('btnExportarAuditoria');
+    if (btnExportarAuditoria) {
+        btnExportarAuditoria.addEventListener('click', function() {
+            if (!logsAuditoria || logsAuditoria.length === 0) {
+                alert('Não há logs de auditoria para exportar.');
+                return;
+            }
 
-function addHistoricoAlteracao(id, alteracao) {
-  const historico = getHistoricoAlteracoes(id);
-  historico.unshift({ ...alteracao, data: new Date().toLocaleString() });
-  localStorage.setItem('historico_funcionario_' + id, JSON.stringify(historico));
-}
+            const csv = 'Data/Hora,Admin,Ação,Detalhes\n' +
+                        logsAuditoria.map(log => `"${new Date(log.data).toLocaleString('pt-BR')}","${log.admin}","${log.acao}","${log.detalhes}"`).join('\n');
 
-// Função para exibir histórico no modal
-function exibirHistoricoAlteracoes(id) {
-  const historico = getHistoricoAlteracoes(id);
-  const div = document.getElementById('historicoAlteracoes');
-  if (!div) return;
-  if (!historico.length) {
-    div.innerHTML = '<span class="text-muted">Nenhuma alteração registrada.</span>';
-    return;
-  }
-  div.innerHTML = historico.map(h => `<div><b>${h.data}:</b> ${h.descricao}</div>`).join('');
-}
-
-// Função para autocomplete (usando jQuery UI)
-function setupAutocompleteNomesLocais(nomes, locais) {
-  if (window.jQuery && window.jQuery.ui) {
-    $('#editFuncionarioNome').autocomplete({ source: nomes });
-    $('#editFuncionarioLocal').autocomplete({ source: locais });
-  }
-}
-
-// Função para renderizar a tabela de funcionários com foto/avatar
-function renderTabelaFuncionarios(funcionarios, ranking) {
-  const tabela = $('#tabelaMonitoramento');
-  if ($.fn.DataTable.isDataTable(tabela)) tabela.DataTable().destroy();
-  tabela.empty();
-  tabela.append('<thead><tr>'
-    + '<th class="resizable col-foto">Foto</th>'
-    + '<th class="resizable col-nome">Nome</th>'
-    + '<th class="resizable col-local">Local</th>'
-    + '<th class="resizable col-status">Status</th>'
-    + '<th class="resizable col-tempo">Tempo Parado</th>'
-    + '<th class="resizable col-total">Total Mov.</th>'
-    + '<th class="resizable col-ultima">Última Movimentação</th>'
-    + '<th class="resizable col-ranking">Ranking</th>'
-    + '<th class="resizable col-acoes">Ações</th>'
-    + '</tr></thead><tbody></tbody>');
-  funcionarios.forEach((f, idx) => {
-    const nomeLower = (f.nome || '').toLowerCase();
-    let local = '';
-    if (FUNC_BICICLETARIO.includes(nomeLower) && FUNC_SECRETARIA.includes(nomeLower)) {
-      local = 'Secretaria/Bicicletário';
-    } else if (FUNC_BICICLETARIO.includes(nomeLower)) {
-      local = 'Bicicletário';
-    } else if (FUNC_SECRETARIA.includes(nomeLower)) {
-      local = 'Secretaria';
-    } else {
-      local = 'Outro';
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `logs-auditoria-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
     }
-    const destaque = f.status === 'Parado' ? 'table-danger' : '';
-    // Botões de ação
-    const isAdmin = FUNC_SECRETARIA.includes(nomeLower);
-    const btnEditar = `<button class='btn btn-sm btn-primary' onclick="editarFuncionario('${f.id}')">Editar</button>`;
-    const btnExcluir = isAdmin ? '' : `<button class='btn btn-sm btn-danger' onclick="excluirFuncionario('${f.id}', '${f.nome.replace(/'/g, '\'')}')">Excluir</button>`;
-    const fotoUrl = f.fotoUrl || '';
-    const avatar = fotoUrl ? `<img src='${fotoUrl}' alt='Foto de ${f.nome}' style='width:36px;height:36px;border-radius:50%;object-fit:cover;'>` : '<span class="avatar-placeholder">👤</span>';
-    tabela.append(`<tr class="${destaque}"><td>${avatar}</td><td>${f.nome}</td><td>${local}</td><td>${formatStatus(f.status)}</td><td>${f.tempoParadoMin ? f.tempoParadoMin + ' min' : '-'}${f.tempoParadoMin > 60 ? " <span class=\"badge bg-danger\">Alerta</span>" : ''}</td><td>${f.totalMovimentacoes}</td><td>${f.ultimaMov ? f.ultimaMov.replace('T',' ').slice(0,16) + ' ('+f.tipoUltimaMov+')' : '-'}</td><td>${ranking.findIndex(r => r.id === f.id) + 1}</td><td>${btnEditar} ${btnExcluir}</td></tr>`);
-  });
-  tabela.DataTable({ responsive: true, order: [[7, 'asc']] });
-}
 
-// [removido] Duplicata de carregarMonitoramento eliminada para evitar sobrescrita incorreta
-
-// Função de edição de funcionário
-window.editarFuncionario = async function(id) {
-  // Buscar dados do funcionário (pode ser do array já carregado ou via API)
-  const token = sessionStorage.getItem('token');
-  const res = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
-  if (!res.ok) return showToast('Erro ao buscar dados do funcionário.', 'error');
-  const f = await res.json();
-  document.getElementById('editFuncionarioId').value = f.id;
-  document.getElementById('editFuncionarioNome').value = f.nome;
-  document.getElementById('editFuncionarioStatus').value = f.status;
-  document.getElementById('editFuncionarioLocal').value = f.local || '';
-  document.getElementById('editFuncionarioFoto').value = f.fotoUrl || '';
-  document.getElementById('modalEditarFuncionario').classList.remove('hidden');
-  exibirHistoricoAlteracoes(f.id);
-  // Autocomplete nomes e locais
-  setupAutocompleteNomesLocais(
-    window.listaNomesFuncionarios || [],
-    ['Bicicletário', 'Secretaria', 'Secretaria/Bicicletário', 'Outro']
-  );
-};
-
-document.getElementById('btnCancelarEdicaoFuncionario').onclick = function() {
-  document.getElementById('modalEditarFuncionario').classList.add('hidden');
-};
-
-document.getElementById('btnSalvarEdicaoFuncionario').onclick = async function() {
-  const id = document.getElementById('editFuncionarioId').value;
-  const nome = document.getElementById('editFuncionarioNome').value.trim();
-  const status = document.getElementById('editFuncionarioStatus').value;
-  const local = document.getElementById('editFuncionarioLocal').value;
-  const fotoUrl = document.getElementById('editFuncionarioFoto').value.trim();
-  const token = sessionStorage.getItem('token');
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}`, {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, status, local, fotoUrl })
-    });
-    if (!res.ok) throw new Error('Erro ao salvar edição.');
-    showToast('Funcionário editado com sucesso!', 'success');
-    // Incrementa contador de edições por funcionário
-    try {
-      const keyEd = 'edicoes_funcionario_' + id;
-      const atual = parseInt(localStorage.getItem(keyEd) || '0', 10) + 1;
-      localStorage.setItem(keyEd, String(atual));
-    } catch {}
-    addHistoricoAlteracao(id, { descricao: `Edição: nome=${nome}, status=${status}, local=${local}` });
-    document.getElementById('modalEditarFuncionario').classList.add('hidden');
-    carregarMonitoramento(token);
-    logarAcao('Editar Funcionário', `ID: ${id}, Nome: ${nome}`);
-  } catch (err) {
-    showToast(err.message || 'Erro ao editar funcionário.', 'error');
-  }
-};
-
-// Toast para cadastro de funcionário (exemplo, se houver função de cadastro)
-window.cadastrarFuncionario = async function(dados) {
-  try {
-    const token = sessionStorage.getItem('token');
-    const res = await fetch(`${API_BASE_URL}/api/admin/funcionario`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(dados)
-    });
-    if (!res.ok) throw new Error('Erro ao cadastrar funcionário.');
-    showToast('Funcionário cadastrado com sucesso!', 'success');
-    logarAcao('Cadastrar Funcionário', `Nome: ${dados.nome}`);
-    carregarMonitoramento(token);
-  } catch (err) {
-    showToast(err.message || 'Erro ao cadastrar funcionário.', 'error');
-  }
-};
-
-// Bloqueio de exclusão para movimentações recentes
-window.excluirFuncionario = async function(id, nome) {
-  const token = sessionStorage.getItem('token');
-  // Buscar movimentações recentes
-  const resMov = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}/movimentacoes?dias=7`, { headers: { 'Authorization': `Bearer ${token}` } });
-  if (resMov.ok) {
-    const movs = await resMov.json();
-    if (Array.isArray(movs) && movs.length > 0) {
-      return showToast('Não é possível excluir: funcionário possui movimentações nos últimos 7 dias.', 'error');
+    // Renderiza as listas quando a aba de bloqueios é ativada
+    const tabBloqueios = document.querySelector('[data-tab="bloqueios"]');
+    if (tabBloqueios) {
+        tabBloqueios.addEventListener('click', function() {
+            // Aguarda um pouco para garantir que a aba foi ativada
+            setTimeout(() => {
+                renderizarBloqueiosPendentes();
+                renderizarProprietariosBloqueados();
+                renderizarLogsAuditoria();
+            }, 100);
+        });
     }
-  }
-  if (!confirm(`Tem certeza que deseja excluir o funcionário ${nome}? Essa ação não pode ser desfeita!`)) return;
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error('Erro ao excluir funcionário.');
-    showToast('Funcionário excluído com sucesso!', 'success');
-    carregarMonitoramento(token);
-    logarAcao('Excluir Funcionário', `ID: ${id}, Nome: ${nome}`);
-  } catch (err) {
-    showToast(err.message || 'Erro ao excluir funcionário.', 'error');
-  }
-};
 
-// Forçar logout do funcionário (troca de plantão)
-window.deslogarFuncionario = async function(id, nome) {
-  const token = sessionStorage.getItem('token');
-  try {
-    // Tenta endpoint dedicado, se existir
-    let res = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}/logout`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    // Fallback: atualiza status para Offline se endpoint não existir
-    if (res.status === 404) {
-      res = await fetch(`${API_BASE_URL}/api/admin/funcionario/${id}`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Offline' })
-      });
+    // Se a aba de bloqueios estiver ativa no carregamento, renderiza
+    const bloqueiosTab = document.getElementById('bloqueiosTab');
+    if (bloqueiosTab && bloqueiosTab.classList.contains('active')) {
+        renderizarBloqueiosPendentes();
+        renderizarProprietariosBloqueados();
+        renderizarLogsAuditoria();
     }
-    if (!res.ok) throw new Error('Falha ao deslogar funcionário.');
-    showToast(`Funcionário ${nome || ''} deslogado com sucesso.`, 'success');
-    logarAcao('Deslogar Funcionário', `ID: ${id}, Nome: ${nome}`);
-    carregarMonitoramento(token);
-  } catch (err) {
-    showToast(err.message || 'Erro ao deslogar funcionário.', 'error');
-  }
-};
-
-// Toasts para erros gerais
-window.addEventListener('error', function(e) {
-  showToast('Erro inesperado: ' + (e.message || 'Erro desconhecido'), 'error');
 });
 
-// Lógica de agendamento de relatórios
-const formAgendar = document.getElementById('formAgendarRelatorio');
-if (formAgendar) {
-  formAgendar.onsubmit = function(e) {
-    e.preventDefault();
-    const email = document.getElementById('agendamentoEmail').value.trim();
-    const freq = document.getElementById('agendamentoFrequencia').value;
-    if (!email || !/^[\w-.]+@[\w-]+\.[a-z]{2,}$/i.test(email)) {
-      document.getElementById('agendamentoMsg').textContent = 'E-mail inválido.';
-      return;
-    }
-    localStorage.setItem('agendamento_relatorio', JSON.stringify({ email, freq }));
-    document.getElementById('agendamentoMsg').textContent = 'Agendamento salvo! Relatórios serão enviados automaticamente.';
-    showToast('Agendamento de relatório salvo!', 'success');
-  };
-}
-
-// --- Toasts Bootstrap para feedback visual ---
-function showToast(mensagem, tipo = 'success', tempo = 4000) {
-  const cores = {
-    success: 'bg-success text-white',
-    error: 'bg-danger text-white',
-    info: 'bg-info text-white',
-    warning: 'bg-warning text-dark'
-  };
-  const toastId = 'toast' + Date.now();
-  const html = `<div id="${toastId}" class="toast align-items-center ${cores[tipo] || cores.success}" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="${tempo}">
-    <div class="d-flex">
-      <div class="toast-body">${mensagem}</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
-    </div>
-  </div>`;
-  $('#toastContainer').append(html);
-  const toastEl = document.getElementById(toastId);
-  const toast = new bootstrap.Toast(toastEl);
-  toast.show();
-  toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
-}
-
-// --- Funções de auditoria (logs) ---
-function registrarLogAuditoria(acao, detalhes) {
-  const logs = JSON.parse(localStorage.getItem('logs_auditoria') || '[]');
-  logs.unshift({
-    data: new Date().toLocaleString('pt-BR'),
-    admin: sessionStorage.getItem('admin_nome') || 'Desconhecido',
-    acao,
-    detalhes
-  });
-  localStorage.setItem('logs_auditoria', JSON.stringify(logs.slice(0, 500)));
-}
-
-function carregarAuditoria() {
-  const logs = JSON.parse(localStorage.getItem('logs_auditoria') || '[]');
-  const tabela = $('#tabelaAuditoria');
-  if ($.fn.DataTable.isDataTable(tabela)) tabela.DataTable().destroy();
-  tabela.find('tbody').empty();
-  logs.forEach(log => {
-    tabela.find('tbody').append(`<tr><td>${log.data}</td><td>${log.admin}</td><td>${log.acao}</td><td>${log.detalhes}</td></tr>`);
-  });
-  tabela.DataTable({ responsive: true, order: [[0, 'desc']] });
-}
-
-$('#btnExportarAuditoria').on('click', function() {
-  const logs = JSON.parse(localStorage.getItem('logs_auditoria') || '[]');
-  let csv = 'Data/Hora,Admin,Ação,Detalhes\n';
-  logs.forEach(log => {
-    csv += `${log.data},${log.admin},${log.acao},${log.detalhes}\n`;
-  });
-  let blob = new Blob([csv], {type: 'text/csv'});
-  let url = window.URL.createObjectURL(blob);
-  let a = document.createElement('a');
-  a.href = url;
-  a.download = 'logs_auditoria.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
-});
-
-// Carregar auditoria ao abrir aba
-$(document).ready(function() {
-  $(document).on('click', '.tab-button[data-tab="auditoria"]', carregarAuditoria);
-});
-
-// Registrar logs nas principais ações
-function logarAcao(acao, detalhes) {
-  registrarLogAuditoria(acao, detalhes);
-}
-// Exemplo: logar login
-if (adminLoginForm) {
-  adminLoginForm.addEventListener('submit', function() {
-    logarAcao('Login', 'Login realizado no painel admin');
-  });
-}
-// [removido] Duplicatas simplificadas de editarFuncionario/excluirFuncionario (mantida a versão completa que utiliza API e validações)
+// Torna as funções globais para serem chamadas pelos botões
+window.confirmarBloqueio = confirmarBloqueio;
+window.rejeitarBloqueio = rejeitarBloqueio;
+window.desbloquearProprietario = desbloquearProprietario;
 
 // --- Logout admin ---
 function bindLogoutLinks() {
@@ -1456,7 +1311,6 @@ bindLogoutLinks();
 
 // [removido] Duplicata de editar/salvar/excluir funcionário para manter uma única fonte de verdade
 
-// [removido] wrapper de carregarMonitoramento para evitar dupla requisição
 
 // --- Busca, filtros e exportação na tabela de funcionários ---
 $(document).ready(function() {
@@ -1509,3 +1363,63 @@ $(document).ready(function() {
     window.URL.revokeObjectURL(url);
   });
 });
+
+// --- Novas funcionalidades para proprietários ---
+
+// --- Adição de foto extra ---
+document.addEventListener('click', e=>{
+    // Upload foto extra
+    const btnExtra = e.target.closest('.btn-add-foto-extra');
+    if(btnExtra){
+      const propId = btnExtra.getAttribute('data-prop');
+      const token = sessionStorage.getItem('token');
+      if(!propId || !token) return;
+      const input = document.createElement('input');
+      input.type='file'; input.accept='image/*';
+      input.onchange = async ev => {
+        if(!ev.target.files || !ev.target.files[0]) return;
+        const fd = new FormData(); fd.append('fotoProprietarioExtra', ev.target.files[0]);
+        btnExtra.disabled=true; btnExtra.textContent='Enviando...';
+        try {
+          const resp = await fetch(`${API_BASE_URL}/api/proprietarios/${propId}/foto-extra`, { method:'PUT', headers:{'Authorization':`Bearer ${token}`}, body: fd });
+          const js = await resp.json();
+          if(!resp.ok) throw new Error(js.erro||'Falha upload');
+          // Atualiza badge de fotos
+          const card = btnExtra.closest('.proprietario-card');
+            if(card){
+              const badgeWrap = card.querySelector('.prop-badges');
+              if(badgeWrap){
+                let count = 0;
+                if(card.querySelector('.foto-wrap img')) count++;
+                count++; // nova extra
+                let fotosBadge = badgeWrap.querySelector('.badge.bg-info');
+                if(!fotosBadge){
+                  fotosBadge = document.createElement('span');
+                  fotosBadge.className='badge bg-info';
+                  badgeWrap.appendChild(fotosBadge);
+                }
+                fotosBadge.textContent = `${count} fotos`;
+              }
+            }
+          showToast('Foto extra adicionada!', 'success');
+        } catch(err){
+          showToast(err.message,'error');
+        } finally { btnExtra.disabled=false; btnExtra.textContent='Adicionar Foto Extra'; }
+      };
+      input.click();
+      return;
+    }
+  });
+(function darkModeSetup(){
+  if(document.getElementById('darkModeStyles')) return;
+  const st = document.createElement('style');
+  st.id='darkModeStyles';
+  st.textContent = `body.dark-mode{background:#121212;color:#e0e0e0;}body.dark-mode header.municipal-header,body.dark-mode #adminHeader{box-shadow:0 2px 10px rgba(0,0,0,.6);}body.dark-mode table{background:#1e1e1e;color:#ddd;}body.dark-mode thead th{background:#2a2f33!important;color:#eee;}body.dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button{color:#fff!important;}body.dark-mode .btn,body.dark-mode .dataTables_wrapper .dt-buttons .dt-button{background:#2d3439;color:#eee;border-color:#444;}body.dark-mode .dt-button:hover{background:#3a444b!important;color:#fff;}body.dark-mode .modal-dialog{background:#1f1f1f!important;color:#f1f1f1;}body.dark-mode .prop-lightbox{background:rgba(0,0,0,.9);}body.dark-mode .bike-preview{color:#ccc;}`;
+  document.head.appendChild(st);
+  document.addEventListener('click', e=>{
+    if(e.target && e.target.id==='btnToggleDark'){
+      document.body.classList.toggle('dark-mode');
+      e.target.textContent = document.body.classList.contains('dark-mode')? 'Modo Claro':'Modo Escuro';
+    }
+  });
+})();

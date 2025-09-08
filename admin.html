@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/login-admin.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
 </head>
 <body>
@@ -147,14 +148,19 @@
         </div>
       </div>
       <div id="proprietariosTab" class="tab-content">
-        <h2>Lista de Proprietários Cadastrados</h2>
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
+          <h2>Lista de Proprietários Cadastrados</h2>
+          <button id="btnToggleDark" class="btn btn-sm btn-outline-secondary" type="button">Modo Escuro</button>
+        </div>
         <div class="search-container">
           <input type="text" id="searchProprietarios" placeholder="Buscar por nome, CPF ou e-mail...">
           <button id="btnBuscarProprietarios">Buscar</button>
           <button id="btnListarTodos">Listar Todos</button>
+          <button id="btnExportarProprietarios" class="btn btn-outline-success" style="margin-left:8px;">Exportar CSV</button>
         </div>
         <div id="proprietariosList" class="proprietarios-list"></div>
-        <div class="row mb-4">
+        <!-- container legado da tabela antiga permanece para compatibilidade -->
+        <div class="row mb-4 d-none">
           <div class="col-md-12">
             <div id="tabelaProprietariosContainer">
               <table id="tabelaProprietarios" class="display" style="width:100%"></table>
@@ -165,21 +171,38 @@
       <div id="auditoriaTab" class="tab-content">
         <h2>Logs de Auditoria</h2>
         <div class="mb-3">
-          <button id="btnExportarAuditoria" class="btn btn-outline-success">Exportar Logs</button>
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Solicitações de Bloqueio Pendentes</h5>
+              </div>
+              <div class="card-body">
+                <div id="listaBloqueiosPendentes">
+                  <p class="text-muted">Carregando solicitações...</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Proprietários Bloqueados</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <button id="btnExportarBloqueados" class="btn btn-outline-success">Exportar Lista de Bloqueados</button>
+                </div>
+                <div id="listaProprietariosBloqueados">
+                  <p class="text-muted">Carregando lista de bloqueados...</p>
+                </div>
+              </div>
+            </div>
+          </div>
         <table id="tabelaAuditoria" class="display" style="width:100%">
-          <thead>
-            <tr>
-              <th>Data/Hora</th>
-              <th>Admin</th>
-              <th>Ação</th>
-              <th>Detalhes</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
     <div id="adminMsg" class="msg"></div>
     <!-- Modal para perguntar e gravar e-mail do ADM -->
     <div id="modalEmail" class="modal hidden">
@@ -235,6 +258,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="admin.js"></script>
 </body>

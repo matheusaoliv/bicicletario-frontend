@@ -10,6 +10,16 @@
 <option value="Outro">Outro</option>
 </select>
 </div>
+<div class="form-group info-linha" style="margin-bottom:14px;">
+<label for="selectBicicletaProprietario" style="font-weight:600;display:block;">Selecionar Bicicleta:</label>
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+<select id="selectBicicletaProprietario" class="input-padrao" style="min-width:260px;max-width:320px;">
+<option value="" disabled selected>Carregando bicicletas...</option>
+</select>
+<button id="btnAdicionarBike" type="button" class="btn add-bike-btn" style="display:none;">Adicionar Bicicleta</button>
+</div>
+<small id="infoBikesStatus" style="display:block;margin-top:4px;color:#555;font-size:.8rem;"></small>
+</div>
 <div class="detalhe">
 <div class="detalhe" id="fotoProprietarioContainer">
 <img id="fotoProprietario" src="imagens/default-user.png" alt="Foto do Proprietário">
@@ -23,8 +33,16 @@
 <strong>CPF:</strong> <span id="detalheCpfProprietario">-</span>
 <button id="btnEditarProprietario" type="button" class="btn edit-btn">Editar</button>
 </div>
-<div class="info-linha">
-<strong>Bicicleta:</strong> <span id="detalheInfoBicicleta">-</span>
+<div class="info-linha" style="gap:6px;align-items:flex-end;flex-wrap:wrap;">
+<div style="display:flex;flex-direction:column;">
+<label style="font-size:.72rem;color:#555;margin-left:2px;">Marca</label>
+<input id="inputMarcaBike" type="text" class="input-padrao" style="padding:4px 8px;min-width:130px;" readonly value="" />
+</div>
+<div style="display:flex;flex-direction:column;">
+<label style="font-size:.72rem;color:#555;margin-left:2px;">Modelo</label>
+<input id="inputModeloBike" type="text" class="input-padrao" style="padding:4px 8px;min-width:130px;" readonly value="" />
+</div>
+<span id="indicadorBikeDentro" style="display:none;background:#22b573;color:#fff;padding:4px 8px;border-radius:14px;font-size:.65rem;font-weight:600;letter-spacing:.5px;">DENTRO</span>
 </div>
 <div class="info-linha">
 <strong>Status:</strong> <span id="detalheStatusAtual" class="status-fora">-</span>
@@ -49,10 +67,3 @@
 </div>
 </form>
 </div>
-
-
-  
-
-
-
-
