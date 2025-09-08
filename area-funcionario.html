@@ -355,21 +355,6 @@ canvas {
             </div>
         </div>
 
-        <!-- Novo Card: Pesquisar e Bloquear Proprietário -->
-        <div class="card">
-            <h3 class="card-title">Pesquisar e Bloquear Proprietário</h3>
-            <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
-                <input type="text" id="proprietarioSearch" placeholder="Digite o nome do proprietário"
-                       style="padding: 8px; flex: 1; min-width: 200px; border: 1px solid #ddd; border-radius: 4px;">
-                <button id="btnBloquearProprietario"
-                        style="padding: 8px 16px; background-color: var(--accent-color); color: white;
-                               border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
-                    Bloquear
-                </button>
-            </div>
-            <p id="statusBloqueio" style="margin: 0; font-weight: bold; font-size: 0.9rem;"></p>
-        </div>
-
 
     </main>
 
@@ -881,62 +866,6 @@ const _oldAtualizaGraficos = window.inicializarOuAtualizarGraficos;
 window.inicializarOuAtualizarGraficos = function(stats) {
     window.statsUltimo = stats;
     if (_oldAtualizaGraficos) _oldAtualizaGraficos(stats);
-}
-</script>
-<script>
-// Lista de proprietários bloqueados (mock; depois integrar com backend)
-    let proprietariosBloqueados = JSON.parse(localStorage.getItem('proprietariosBloqueados') || '[]');
-
-    // Função para buscar proprietário e exibir status
-    document.getElementById('proprietarioSearch').addEventListener('input', function() {
-        const nome = this.value.trim().toLowerCase();
-        const statusEl = document.getElementById('statusBloqueio');
-        if (!nome) {
-            statusEl.textContent = '';
-            return;
-        }
-        if (proprietariosBloqueados.includes(nome)) {
-            statusEl.textContent = '⚠️ Este proprietário está BLOQUEADO';
-            statusEl.style.color = 'red';
-        } else {
-            statusEl.textContent = '✅ Este proprietário está ativo';
-            statusEl.style.color = 'green';
-        }
-    });
-
-    // Botão de bloqueio com confirmação
-    document.getElementById('btnBloquearProprietario').addEventListener('click', function() {
-        const nome = document.getElementById('proprietarioSearch').value.trim();
-        if (!nome) {
-            alert('Digite o nome do proprietário.');
-            return;
-        }
-
-        // Verifica se já está bloqueado
-        if (proprietariosBloqueados.includes(nome.toLowerCase())) {
-            alert(`O proprietário "${nome}" já está bloqueado.`);
-            return;
-        }
-
-        // Confirmação do funcionário
-        const confirmaFuncionario = confirm(`Você quer solicitar o bloqueio do proprietário "${nome}"?`);
-        if (!confirmaFuncionario) return;
-
-        // Aqui você enviaria a solicitação para o backend/admin
-        alert(`Solicitação de bloqueio de "${nome}" enviada para o administrador.`);
-
-        // Mock: adicionar à lista de bloqueios pendentes para o admin confirmar
-        if (!window.bloqueiosPendentes) window.bloqueiosPendentes = [];
-        window.bloqueiosPendentes.push(nome);
-
-        // Salva no localStorage para persistir entre sessões
-        localStorage.setItem('bloqueiosPendentes', JSON.stringify(window.bloqueiosPendentes));
-    });
-
-    // Inicializa bloqueios pendentes do localStorage
-    window.bloqueiosPendentes = JSON.parse(localStorage.getItem('bloqueiosPendentes') || '[]');
-
-    // ...existing code...
 }
 </script>
 </html>
