@@ -1,0 +1,213 @@
+/* ficha-proprietario.css */
+
+/* Layout base */
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background-color: #e9f5f1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #333;
+  min-height: 100vh;
+}
+header:not(.app-header) {
+  width: 100%;
+  background-color: #005f73;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+header:not(.app-header) h1 { font-size: 1.7em; margin: 0; }
+.container-ficha {
+  width: 95%;
+  max-width: 760px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+}
+.container-ficha h2 { color: #005f73; text-align: center; margin-top: 0; margin-bottom: 25px; }
+label { margin-top: 15px; display: block; font-weight: bold; color: #333; margin-bottom: 5px; }
+/* Evita conflito com .input-padrao do design moderno */
+:where(input[type="text"], input[type="email"], input[type="tel"], select, textarea):not(.input-padrao) {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border-radius: 6px;
+  border: 1px solid #ade8f4;
+  box-sizing: border-box;
+  background-color: #f8f9fa;
+}
+input[type="file"] { margin-top: 5px; }
+.foto-preview { max-width: 150px; max-height: 150px; margin-top: 10px; border: 1px solid #ddd; cursor: zoom-in; }
+.botoes-acao { margin-top: 30px; text-align: right; }
+.botoes-acao button {
+  padding: 10px 20px; background: #2a9d8f; color: white; border: none;
+  border-radius: 8px; cursor: pointer; font-size: 1em; margin-left: 10px;
+}
+.botoes-acao button.secundario { background-color: #007bff; }
+.botoes-acao button.perigo { background-color: #dc3545; }
+
+/* Utilidades */
+.hidden { display: none !important; }
+.row-flex { display: flex; gap: 10px; align-items: center; }
+.form-row .row-flex { width: 100%; flex-wrap: wrap; }
+.row-flex > * { flex: 0 0 auto; }
+#btnExcluirBike { margin-left: auto; }
+.container-ficha #selectBicicleta { min-width: 260px; }
+.row-flex #selectBicicleta { flex: 1 1 320px; }
+.pager { display: inline-flex; align-items: center; gap: 6px; }
+.pager .btn-pager { padding: 6px 10px; border-radius: 6px; border: none; background: #e0f2f1; color: #004d40; cursor: pointer; }
+.pager .btn-pager:disabled { opacity: .4; cursor: default; }
+#bikePageLabel { font-weight: 700; color: #005f73; min-width: 42px; text-align: center; }
+
+/* Aperfeiçoamentos visuais da identificação */
+.container-ficha .ident-grid > div:last-child .form-row { grid-template-columns: 160px 1fr; }
+.container-ficha .proprietario-fotos { margin-bottom: 10px; }
+.container-ficha .foto-proprietario { width: 112px; height: 112px; }
+.container-ficha .ident-grid { gap: 12px; }
+/* Puxar campos para a esquerda: diminuir coluna da esquerda (foto/uploader) */
+.container-ficha .ident-grid { grid-template-columns: 160px 1fr; }
+.ident-fields-grid .form-row label { color: var(--cor-texto-suave); font-weight: 600; }
+.input-padrao::placeholder { color: var(--cor-texto-suave); opacity: .8; }
+#fichaEndereco.input-padrao { min-height: 96px; }
+
+/* Grid de campos (lado direito) em duas colunas responsivo */
+.ident-fields-grid { display: grid; grid-template-columns: 1fr; gap: 12px; align-items: start; }
+.ident-fields-grid .form-row { display: grid; grid-template-columns: 120px 1fr; column-gap: 8px; row-gap: 6px; margin: 0; }
+.ident-fields-grid .form-row label { margin: 0; }
+.ident-fields-grid .full-span { grid-column: 1 / -1; }
+@media (max-width: 780px){ .ident-fields-grid { grid-template-columns: 1fr; } }
+
+/* Evitar overflow/clipping: permitir que itens encolham dentro do grid */
+.ident-fields-grid > * { min-width: 0; }
+.ident-fields-grid .form-row > * { min-width: 0; }
+.container-ficha .ident-grid > div { min-width: 0; }
+.container-ficha .modal-detail { overflow: visible; }
+.container-ficha .modal-detail .detail-content { overflow: visible; }
+.container-ficha .modal-detail[open] .detail-content { max-height: none; }
+
+/* Garantir que os campos ocupem a largura disponível sem extravasar */
+.input-padrao { min-width: 0; width: 100%; box-sizing: border-box; }
+
+/* Grid dos campos da Bicicleta Principal */
+.bike-fields-grid { display: grid; grid-template-columns: repeat(2, minmax(240px, 1fr)); gap: 12px; align-items: start; }
+.bike-fields-grid .form-row { display: grid; grid-template-columns: 160px 1fr; column-gap: 12px; row-gap: 6px; margin: 0; }
+.bike-fields-grid .form-row label { margin: 0; color: var(--cor-texto-suave); font-weight: 600; }
+.bike-fields-grid .full-span { grid-column: 1 / -1; }
+@media (max-width: 820px){ .bike-fields-grid { grid-template-columns: 1fr; } .bike-fields-grid .form-row { grid-template-columns: 160px 1fr; } }
+
+/* Texto de ajuda abaixo de campos */
+.help-text { font-size: .86rem; color: var(--cor-texto-suave); margin-top: 4px; }
+
+/* Selects com busca (Marca/Modelo) */
+.select-search-row { display: flex; align-items: center; gap: 8px; }
+.select-search { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #e1e5ea; background: #fff; }
+.select-clear { border: none; background: #e9ecef; color: #1b1b1b; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.select-clear:disabled { opacity: .5; cursor: not-allowed; }
+.select-suggestions { display: none; background: #fff; border: 1px solid #e1e5ea; border-radius: 8px; margin: 4px 0; max-height: 160px; overflow: auto; }
+.select-suggestions.show { display: block; }
+.select-suggestions .item { padding: 8px 10px; cursor: pointer; }
+.select-suggestions .item:hover { background: #f3f4f6; }
+.select-suggestions mark { background: #ffea99; padding: 0 2px; border-radius: 2px; }
+.select-search:disabled { opacity: .6; cursor: not-allowed; }
+.outro-wrap { margin-top: 10px; }
+.outro-wrap.hidden { display: none !important; }
+
+/* Toasts */
+#toastArea { position: fixed; right: 16px; top: 16px; display: grid; gap: 10px; z-index: 99999; }
+.toast { display:flex; align-items:center; gap:8px; padding: 10px 14px; border-radius: 8px; color: #fff; box-shadow: 0 6px 24px rgba(0,0,0,0.2); font-weight: 700; animation: toastIn .2s ease-out; }
+.toast .icon { font-size: 1.1em; opacity: .95; }
+.toast .action { margin-left: 10px; background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.toast.info { background: #0a9396; }
+.toast.ok { background: #2a9d8f; }
+.toast.err { background: #dc3545; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Confirm Dialog */
+.confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; align-items:center; justify-content:center; z-index: 99998; }
+.confirm-overlay.open { display: flex; }
+.confirm-modal { background: #fff; border-radius: 12px; max-width: 420px; width: calc(100% - 32px); padding: 18px 18px 14px; box-shadow: 0 12px 36px rgba(0,0,0,.3); }
+.confirm-modal .head { display:flex; align-items:center; gap:10px; margin-bottom: 10px; }
+.confirm-modal .title { font-size: 1.1em; font-weight: 800; color: #102a43; }
+.confirm-modal .body { color: #334e68; margin: 6px 0 14px; }
+.confirm-modal .actions { display:flex; gap:10px; justify-content:flex-end; }
+.confirm-modal .btn { padding: 9px 14px; border:none; border-radius:8px; font-weight:700; cursor:pointer; }
+.confirm-modal .btn.cancel { background:#e0e0e0; color:#37474f; }
+.confirm-modal .btn.ok { background:#dc3545; color:#fff; }
+
+/* Lightbox */
+.lightbox { position: fixed; inset:0; background: rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; z-index: 99997; }
+.lightbox.open { display:flex; }
+.lightbox img { max-width: 92vw; max-height: 92vh; border-radius: 8px; box-shadow: 0 8px 28px rgba(0,0,0,.5); }
+
+/* Modal Cartão */
+.modal-overlay { position: fixed; inset:0; background: rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:9999; }
+.modal-overlay.open { display:flex; }
+.modal-card { background:white; border-radius:16px; padding:24px; box-shadow:0 8px 32px rgba(0,0,0,0.3); position:relative; max-width:450px; margin:auto; }
+.modal-close { position:absolute; top:10px; right:18px; font-size:2em; color:#888; cursor:pointer; background:transparent; border:none; }
+#cartaoAcesso { width:390px; height:260px; position:relative; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.20); }
+#cartaoAcesso img.bg { position:absolute; left:0; top:0; width:100%; height:100%; object-fit:cover; border-radius:12px; z-index:0; pointer-events:none; }
+#cartaoFoto { position: absolute; left: 50px; top: 99px; width: 78px; height: 78px; border-radius: 7px; object-fit: cover; border: none; background: transparent; z-index: 1; }
+#cartaoNumeroGrande { position: absolute; left: 142px; top: 120px; width: 195px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: bold; color: #0D47A1; letter-spacing: 0.5px; background: transparent; z-index: 1; text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.3); }
+#cartaoQR { position: absolute; right: 43px; bottom: 50px; width: 58px; height: 58px; background: white; border-radius: 0px; display: flex; align-items: center; justify-content: center; padding: 1px; z-index: 1; }
+#cartaoNome { position: absolute; left: 51px; top: 177px; font-size: 0.75em; font-weight: bold; color: #333333; width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 1; }
+#cartaoInfoBicicleta { position: absolute; left: 51px; top: 194px; font-size: 0.8em; color: #1A1A1A; width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 1; }
+#cartaoRodapeTexto { position: absolute; left: 51px; bottom: 37px; font-size: 0.46875em; color: #1A1A1A; width: 400px; line-height: 1.2; z-index: 1; }
+.btn-imprimir { display:inline-block; padding:8px 18px; border:none; background:#2a9d8f; color:white; border-radius:8px; font-size:1em; cursor:pointer; }
+.btn-row { text-align:center; margin-top:18px; }
+
+/* Print */
+@media print {
+  body * { visibility: hidden; }
+  #modalCartao, #modalCartao > .modal-card, #cartaoAcesso, #cartaoAcesso * { visibility: visible; }
+  #modalCartao { position: static !important; width: auto !important; height: auto !important; background: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; display: block !important; overflow: visible !important; }
+  #modalCartao > .modal-card { box-shadow: none !important; padding: 0 !important; margin: 0 !important; border: none !important; max-width: none !important; width: auto !important; background: none !important; }
+  #cartaoAcesso { width: 8.56cm !important; height: 5.398cm !important; box-shadow: none !important; margin: 1cm auto; border: 1px dashed #888; border-radius: 3.18mm; overflow: hidden; box-sizing: border-box; }
+  .modal-close, .btn-imprimir { display: none !important; }
+}
+
+/* Header unificado: aplicar estilo do listadecadastro.css nesta página */
+header.app-header {
+  background-color: #006375;
+  color: #fff;
+  padding: 15px 30px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative; /* para posicionar nav absoluta dentro */
+  z-index: 100;
+  width: 100%;
+}
+header.app-header .header-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0;
+  position: relative; /* base para nav absoluta */
+}
+header.app-header .logo-japeri {
+  height: 60px;
+  width: auto;
+  margin-bottom: 5px;
+}
+header.app-header .brand-name {
+  font-size: 1.7em;
+  margin: 0;
+}
+header.app-header .header-actions {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 15px;
+}
+
+/* Summary add-bike */
+.summary-add-bike { cursor:pointer; font-weight:700; color:#005f73; }
+.mt-14 { margin-top:14px; }

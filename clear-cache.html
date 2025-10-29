@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="imagens/logobicicletario.png">
+    <meta charset="UTF-8">
+    <title>Teste de URL</title>
+    <!-- DEV-LOCAL: remover antes do commit -->
+    <script src="js/config-local.js"></script>
+</head>
+<body>
+    <h1>Teste de Configuração</h1>
+    <p id="url-atual"></p>
+    <script>
+        // Base unificada (com ou sem /api)
+        const BASE_API = (
+          (window.API_BASE_URL && window.API_BASE_URL.trim())
+            ? window.API_BASE_URL
+            : 'https://southamerica-east1-bicicletario-japeri-v3.cloudfunctions.net/api'
+        ).replace(/\/$/, '');
+        document.getElementById('url-atual').textContent = 'BASE_API: ' + BASE_API;
+        console.log('BASE_API:', BASE_API);
+    </script>
+</body>
+</html>

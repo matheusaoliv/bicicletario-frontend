@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Controle de Acesso - Bicicletário</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <meta name="theme-color" content="#005f73" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style-moderno.css" />
+  <!-- CSS Responsivo adicional -->
+  <link rel="stylesheet" href="css/responsivo-extra.css" />
+  <script src="js/catalogo-bikes-ui.js"></script>
+</head>
+<body class="page-lista">
+  <header id="appHeader" class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo-container">
+          <img src="imagens/image.png" alt="Logo Prefeitura de Japeri" class="logo-japeri" loading="lazy" decoding="async">
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-name">Bicicletário Japeri</h1>
+          <p class="brand-subtitle">Controle de Acesso</p>
+        </div>
+      </div>
+      <nav class="header-actions">
+        <a href="area-funcionario.html" class="btn btn-secundario">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a8.25 8.25 0 1 1 15 0v.75H4.5v-.75z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Área do Funcionário</span>
+        </a>
+        <a href="cadastrobicicletario.html" class="btn btn-primario">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 4.5v15m7.5-7.5h-15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Novo Cadastro</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="appMain">
+    <div class="search-container">
+      <div class="search-bar" id="searchBar">
+        <input type="text" id="termoPesquisa" placeholder="Buscar por Nome, CPF, ID da bike..." aria-label="Buscar proprietário">
+        <button type="button" class="clear-btn" id="btnClear" aria-label="Limpar busca" title="Limpar">&times;</button>
+        <button id="btnBuscar" class="btn btn-primario" aria-label="Buscar" title="Buscar">
+          <span class="btn-label">Buscar</span>
+        </button>
+      </div>
+    </div>
+    <!-- Faixa de Filtros: Tipo → Marca → Linha → Modelo (oculta conforme opção A) -->
+    <section id="filtrosCatalogo" class="filters-strip" hidden>
+      <div class="filters-grid">
+        <div class="form-row">
+          <label for="fltTipo">Tipo</label>
+          <select id="fltTipo" class="input-padrao">
+            <option value="">Selecione o Tipo</option>
+            <option value="Mountain Bike">Mountain Bike</option>
+            <option value="Speed">Speed</option>
+            <option value="Urbana">Urbana</option>
+            <option value="Elétrica">Elétrica</option>
+            <option value="Dobrável">Dobrável</option>
+            <option value="Infantil">Infantil</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="fltMarca">Marca</label>
+          <div class="select-search-row">
+            <input type="text" id="fltMarcaSearch" class="input-padrao select-search" placeholder="Pesquisar marca..." disabled role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="fltMarcaSuggestions" aria-expanded="false">
+            <button type="button" id="fltMarcaClear" class="select-clear" disabled>Limpar</button>
+          </div>
+          <div id="fltMarcaSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de marca"></div>
+          <select id="fltMarca" class="input-padrao" disabled>
+            <option value="">Selecione a Marca</option>
+          </select>
+          <div id="fltMarcaOutroWrap" class="outro-wrap hidden">
+            <label for="fltMarcaOutro">Marca (Outro)</label>
+            <input type="text" id="fltMarcaOutro" class="input-padrao" placeholder="Informe a marca">
+          </div>
+        </div>
+        <div class="form-row" id="fltLinhaRow">
+          <label for="fltLinhaSearch">Linha</label>
+          <div id="fltLinhaFilterWrap" class="select-search-row hidden">
+            <input type="text" id="fltLinhaSearch" class="input-padrao select-search" placeholder="Filtrar por linha..." disabled role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="fltLinhaSuggestions" aria-expanded="false">
+            <button type="button" id="fltLinhaClear" class="select-clear" disabled>Limpar</button>
+          </div>
+          <div id="fltLinhaSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de linha"></div>
+        </div>
+        <div class="form-row">
+          <label for="fltModelo">Modelo</label>
+          <div class="select-search-row">
+            <input type="text" id="fltModeloSearch" class="input-padrao select-search" placeholder="Pesquisar modelo..." disabled role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="fltModeloSuggestions" aria-expanded="false">
+            <button type="button" id="fltModeloClear" class="select-clear" disabled>Limpar</button>
+          </div>
+          <div id="fltModeloSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de modelo"></div>
+          <select id="fltModelo" class="input-padrao" disabled>
+            <option value="">Selecione o Modelo</option>
+          </select>
+          <div id="fltModeloOutroWrap" class="outro-wrap hidden">
+            <label for="fltModeloOutro">Modelo (Outro)</label>
+            <input type="text" id="fltModeloOutro" class="input-padrao" placeholder="Informe o modelo">
+          </div>
+        </div>
+      </div>
+    </section>
+    <div id="mensagemStatusBusca" aria-live="polite"></div>
+    <div id="listaResultadosBusca"></div>
+  </main>
+
+  <!-- Popup de confirmação de operação (Check-in / Check-out) -->
+  <div id="opPopupOverlay" class="op-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="opPopupTitle">
+    <div class="op-card" role="document">
+      <div class="icon-container">
+        <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" aria-hidden="true">
+          <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="checkmark-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+        <svg class="xmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" aria-hidden="true">
+          <circle class="xmark-circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="xmark-path1" fill="none" d="M16 16 L36 36"/>
+          <path class="xmark-path2" fill="none" d="M36 16 L16 36"/>
+        </svg>
+        <div class="confetti-container" aria-hidden="true">
+          <div></div><div></div><div></div><div></div><div></div>
+          <div></div><div></div><div></div><div></div><div></div>
+          <div></div><div></div>
+        </div>
+      </div>
+      <h1 id="opPopupTitle">Sucesso!</h1>
+      <p id="opPopupMessage">A operação foi concluída.</p>
+      <div id="opPopupDetails" class="op-details" aria-live="polite"></div>
+      <button id="opPopupCloseBtn" type="button" class="btn btn-sucesso">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Modal moderno de detalhes -->
+  <div id="detalheModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <div class="modal-content" tabindex="-1">
+      <div class="modal-header">
+        <h2 id="modalTitulo">Detalhes do Registro</h2>
+        <button type="button" class="modal-close-btn" aria-label="Fechar">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-sections">
+          <details class="modal-detail" open>
+            <summary class="section-title">Identificação</summary>
+            <div class="detail-content ident-grid">
+              <div>
+                <div class="proprietario-fotos">
+                  <img id="fotoProprietarioPrincipal" class="foto-proprietario" alt="Foto do Proprietário" src="imagens/image.png">
+                  <img id="fotoProprietarioExtra" class="foto-proprietario" alt="Foto Extra do Proprietário" src="imagens/image.png">
+                </div>
+                <div class="fotos-uploader">
+                  <div class="uploader-row">
+                    <label for="uploadFotoPrincipal">Foto do Proprietário</label>
+                    <div class="file-control">
+                      <input id="uploadFotoPrincipal" type="file" accept="image/*" class="hidden-input">
+                      <button type="button" id="btnPickFotoPrincipal" class="btn btn-secundario">Escolher arquivo</button>
+                      <span class="file-name" id="nomeFotoPrincipal" aria-live="polite" aria-atomic="true">Nenhum arquivo</span>
+                    </div>
+                  </div>
+                  <div class="uploader-row">
+                    <label for="uploadFotoExtra">Foto Extra (Proprietário + Bicicleta)</label>
+                    <div class="file-control">
+                      <input id="uploadFotoExtra" type="file" accept="image/*" class="hidden-input">
+                      <button type="button" id="btnPickFotoExtra" class="btn btn-secundario">Escolher arquivo</button>
+                      <span class="file-name" id="nomeFotoExtra" aria-live="polite" aria-atomic="true">Nenhum arquivo</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="form-row">
+                  <label>Proprietário</label>
+                  <p id="detalheNomeProprietario">-</p>
+                </div>
+                <div class="form-row">
+                  <label>Bicicleta</label>
+                  <p id="detalheInfoBicicleta">-</p>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="modal-detail" open>
+            <summary class="section-title">Operação</summary>
+            <div class="detail-content operacao-grid">
+              <div class="form-row">
+                <label for="selectLocalBicicletario">Bicicletário</label>
+                <select id="selectLocalBicicletario" class="input-padrao"></select>
+              </div>
+              <div class="form-row operacao-info">
+                <label>Data/Hora da Operação (Automática)</label>
+                <p id="dataHoraOperacao">-</p>
+              </div>
+              <div class="form-row">
+                <label>Status Atual</label>
+                <p><span id="detalheStatusAtual" class="status-badge status-neutro">-</span></p>
+              </div>
+            </div>
+          </details>
+
+          <details class="modal-detail">
+            <summary class="section-title">Bicicletas do Proprietário</summary>
+            <div class="detail-content">
+              <div class="form-row">
+                <label>Escolher Bicicleta</label>
+                <div id="listaBicicletasDoProprietario" class="lista-bicicletas"></div>
+              </div>
+              <details class="modal-detail">
+                <summary class="section-title">Adicionar Bicicleta</summary>
+                <div class="detail-content add-bike-grid">
+                  <input id="novoNumeroBike" class="input-padrao" placeholder="JPR-XXXXXXXXXXXXXX" pattern="JPR-[A-Z0-9]{14}" title="Use o formato JPR-XXXXXXXXXXXXXX (letras maiúsculas e números)" maxlength="18">
+                  <button type="button" id="btnGerarNovoNumero" class="btn btn-secundario">Gerar ID</button>
+
+                  <select id="novoTipoBike" class="input-padrao">
+                    <option value="">Selecione o Tipo</option>
+                    <option value="Mountain Bike">Mountain Bike</option>
+                    <option value="Speed">Speed</option>
+                    <option value="Urbana">Urbana</option>
+                    <option value="Elétrica">Elétrica</option>
+                    <option value="Dobrável">Dobrável</option>
+                    <option value="Infantil">Infantil</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+
+                  <div class="select-search-row">
+                    <input type="text" id="novoMarcaSearch" class="input-padrao select-search" placeholder="Pesquisar marca..." disabled aria-autocomplete="list" aria-haspopup="listbox" aria-controls="novoMarcaSuggestions" aria-expanded="false">
+                    <button type="button" id="novoMarcaClear" class="select-clear" disabled>Limpar</button>
+                  </div>
+                  <div id="novoMarcaSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de marca"></div>
+                  <select id="novoMarca" class="input-padrao" required disabled>
+                    <option value="">Selecione a Marca</option>
+                  </select>
+                  <div id="novoMarcaOutroWrap" class="outro-wrap hidden">
+                    <input id="novoMarcaOutro" class="input-padrao" placeholder="Marca (Outro)">
+                  </div>
+
+                  <div class="select-search-row">
+                    <input type="text" id="novoModeloSearch" class="input-padrao select-search" placeholder="Pesquisar modelo..." disabled aria-autocomplete="list" aria-haspopup="listbox" aria-controls="novoModeloSuggestions" aria-expanded="false">
+                    <button type="button" id="novoModeloClear" class="select-clear" disabled>Limpar</button>
+                  </div>
+                  <div id="novoModeloSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de modelo"></div>
+                  <select id="novoModelo" class="input-padrao" required disabled>
+                    <option value="">Selecione o Modelo</option>
+                  </select>
+                  <div id="novoModeloOutroWrap" class="outro-wrap hidden">
+                    <input id="novoModeloOutro" class="input-padrao" placeholder="Modelo (Outro)">
+                  </div>
+                  <input id="novoObsBike" class="input-padrao" placeholder="Observações da bike (opcional)">
+                  <div class="uploader-row">
+                    <label for="uploadFotoBike">Foto da Bicicleta</label>
+                    <input id="uploadFotoBike" type="file" accept="image/*">
+                  </div>
+                  <div class="uploader-row">
+                    <label for="uploadFotoDonoComBike">Foto Dono com Bicicleta</label>
+                    <input id="uploadFotoDonoComBike" type="file" accept="image/*">
+                  </div>
+                  <button type="button" id="btnAdicionarBikeModal" class="btn btn-primario">Adicionar Bicicleta</button>
+                </div>
+              </details>
+            </div>
+          </details>
+
+          <details class="modal-detail" open>
+            <summary class="section-title">Verificação do Lacre</summary>
+            <div class="detail-content" id="lacre-verification-section">
+              <div id="lacre-display-area">
+                <p>Lacre registrado: <strong id="current-lacre-number">Nenhum</strong></p>
+                <p>O proprietário está com o lacre correto?</p>
+                <div class="lacre-buttons">
+                  <button type="button" id="btn-lacre-sim" class="btn btn-sucesso">Sim</button>
+                  <button type="button" id="btn-lacre-nao" class="btn btn-erro">Não</button>
+                </div>
+              </div>
+              <div id="lacre-edit-area" class="hidden">
+                <div class="form-row">
+                  <label for="new-lacre-input">Novo Número do Lacre</label>
+                  <input id="new-lacre-input" class="input-padrao" placeholder="Digite o novo número" inputmode="numeric">
+                  <button type="button" id="btn-save-lacre" class="btn btn-primario">Salvar Lacre</button>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="modal-detail">
+            <summary class="section-title">Observações</summary>
+            <div class="detail-content">
+              <div class="form-row">
+                <label for="obsNormal">Observações (Entrada/Saída Normais)</label>
+                <textarea id="obsNormal" class="input-padrao" rows="2" placeholder="Ex.: Sem ocorrências"></textarea>
+              </div>
+              <div class="form-row">
+                <label for="obsOcorrencia">Observação de Ocorrência</label>
+                <textarea id="obsOcorrencia" class="input-padrao" rows="2" placeholder="Ex.: chave perdida, pneu furado"></textarea>
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+      <div class="modal-botoes-area">
+        <button type="button" id="btnCancelarModal" class="btn btn-secundario">Cancelar</button>
+        <button type="button" id="btnEditarProprietario" class="btn btn-secundario">Editar Proprietário</button>
+        <button type="button" id="btnAcaoPrincipal" class="btn btn-sucesso">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config-local.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/app-moderno.js"></script>
+</body>
+</html>

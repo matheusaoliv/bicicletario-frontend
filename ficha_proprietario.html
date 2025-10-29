@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ficha Detalhada do Proprietário - Bicicletário</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <meta name="theme-color" content="#005f73" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <!-- DEV-LOCAL: remover antes do commit -->
+  <script src="js/config-local.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/heartbeat.js"></script>
+  <script src="js/catalogo-bikes-ui.js"></script>
+  <link rel="stylesheet" href="css/style-moderno.css">
+  <link rel="stylesheet" href="css/ficha-proprietario.css">
+  <link rel="stylesheet" href="css/responsivo-extra.css"><!-- novo CSS responsivo -->
+</head>
+<body class="page-ficha">
+  <header id="appHeader" class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo-container">
+          <img src="imagens/image.png" alt="Logo Prefeitura de Japeri" class="logo-japeri" loading="lazy" decoding="async">
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-name">Ficha do Proprietário</h1>
+          <p class="brand-subtitle">Edição e Bicicletas</p>
+        </div>
+      </div>
+      <nav class="header-actions">
+        <button type="button" class="btn btn-secundario" onclick="voltarParaLista()">Voltar</button>
+      </nav>
+    </div>
+  </header>
+  <div id="toastArea" aria-live="polite" aria-atomic="true"></div>
+  <div class="container-ficha">
+    <form id="formFichaProprietario">
+      <input type="hidden" id="proprietarioId">
+      <details class="modal-detail" open data-key="proprietario">
+        <summary class="section-title">Dados do Proprietário</summary>
+        <div class="detail-content ident-grid">
+          <div>
+            <div class="proprietario-fotos">
+              <img id="previewFotoProprietario" src="#" alt="Foto do Proprietário" class="foto-proprietario hidden">
+            </div>
+            <div class="fotos-uploader">
+              <div class="uploader-row">
+                <label for="fichaFotoProprietario">Foto do Proprietário</label>
+                <div class="file-control">
+                  <input type="file" id="fichaFotoProprietario" accept="image/*" class="hidden-input">
+                  <button type="button" id="btnPickFotoProprietario" class="btn btn-secundario">Escolher arquivo</button>
+                  <span class="file-name" id="nomeFotoProprietario" aria-live="polite" aria-atomic="true">Nenhum arquivo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="ident-fields-grid">
+              <div class="form-row">
+                <label for="fichaNome">Nome Completo</label>
+                <input type="text" id="fichaNome" class="input-padrao" placeholder="Nome completo do proprietário" required>
+              </div>
+              <div class="form-row">
+                <label for="fichaEmail">Email</label>
+                <input type="email" id="fichaEmail" class="input-padrao" placeholder="nome@exemplo.com">
+              </div>
+              <div class="form-row">
+                <label for="fichaCpf">CPF</label>
+                <input type="text" id="fichaCpf" class="input-padrao" placeholder="000.000.000-00" required>
+              </div>
+              <div class="form-row">
+                <label for="fichaContato">Contato</label>
+                <input type="tel" id="fichaContato" class="input-padrao" placeholder="(00) 90000-0000">
+              </div>
+              <div class="form-row full-span">
+                <label for="fichaEndereco">Endereço</label>
+                <textarea id="fichaEndereco" class="input-padrao" rows="3" placeholder="Rua, número, bairro, cidade"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="modal-detail" open data-key="bike-principal">
+        <summary class="section-title">Bicicleta Principal</summary>
+        <div class="detail-content">
+          <div class="form-row">
+            <label for="selectBicicleta">Selecionar Bicicleta</label>
+            <div class="row-flex">
+              <select id="selectBicicleta" class="input-padrao"></select>
+              <div class="pager">
+                <button type="button" id="bikePrev" class="btn-pager" aria-label="Anterior">«</button>
+                <span id="bikePageLabel">1/1</span>
+                <button type="button" id="bikeNext" class="btn-pager" aria-label="Próxima">»</button>
+              </div>
+              <button type="button" id="btnExcluirBike" class="btn btn-perigo">
+                <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M9 3h6M7 7h10m1 0v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7m3 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Excluir Bicicleta</span>
+              </button>
+            </div>
+          </div>
+          <input type="hidden" id="bicicletaId">
+          <div class="bike-fields-grid">
+            <div class="form-row">
+              <label for="fichaBikeNumeroID">Número da Bicicleta</label>
+              <input type="text" id="fichaBikeNumeroID" class="input-padrao" required placeholder="JPR-XXXXXXXXXXXXXX" pattern="JPR-[A-Z0-9]{14}" title="Use o formato JPR-XXXXXXXXXXXXXX (letras maiúsculas e números)" maxlength="18">
+            </div>
+            <div class="form-row">
+              <label for="fichaBikeTipo">Tipo</label>
+              <select id="fichaBikeTipo" class="input-padrao" required>
+                <option value="">Selecione o Tipo</option>
+                <option value="Mountain Bike">Mountain Bike</option>
+                <option value="Speed">Speed</option>
+                <option value="Urbana">Urbana</option>
+                <option value="Elétrica">Elétrica</option>
+                <option value="Dobrável">Dobrável</option>
+                <option value="Infantil">Infantil</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="fichaBikeMarca">Marca</label>
+              <div class="select-search-row">
+                <input type="text" id="fichaMarcaSearch" class="select-search" placeholder="Pesquisar marca..." disabled role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="fichaMarcaSuggestions" aria-expanded="false">
+                <button type="button" id="fichaMarcaClear" class="select-clear" disabled>Limpar</button>
+              </div>
+              <div id="fichaMarcaSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de marca"></div>
+              <select id="fichaBikeMarca" class="input-padrao" required disabled>
+                <option value="">Selecione a Marca</option>
+              </select>
+              <div id="fichaMarcaOutroWrap" class="outro-wrap hidden">
+                <label for="fichaMarcaOutro">Marca (Outro)</label>
+                <input type="text" id="fichaMarcaOutro" class="input-padrao" placeholder="Informe a marca">
+              </div>
+            </div>
+            <!-- Linha (Filtro opcional) -->
+            <div class="form-row">
+              <label for="fichaLinhaSearch">Linha</label>
+              <div id="fichaLinhaFilterWrap" class="select-search-row hidden">
+                <input type="text" id="fichaLinhaSearch" class="select-search" placeholder="Filtrar linha..." disabled role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="fichaLinhaSuggestions" aria-expanded="false">
+                <button type="button" id="fichaLinhaClear" class="select-clear" disabled>Limpar</button>
+              </div>
+              <div id="fichaLinhaSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de linha"></div>
+            </div>
+            <div class="form-row">
+              <label for="fichaBikeModelo">Modelo</label>
+              <div class="select-search-row">
+                <input type="text" id="fichaModeloSearch" class="select-search" placeholder="Pesquisar modelo..." disabled role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="fichaModeloSuggestions" aria-expanded="false">
+                <button type="button" id="fichaModeloClear" class="select-clear" disabled>Limpar</button>
+              </div>
+              <div id="fichaModeloSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de modelo"></div>
+              <select id="fichaBikeModelo" class="input-padrao" required disabled>
+                <option value="">Selecione o Modelo</option>
+              </select>
+              <div id="fichaModeloOutroWrap" class="outro-wrap hidden">
+                <label for="fichaModeloOutro">Modelo (Outro)</label>
+                <input type="text" id="fichaModeloOutro" class="input-padrao" placeholder="Informe o modelo">
+              </div>
+            </div>
+            <div class="form-row full-span">
+              <label for="fichaBikeObs">Observações da Bicicleta</label>
+              <textarea id="fichaBikeObs" class="input-padrao" rows="3" placeholder="Detalhes gerais, acessórios, diferenciais, etc."></textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Foto da Bicicleta Atual</label>
+            <img id="previewFotoBicicleta" src="#" alt="Foto da Bicicleta" class="foto-preview hidden">
+          </div>
+          <div class="form-row">
+            <label>Foto do Dono com Bicicleta Atual</label>
+            <img id="previewFotoDonoComBicicleta" src="#" alt="Foto Dono com Bicicleta" class="foto-preview hidden">
+          </div>
+          <div class="fotos-uploader">
+            <div class="uploader-row">
+              <label for="fichaFotoBicicleta">Alterar Foto da Bicicleta</label>
+              <div class="file-control">
+                <input type="file" id="fichaFotoBicicleta" accept="image/*" class="hidden-input">
+                <button type="button" id="btnPickFotoBike" class="btn btn-secundario">Escolher arquivo</button>
+                <span class="file-name" id="nomeFotoBike" aria-live="polite" aria-atomic="true">Nenhum arquivo</span>
+              </div>
+            </div>
+            <div class="uploader-row">
+              <label for="fichaFotoDonoComBicicleta">Alterar Foto do Dono com Bicicleta</label>
+              <div class="file-control">
+                <input type="file" id="fichaFotoDonoComBicicleta" accept="image/*" class="hidden-input">
+                <button type="button" id="btnPickFotoDonoBike" class="btn btn-secundario">Escolher arquivo</button>
+                <span class="file-name" id="nomeFotoDonoBike" aria-live="polite" aria-atomic="true">Nenhum arquivo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+      <div class="modal-botoes-area">
+        <button type="button" class="btn btn-secundario" onclick="voltarParaLista()">Voltar</button>
+        <button type="button" id="btnExcluirProprietario" class="btn btn-perigo">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M9 3h6M7 7h10m1 0v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7m3 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Excluir Proprietário</span>
+        </button>
+        <button type="button" id="btnExcluirTodasBikes" class="btn btn-perigo" title="Exclui todas as bicicletas FORA deste proprietário">Excluir todas as bicicletas</button>
+        <button type="button" class="btn btn-secundario" id="btnGerarCartao">
+          <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="3" y="6" width="18" height="12" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M3 10h18" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <span>Gerar Cartão de Acesso</span>
+        </button>
+        <button type="submit" id="btnSalvar" class="btn btn-primario">Salvar Alterações</button>
+      </div>
+    </form>
+    <hr class="mt-14">
+    <details class="modal-detail" data-key="add-bike">
+      <summary class="section-title">Adicionar Nova Bicicleta</summary>
+      <div class="detail-content">
+      <form id="formNovaBike" class="mt-14">
+        <label for="novaBikeNumero">Número de Identificação</label>
+        <input type="text" id="novaBikeNumero" class="input-padrao" required placeholder="JPR-XXXXXXXXXXXXXX" pattern="JPR-[A-Z0-9]{14}" title="Use o formato JPR-XXXXXXXXXXXXXX (letras maiúsculas e números)" maxlength="18">
+        <button type="button" id="btnGerarNovaBikeNumero" class="btn btn-secundario">Gerar Número</button>
+        <label for="novaBikeTipo">Tipo</label>
+        <select id="novaBikeTipo" class="input-padrao">
+          <option value="">Selecione o Tipo</option>
+          <option value="Mountain Bike">Mountain Bike</option>
+          <option value="Speed">Speed</option>
+          <option value="Urbana">Urbana</option>
+          <option value="Elétrica">Elétrica</option>
+          <option value="Dobrável">Dobrável</option>
+          <option value="Infantil">Infantil</option>
+          <option value="Outro">Outro</option>
+        </select>
+        <label for="novaBikeMarca">Marca</label>
+        <div class="select-search-row">
+          <input type="text" id="novaMarcaSearch" class="select-search" placeholder="Pesquisar marca..." disabled aria-autocomplete="list" aria-haspopup="listbox" aria-controls="novaMarcaSuggestions" aria-expanded="false">
+          <button type="button" id="novaMarcaClear" class="select-clear" disabled>Limpar</button>
+        </div>
+        <div id="novaMarcaSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de marca"></div>
+        <select id="novaBikeMarca" class="input-padrao" required disabled>
+          <option value="">Selecione a Marca</option>
+        </select>
+        <div id="novaMarcaOutroWrap" class="outro-wrap hidden">
+          <label for="novaMarcaOutro">Marca (Outro)</label>
+          <input type="text" id="novaMarcaOutro" class="input-padrao" placeholder="Informe a marca">
+        </div>
+        <!-- Linha (Filtro opcional) -->
+        <label for="novaLinhaSearch">Linha</label>
+        <div id="novaLinhaFilterWrap" class="select-search-row hidden">
+          <input type="text" id="novaLinhaSearch" class="select-search" placeholder="Filtrar linha..." disabled aria-autocomplete="list" aria-haspopup="listbox" aria-controls="novaLinhaSuggestions" aria-expanded="false">
+          <button type="button" id="novaLinhaClear" class="select-clear" disabled>Limpar</button>
+        </div>
+        <div id="novaLinhaSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de linha"></div>
+        <label for="novaBikeModelo">Modelo</label>
+        <div class="select-search-row">
+          <input type="text" id="novaModeloSearch" class="select-search" placeholder="Pesquisar modelo..." disabled aria-autocomplete="list" aria-haspopup="listbox" aria-controls="novaModeloSuggestions" aria-expanded="false">
+          <button type="button" id="novaModeloClear" class="select-clear" disabled>Limpar</button>
+        </div>
+        <div id="novaModeloSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de modelo"></div>
+        <select id="novaBikeModelo" class="input-padrao" required disabled>
+          <option value="">Selecione o Modelo</option>
+        </select>
+        <div id="novaModeloOutroWrap" class="outro-wrap hidden">
+          <label for="novaModeloOutro">Modelo (Outro)</label>
+          <input type="text" id="novaModeloOutro" class="input-padrao" placeholder="Informe o modelo">
+        </div>
+        <label for="novaBikeObs">Observações</label>
+        <textarea id="novaBikeObs" class="input-padrao" rows="2"></textarea>
+        <div class="fotos-uploader">
+          <div class="uploader-row">
+            <label for="novaFotoBike">Foto da Bicicleta</label>
+            <div class="file-control">
+              <input type="file" id="novaFotoBike" accept="image/*" class="hidden-input">
+              <button type="button" id="btnPickNovaFotoBike" class="btn btn-secundario">Escolher arquivo</button>
+              <span class="file-name" id="nomeNovaFotoBike" aria-live="polite" aria-atomic="true">Nenhum arquivo</span>
+            </div>
+          </div>
+          <div class="uploader-row">
+            <label for="novaFotoDono">Foto Dono com Bicicleta</label>
+            <div class="file-control">
+              <input type="file" id="novaFotoDono" accept="image/*" class="hidden-input">
+              <button type="button" id="btnPickNovaFotoDono" class="btn btn-secundario">Escolher arquivo</button>
+              <span class="file-name" id="nomeNovaFotoDono" aria-live="polite" aria-atomic="true">Nenhum arquivo</span>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row mt-14">
+          <button type="submit" class="btn btn-primario">Adicionar</button>
+        </div>
+      </form>
+      </div>
+    </details>
+  </div>
+  <div id="modalCartao" class="modal-overlay">
+    <div class="modal-card">
+      <button class="modal-close" aria-label="Fechar" onclick="document.getElementById('modalCartao').classList.remove('open')">&times;</button>
+      <div id="cartaoAcesso">
+        <img class="bg" src="imagens/cartao-fundo.png" alt="Fundo do Cartão" />
+        <img id="cartaoFoto" src="" alt="Foto do Proprietário" />
+        <div id="cartaoNumeroGrande"></div>
+        <div id="cartaoQR"></div>
+        <div id="cartaoNome"></div>
+        <div id="cartaoInfoBicicleta"></div>
+        <div id="cartaoRodapeTexto">Documento pessoal e intransferível. Em caso de perda, comunique à administração.</div>
+      </div>
+      <div class="btn-row">
+        <button onclick="imprimirCartao()" class="btn-imprimir">Imprimir Cartão</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox e Confirm Modal -->
+  <div id="lightbox" class="lightbox" aria-hidden="true"><img id="lightboxImg" alt="Visualização"></div>
+  <div id="confirmOverlay" class="confirm-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="confirm-modal">
+      <div class="head"><span class="title" id="confirmTitle"></span></div>
+      <div class="body" id="confirmBody"></div>
+      <div class="actions">
+        <button class="btn cancel" id="confirmCancel">Cancelar</button>
+        <button class="btn ok" id="confirmOk">Confirmar</button>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    // Util: ler parâmetros da URL
+    function getParam(name){
+      const u = new URL(window.location.href);
+      return u.searchParams.get(name);
+    }
+
+    // Verifica se há registros de acesso vinculados à bicicleta
+    async function contarRegistrosBike(b){
+      const id = b?.id;
+      if(!id) return 0;
+      // Novo endpoint dedicado
+      try {
+        const dep = await api.get(`/bicicletas/${encodeURIComponent(id)}/dependencias`);
+        const total = (dep && (dep.total ?? dep.count ?? 0)) || 0;
+        return total;
+      } catch(err){
+        console.warn('[ficha] dependencias endpoint indisponível, usando fallback de busca', err?.message||err);
+        // Fallback: busca agregada (menos precisa)
+        try {
+          const termo = String(b?.numero_identificacao || b?.id || '').trim();
+          if(!termo) return 0;
+          const data = await api.get(`/controle-acesso/buscar?termo=${encodeURIComponent(termo)}`);
+          const lista = Array.isArray(data) ? data : [];
+          const match = lista.filter(it => String(it.bicicleta?.id) === String(b?.id));
+          return match.length;
+        } catch(err2){ console.warn('[ficha] Falha no fallback de busca', err2); return 0; }
+      }
+    }
+
+    // =====================
+    // Selects dependentes (Tipo→Marca→Modelo) com busca e 'Outro'
+    // =====================
+    let catalogoBikes = null;
+    let fichaCurrentMarcas = [], fichaCurrentModelos = [];
+    function fichaEls(){
+      return {
+        tipoSel: $('fichaBikeTipo'),
+        marcaSel: $('fichaBikeMarca'),
+        modeloSel: $('fichaBikeModelo'),
+        marcaSearch: $('fichaMarcaSearch'),
+        modeloSearch: $('fichaModeloSearch'),
+        marcaSug: $('fichaMarcaSuggestions'),
+        modeloSug: $('fichaModeloSuggestions'),
+        marcaClear: $('fichaMarcaClear'),
+        modeloClear: $('fichaModeloClear'),
+        marcaOutroWrap: $('fichaMarcaOutroWrap'),
+        modeloOutroWrap: $('fichaModeloOutroWrap'),
+        marcaOutroInp: $('fichaMarcaOutro'),
+        modeloOutroInp: $('fichaModeloOutro'),
+      };
+    }
+    function resetSelect(el, placeholder, disabled=true){ if(!el) return; el.innerHTML=''; el.appendChild(new Option(placeholder, '')); if(disabled) el.setAttribute('disabled',''); else el.removeAttribute('disabled'); }
+    function habilitarBusca(el, enabled){ if(!el) return; if(enabled){ el.removeAttribute('disabled'); } else { el.setAttribute('disabled',''); el.value=''; } }
+    function habilitarClear(btn, enabled){ if(!btn) return; if(enabled){ btn.removeAttribute('disabled'); } else { btn.setAttribute('disabled',''); } }
+    function norm(s){ return (s||'').toLowerCase(); }
+    async function initBikeCatalog(){
+      if(catalogoBikes) return;
+      try {
+        const resp = await fetch('data/catalogo-bikes.json', { cache: 'no-store' });
+        if(resp.ok){ const data = await resp.json(); if(data && typeof data==='object'){ catalogoBikes = data; return; } }
+      } catch(_) {}
+      catalogoBikes = {}; // fallback vazio; usuário pode usar 'Outro'
+    }
+    function aplicarFiltroSelect(selectEl, base, query, placeholder, incluirOutro){
+      resetSelect(selectEl, placeholder, false);
+      const q = norm(query);
+      const lista = q ? base.filter(v => norm(v).includes(q)) : base;
+      lista.forEach(v => selectEl.appendChild(new Option(v, v)));
+      if(incluirOutro) selectEl.appendChild(new Option('Outro', 'Outro'));
+    }
+    function popularMarcasPorTipoFicha(tipo){
+      const { marcaSel, modeloSel, marcaSearch, marcaClear, modeloSearch, modeloClear, marcaSug, modeloSug, marcaOutroWrap, modeloOutroWrap, marcaOutroInp, modeloOutroInp } = fichaEls();
+      resetSelect(marcaSel, 'Selecione a Marca', true);
+      resetSelect(modeloSel, 'Selecione o Modelo', true);
+      if(!catalogoBikes || !catalogoBikes[tipo]){ habilitarBusca(marcaSearch, false); habilitarClear(marcaClear, false); habilitarBusca(modeloSearch, false); habilitarClear(modeloClear, false); return; }
+      fichaCurrentMarcas = Object.keys(catalogoBikes[tipo] || {}).sort();
+      fichaCurrentMarcas.forEach(m => marcaSel.appendChild(new Option(m, m)));
+      marcaSel.appendChild(new Option('Outro','Outro'));
+      marcaSel.removeAttribute('disabled');
+      habilitarBusca(marcaSearch, true); habilitarClear(marcaClear, true);
+      habilitarBusca(modeloSearch, false); habilitarClear(modeloClear, false);
+      if(marcaSug) marcaSug.classList.remove('show'); if(modeloSug) modeloSug.classList.remove('show');
+      marcaOutroWrap.classList.add('hidden'); marcaOutroInp.removeAttribute('required');
+      modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required');
+    }
+    function popularModelosPorMarcaFicha(tipo, marca){
+      const { modeloSel, modeloSearch, modeloClear, modeloSug, modeloOutroWrap, modeloOutroInp, marcaSug } = fichaEls();
+      resetSelect(modeloSel, 'Selecione o Modelo', true);
+      let entry = (catalogoBikes && catalogoBikes[tipo]) ? catalogoBikes[tipo][marca] : [];
+      let modelos = [];
+      if(Array.isArray(entry)) modelos = entry;
+      else if(entry && Array.isArray(entry.models)) modelos = entry.models;
+      else if(entry && entry.lines && typeof entry.lines==='object') modelos = Object.values(entry.lines).flat();
+      fichaCurrentModelos = (modelos || []).slice();
+      fichaCurrentModelos.forEach(md => modeloSel.appendChild(new Option(md, md)));
+      modeloSel.appendChild(new Option('Outro','Outro'));
+      modeloSel.removeAttribute('disabled');
+      habilitarBusca(modeloSearch, true); habilitarClear(modeloClear, true);
+      if(modeloSug) modeloSug.classList.remove('show'); if(marcaSug) marcaSug.classList.remove('show');
+      modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required');
+    }
+    function setupBikeCatalogControls(){
+      const { tipoSel, marcaSel, modeloSel, marcaSearch, modeloSearch, marcaClear, modeloClear, marcaOutroWrap, modeloOutroWrap, marcaOutroInp, modeloOutroInp } = fichaEls();
+      if(!tipoSel) return;
+      tipoSel.addEventListener('change', ()=>{
+        const tipo = tipoSel.value;
+        if(!tipo){ resetSelect(marcaSel,'Selecione a Marca',true); resetSelect(modeloSel,'Selecione o Modelo',true); habilitarBusca(marcaSearch,false); habilitarClear(marcaClear,false); habilitarBusca(modeloSearch,false); habilitarClear(modeloClear,false); marcaOutroWrap.classList.add('hidden'); marcaOutroInp.removeAttribute('required'); modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required'); return; }
+        if(tipo==='Outro'){
+          // Desabilita selects e abre campos livres
+          resetSelect(marcaSel,'Selecione a Marca',true);
+          resetSelect(modeloSel,'Selecione o Modelo',true);
+          habilitarBusca(marcaSearch,false); habilitarClear(marcaClear,false);
+          habilitarBusca(modeloSearch,false); habilitarClear(modeloClear,false);
+          marcaOutroWrap.classList.remove('hidden'); marcaOutroInp.setAttribute('required','');
+          modeloOutroWrap.classList.remove('hidden'); modeloOutroInp.setAttribute('required','');
+          return;
+        }
+        marcaOutroWrap.classList.add('hidden'); marcaOutroInp.removeAttribute('required');
+        modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required');
+        popularMarcasPorTipoFicha(tipo);
+      });
+      marcaSel.addEventListener('change', ()=>{
+        const tipo = tipoSel.value; const marca = marcaSel.value;
+        if(!tipo || !marca){ resetSelect(modeloSel,'Selecione o Modelo',true); modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required'); habilitarBusca(modeloSearch,false); habilitarClear(modeloClear,false); return; }
+        if(marca==='Outro'){
+          resetSelect(modeloSel,'Selecione o Modelo',true); habilitarBusca(modeloSearch,false); habilitarClear(modeloClear,false);
+          // Mostrar campo livre de marca; modelo também livre
+          marcaOutroWrap.classList.remove('hidden'); marcaOutroInp.setAttribute('required','');
+          modeloOutroWrap.classList.remove('hidden'); modeloOutroInp.setAttribute('required','');
+          return;
+        }
+        marcaOutroWrap.classList.add('hidden'); marcaOutroInp.removeAttribute('required');
+        popularModelosPorMarcaFicha(tipo, marca);
+        modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required');
+      });
+      if(marcaSearch){ marcaSearch.addEventListener('input', ()=>{ if(marcaSel.hasAttribute('disabled')) return; aplicarFiltroSelect(marcaSel, fichaCurrentMarcas, marcaSearch.value, 'Selecione a Marca', true); }); }
+      if(modeloSearch){ modeloSearch.addEventListener('input', ()=>{ if(modeloSel.hasAttribute('disabled')) return; aplicarFiltroSelect(modeloSel, fichaCurrentModelos, modeloSearch.value, 'Selecione o Modelo', true); }); }
+      if(marcaClear){ marcaClear.addEventListener('click', ()=>{ marcaSearch.value=''; aplicarFiltroSelect(marcaSel, fichaCurrentMarcas, '', 'Selecione a Marca', true); }); }
+      if(modeloClear){ modeloClear.addEventListener('click', ()=>{ modeloSearch.value=''; aplicarFiltroSelect(modeloSel, fichaCurrentModelos, '', 'Selecione o Modelo', true); }); }
+    }
+
+    // =====================
+    // Nova Bicicleta: Tipo→Marca→Modelo
+    // =====================
+    let novaCurrentMarcas = [], novaCurrentModelos = [];
+    function novaEls(){
+      return {
+        tipoSel: $('novaBikeTipo'),
+        marcaSel: $('novaBikeMarca'),
+        modeloSel: $('novaBikeModelo'),
+        marcaSearch: $('novaMarcaSearch'),
+        modeloSearch: $('novaModeloSearch'),
+        marcaSug: $('novaMarcaSuggestions'),
+        modeloSug: $('novaModeloSuggestions'),
+        marcaClear: $('novaMarcaClear'),
+        modeloClear: $('novaModeloClear'),
+        marcaOutroWrap: $('novaMarcaOutroWrap'),
+        modeloOutroWrap: $('novaModeloOutroWrap'),
+        marcaOutroInp: $('novaMarcaOutro'),
+        modeloOutroInp: $('novaModeloOutro'),
+      };
+    }
+    function popularMarcasPorTipoNova(tipo){
+      const { marcaSel, modeloSel, marcaSearch, marcaClear, modeloSearch, modeloClear, marcaSug, modeloSug, marcaOutroWrap, modeloOutroWrap, marcaOutroInp, modeloOutroInp } = novaEls();
+      resetSelect(marcaSel, 'Selecione a Marca', true);
+      resetSelect(modeloSel, 'Selecione o Modelo', true);
+      if(!catalogoBikes || !catalogoBikes[tipo]){ habilitarBusca(marcaSearch, false); habilitarClear(marcaClear, false); habilitarBusca(modeloSearch, false); habilitarClear(modeloClear, false); return; }
+      novaCurrentMarcas = Object.keys(catalogoBikes[tipo] || {}).sort();
+      novaCurrentMarcas.forEach(m => marcaSel.appendChild(new Option(m, m)));
+      marcaSel.appendChild(new Option('Outro','Outro'));
+      marcaSel.removeAttribute('disabled');
+      habilitarBusca(marcaSearch, true); habilitarClear(marcaClear, true);
+      habilitarBusca(modeloSearch, false); habilitarClear(modeloClear, false);
+      if(marcaSug) marcaSug.classList.remove('show'); if(modeloSug) modeloSug.classList.remove('show');
+      marcaOutroWrap.classList.add('hidden'); marcaOutroInp.removeAttribute('required');
+      modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required');
+    }
+    function popularModelosPorMarcaNova(tipo, marca){
+      const { modeloSel, modeloSearch, modeloClear, modeloSug, modeloOutroWrap, modeloOutroInp, marcaSug } = novaEls();
+      resetSelect(modeloSel, 'Selecione o Modelo', true);
+      let entry = (catalogoBikes && catalogoBikes[tipo]) ? catalogoBikes[tipo][marca] : [];
+      let modelos = [];
+      if(Array.isArray(entry)) modelos = entry;
+      else if(entry && Array.isArray(entry.models)) modelos = entry.models;
+      else if(entry && entry.lines && typeof entry.lines==='object') modelos = Object.values(entry.lines).flat();
+      novaCurrentModelos = (modelos || []).slice();
+      novaCurrentModelos.forEach(md => modeloSel.appendChild(new Option(md, md)));
+      modeloSel.appendChild(new Option('Outro','Outro'));
+      modeloSel.removeAttribute('disabled');
+      habilitarBusca(modeloSearch, true); habilitarClear(modeloClear, true);
+      if(modeloSug) modeloSug.classList.remove('show'); if(marcaSug) marcaSug.classList.remove('show');
+      modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required');
+    }
+    function setupNovaCatalogControls(){
+      const { tipoSel, marcaSel, modeloSel, marcaSearch, modeloSearch, marcaClear, modeloClear, marcaOutroWrap, modeloOutroWrap, marcaOutroInp, modeloOutroInp } = novaEls();
+      if(!tipoSel) return;
+      tipoSel.addEventListener('change', ()=>{
+        const tipo = tipoSel.value;
+        if(!tipo){ resetSelect(marcaSel,'Selecione a Marca',true); resetSelect(modeloSel,'Selecione o Modelo',true); habilitarBusca(marcaSearch,false); habilitarClear(marcaClear,false); habilitarBusca(modeloSearch,false); habilitarClear(modeloClear,false); marcaOutroWrap.classList.add('hidden'); marcaOutroInp.removeAttribute('required'); modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required'); return; }
+        if(tipo==='Outro'){
+          resetSelect(marcaSel,'Selecione a Marca',true);
+          resetSelect(modeloSel,'Selecione o Modelo',true);
+          habilitarBusca(marcaSearch,false); habilitarClear(marcaClear,false);
+          habilitarBusca(modeloSearch,false); habilitarClear(modeloClear,false);
+          marcaOutroWrap.classList.remove('hidden'); marcaOutroInp.setAttribute('required','');
+          modeloOutroWrap.classList.remove('hidden'); modeloOutroInp.setAttribute('required','');
+          return;
+        }
+        marcaOutroWrap.classList.add('hidden'); marcaOutroInp.removeAttribute('required');
+        modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required');
+        popularMarcasPorTipoNova(tipo);
+      });
+      marcaSel.addEventListener('change', ()=>{
+        const tipo = tipoSel.value; const marca = marcaSel.value;
+        if(!tipo || !marca){ resetSelect(modeloSel,'Selecione o Modelo',true); modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required'); habilitarBusca(modeloSearch,false); habilitarClear(modeloClear,false); return; }
+        if(marca==='Outro'){
+          resetSelect(modeloSel,'Selecione o Modelo',true); habilitarBusca(modeloSearch,false); habilitarClear(modeloClear,false);
+          marcaOutroWrap.classList.remove('hidden'); marcaOutroInp.setAttribute('required','');
+          modeloOutroWrap.classList.remove('hidden'); modeloOutroInp.setAttribute('required','');
+          return;
+        }
+        marcaOutroWrap.classList.add('hidden'); marcaOutroInp.removeAttribute('required');
+        popularModelosPorMarcaNova(tipo, marca);
+        modeloOutroWrap.classList.add('hidden'); modeloOutroInp.removeAttribute('required');
+      });
+      if(marcaSearch){ marcaSearch.addEventListener('input', ()=>{ if(marcaSel.hasAttribute('disabled')) return; aplicarFiltroSelect(marcaSel, novaCurrentMarcas, marcaSearch.value, 'Selecione a Marca', true); }); }
+      if(modeloSearch){ modeloSearch.addEventListener('input', ()=>{ if(modeloSel.hasAttribute('disabled')) return; aplicarFiltroSelect(modeloSel, novaCurrentModelos, modeloSearch.value, 'Selecione o Modelo', true); }); }
+      if(marcaClear){ marcaClear.addEventListener('click', ()=>{ marcaSearch.value=''; aplicarFiltroSelect(marcaSel, novaCurrentMarcas, '', 'Selecione a Marca', true); }); }
+      if(modeloClear){ modeloClear.addEventListener('click', ()=>{ modeloSearch.value=''; aplicarFiltroSelect(modeloSel, novaCurrentModelos, '', 'Selecione o Modelo', true); }); }
+    }
+
+    // Estado
+    let estado = { proprietario: null, bicicletas: [], bikeAtivaId: null };
+
+    // Helpers de UI
+    const $ = (id)=> document.getElementById(id);
+    function preencherProprietario(p={}){
+      if(p.id) $('proprietarioId').value = p.id;
+      $('fichaNome').value = p.nome_completo || '';
+      $('fichaEmail').value = p.email || '';
+      $('fichaCpf').value = p.cpf || '';
+      $('fichaContato').value = p.contato || '';
+      $('fichaEndereco').value = p.endereco || '';
+      if(p.foto_proprietario_url){ const img=$('previewFotoProprietario'); img.src=p.foto_proprietario_url; img.classList.remove('hidden'); }
+    }
+    function preencherBike(b={}){
+      $('bicicletaId').value = b.id || '';
+      $('fichaBikeNumeroID').value = (b.numero_identificacao || '').toUpperCase();
+      const tipoSel = document.getElementById('fichaBikeTipo');
+      const marcaSel = document.getElementById('fichaBikeMarca');
+      const modeloSel = document.getElementById('fichaBikeModelo');
+      const marcaOutroWrap = document.getElementById('fichaMarcaOutroWrap');
+      const modeloOutroWrap = document.getElementById('fichaModeloOutroWrap');
+      const marcaOutroInp = document.getElementById('fichaMarcaOutro');
+      const modeloOutroInp = document.getElementById('fichaModeloOutro');
+      const tiposValidos = ['Mountain Bike','Speed','Urbana','Elétrica','Dobrável','Infantil'];
+      const tipoRaw = b.tipo_bike || '';
+      const tipoVal = tiposValidos.includes(tipoRaw) ? tipoRaw : (tipoRaw ? 'Outro' : '');
+      if(tipoSel){ tipoSel.value = tipoVal || ''; tipoSel.dispatchEvent(new Event('change')); }
+      if(tipoVal === 'Outro'){
+        if(marcaOutroWrap) marcaOutroWrap.classList.remove('hidden');
+        if(modeloOutroWrap) modeloOutroWrap.classList.remove('hidden');
+        if(marcaOutroInp) marcaOutroInp.value = b.marca || '';
+        if(modeloOutroInp) modeloOutroInp.value = b.modelo || '';
+      } else if (tipoVal){
+        // Marca
+        let marcaOK = false;
+        if(b.marca && marcaSel){
+          const opt = Array.from(marcaSel.options).find(o => o.value === b.marca);
+          if(opt){ marcaSel.value = b.marca; marcaSel.dispatchEvent(new Event('change')); marcaOK = true; }
+        }
+        if(!marcaOK && marcaSel){ marcaSel.value = 'Outro'; marcaSel.dispatchEvent(new Event('change')); if(marcaOutroWrap) marcaOutroWrap.classList.remove('hidden'); if(marcaOutroInp) marcaOutroInp.value = b.marca || ''; }
+        // Modelos
+        if(marcaSel && marcaSel.value && marcaSel.value!=='Outro' && modeloSel){
+          let modeloOK = false;
+          if(b.modelo){ const optM = Array.from(modeloSel.options).find(o => o.value === b.modelo); if(optM){ modeloSel.value = b.modelo; modeloSel.dispatchEvent(new Event('change')); modeloOK = true; } }
+          if(!modeloOK){ modeloSel.value = 'Outro'; modeloSel.dispatchEvent(new Event('change')); if(modeloOutroWrap) modeloOutroWrap.classList.remove('hidden'); if(modeloOutroInp) modeloOutroInp.value = b.modelo || ''; }
+        } else {
+          if(modeloOutroWrap) modeloOutroWrap.classList.remove('hidden'); if(modeloOutroInp) modeloOutroInp.value = b.modelo || '';
+        }
+      }
+      $('fichaBikeObs').value = b.observacoes_bike || b.observacoes || '';
+      if(b.foto_bicicleta_url){ const img=$('previewFotoBicicleta'); img.src=b.foto_bicicleta_url; img.classList.remove('hidden'); }
+    }
+    // Paginação e seletor de bicicletas
+    function popularSelectBikes(list, selecionadaId){
+      if(!estado.pg) estado.pg = { page: 1, size: 10 };
+      const total = list.length;
+      const pageCount = Math.max(1, Math.ceil(total / estado.pg.size));
+      if(estado.pg.page > pageCount) estado.pg.page = pageCount;
+      const start = (estado.pg.page - 1) * estado.pg.size;
+      const slice = list.slice(start, start + estado.pg.size);
+      const sel = $('selectBicicleta');
+      sel.innerHTML = '';
+      slice.forEach(b => {
+        const opt = document.createElement('option');
+        const label = [b.numero_identificacao, b.marca, b.modelo].filter(Boolean).join(' · ');
+        opt.value = b.id; opt.textContent = label || `Bicicleta ${b.id}`;
+        sel.appendChild(opt);
+      });
+      // Selecionar a ativa quando estiver visível, senão selecionar a primeira da página
+      let toSelect = slice.find(b => String(b.id)===String(selecionadaId)) || slice[0] || null;
+      if(toSelect){ sel.value = String(toSelect.id); estado.bikeAtivaId = toSelect.id; preencherBike(toSelect); }
+      const prev = $('bikePrev'), next = $('bikeNext'), lbl = $('bikePageLabel');
+      if(prev && next && lbl){
+        lbl.textContent = `${estado.pg.page}/${pageCount}`;
+        prev.disabled = estado.pg.page<=1; next.disabled = estado.pg.page>=pageCount;
+        prev.onclick = ()=>{ if(estado.pg.page>1){ estado.pg.page--; popularSelectBikes(estado.bicicletas, estado.bikeAtivaId); } };
+        next.onclick = ()=>{ if(estado.pg.page<pageCount){ estado.pg.page++; popularSelectBikes(estado.bicicletas, estado.bikeAtivaId); } };
+      }
+      sel.onchange = ()=>{
+        const idSel = sel.value;
+        const b = estado.bicicletas.find(x => String(x.id)===String(idSel));
+        if(b){ estado.bikeAtivaId = idSel; preencherBike(b); }
+      };
+    }
+
+    // Habilita/desabilita exclusão de proprietário conforme existência de bicicletas
+    function updateExcluirProprietarioBtn(){
+      const btn = $('btnExcluirProprietario');
+      const all = (estado && Array.isArray(estado.bicicletas)) ? estado.bicicletas : [];
+      const has = all.length > 0;
+      if(btn){
+        btn.disabled = has;
+        btn.title = has ? `Exclua as ${all.length} bicicleta(s) antes de excluir o proprietário.` : '';
+      }
+      const btnAll = $('btnExcluirTodasBikes');
+      if(btnAll){
+        btnAll.disabled = !has;
+        btnAll.title = has ? 'Exclui todas as bicicletas FORA deste proprietário' : 'Nenhuma bicicleta para excluir';
+      }
+    }
+
+    // Carregar dados iniciais
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Persistência de estado das seções (details/summary)
+      (function initDetailsPersistence(){
+        try {
+          const dets = document.querySelectorAll('.container-ficha .modal-detail[data-key]');
+          dets.forEach(d => {
+            const key = d.getAttribute('data-key');
+            const saved = localStorage.getItem('ficha_details_open_' + key);
+            if(saved === '0') d.removeAttribute('open');
+            else if(saved === '1') d.setAttribute('open','');
+            d.addEventListener('toggle', ()=>{
+              const isOpen = d.hasAttribute('open');
+              localStorage.setItem('ficha_details_open_' + key, isOpen ? '1' : '0');
+            });
+          });
+        } catch(_){}
+      })();
+      const propId = getParam('id');
+      const bikeId = getParam('bike');
+      if(!propId){ return; }
+
+      // 1) Tentar cache salvo pela busca rápida
+      let proprietario = null, bicicleta = null, bicicletas = [];
+      try {
+        const cacheRaw = sessionStorage.getItem('ficha_proprietario_cache');
+        const cache = cacheRaw ? JSON.parse(cacheRaw) : {};
+        const item = cache[String(propId)] || null;
+        if(item){
+          proprietario = item.proprietario || null;
+          // Se houver bikeId, tentar achar no array que pode ter vindo, senão usar item.bicicleta
+          if(Array.isArray(item.bicicletas)){
+            bicicletas = item.bicicletas; 
+            bicicleta = bicicletas.find(b => String(b.id) === String(bikeId)) || item.bicicleta || bicicletas[0] || null;
+          } else {
+            bicicleta = item.bicicleta || null;
+          }
+        }
+      } catch(e){ console.warn('Cache inválido para ficha:', e); }
+
+      // 2) Buscar dados atualizados do proprietário
+      try { proprietario = await api.get(`/proprietarios/${encodeURIComponent(propId)}`); } catch(e){ console.warn('Falha ao buscar proprietário:', e); }
+      // 3) Buscar bicicletas atuais
+      try {
+        const bikes = await api.get(`/proprietarios/${encodeURIComponent(propId)}/bicicletas`);
+        if(Array.isArray(bikes)) bicicletas = bikes;
+      } catch(e){ console.warn('Falha ao buscar bicicletas do proprietário:', e); }
+      // Seleção da bike ativa
+      if(!bicicleta){
+        bicicleta = (bikeId && bicicletas.find(b => String(b.id)===String(bikeId))) || bicicletas[0] || null;
+      }
+
+      // 4) Preencher UI
+      estado.proprietario = proprietario || {};
+      estado.bicicletas = bicicletas || [];
+      estado.bikeAtivaId = bicicleta ? bicicleta.id : null;
+      preencherProprietario(estado.proprietario);
+      // Carregar catálogo e preparar controles de Tipo→Marca→Modelo (módulo compartilhado)
+      await CatalogoBikesUI.loadCatalog();
+      // Bind principal
+      CatalogoBikesUI.setupDependentSelects({
+        tipoSel: '#fichaBikeTipo',
+        marcaSel: '#fichaBikeMarca',
+        modeloSel: '#fichaBikeModelo',
+        marcaSearch: '#fichaMarcaSearch',
+        modeloSearch: '#fichaModeloSearch',
+        marcaClear: '#fichaMarcaClear',
+        modeloClear: '#fichaModeloClear',
+        marcaOutroWrap: '#fichaMarcaOutroWrap',
+        modeloOutroWrap: '#fichaModeloOutroWrap',
+        marcaOutroInput: '#fichaMarcaOutro',
+        modeloOutroInput: '#fichaModeloOutro',
+        marcaSuggestions: '#fichaMarcaSuggestions',
+        modeloSuggestions: '#fichaModeloSuggestions',
+        includeOutroOption: true,
+        includeLinhaFilter: true,
+        linhaFilterWrap: '#fichaLinhaFilterWrap',
+        linhaSearch: '#fichaLinhaSearch',
+        linhaClear: '#fichaLinhaClear',
+        linhaSuggestions: '#fichaLinhaSuggestions',
+      });
+      // Bind Nova Bike
+      CatalogoBikesUI.setupDependentSelects({
+        tipoSel: '#novaBikeTipo',
+        marcaSel: '#novaBikeMarca',
+        modeloSel: '#novaBikeModelo',
+        marcaSearch: '#novaMarcaSearch',
+        modeloSearch: '#novaModeloSearch',
+        marcaClear: '#novaMarcaClear',
+        modeloClear: '#novaModeloClear',
+        marcaOutroWrap: '#novaMarcaOutroWrap',
+        modeloOutroWrap: '#novaModeloOutroWrap',
+        marcaOutroInput: '#novaMarcaOutro',
+        modeloOutroInput: '#novaModeloOutro',
+        marcaSuggestions: '#novaMarcaSuggestions',
+        modeloSuggestions: '#novaModeloSuggestions',
+        includeOutroOption: true,
+        includeLinhaFilter: true,
+        linhaFilterWrap: '#novaLinhaFilterWrap',
+        linhaSearch: '#novaLinhaSearch',
+        linhaClear: '#novaLinhaClear',
+        linhaSuggestions: '#novaLinhaSuggestions',
+      });
+      if(estado.bicicletas.length){
+        popularSelectBikes(estado.bicicletas, estado.bikeAtivaId);
+        if(bicicleta) preencherBike(bicicleta);
+      }
+      updateExcluirProprietarioBtn();
+
+      // Máscaras e validações
+      const cpfEl = $('fichaCpf');
+      const telEl = $('fichaContato');
+      cpfEl.addEventListener('input', ()=> cpfEl.value = maskCPF(cpfEl.value));
+      telEl.addEventListener('input', ()=> telEl.value = maskPhone(telEl.value));
+      cpfEl.addEventListener('blur', ()=>{ const raw = cpfEl.value; if(raw && !isCPFValid(raw)){ toast('CPF inválido', 'err'); cpfEl.setAttribute('aria-invalid','true'); } else { cpfEl.removeAttribute('aria-invalid'); } });
+
+      // Uppercase automático do número da bicicleta
+      const numEl = $('fichaBikeNumeroID');
+      if(numEl){
+        numEl.addEventListener('input', ()=>{ if(numEl.value) numEl.value = numEl.value.toUpperCase(); });
+        numEl.addEventListener('blur', ()=>{ if(numEl.value) numEl.value = numEl.value.toUpperCase(); });
+      }
+
+      // Nova Bike: gerar número e uppercase automático
+      const novaNumEl = $('novaBikeNumero');
+      const btnGerarNova = $('btnGerarNovaBikeNumero');
+      if(novaNumEl){
+        novaNumEl.addEventListener('input', ()=>{ if(novaNumEl.value) novaNumEl.value = novaNumEl.value.toUpperCase(); });
+        novaNumEl.addEventListener('blur', ()=>{ if(novaNumEl.value) novaNumEl.value = novaNumEl.value.toUpperCase(); });
+      }
+      function gerarCodigoAlfa(){
+        const prefixo = 'JPR-';
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let codigo = '';
+        for(let i=0;i<14;i++){ codigo += chars.charAt(Math.floor(Math.random()*chars.length)); }
+        return prefixo + codigo;
+      }
+      if(btnGerarNova){ btnGerarNova.addEventListener('click', ()=>{ novaNumEl.value = gerarCodigoAlfa(); novaNumEl.dispatchEvent(new Event('input')); }); }
+
+      // Lightbox nas prévias
+      setupLightbox();
+
+      // 5) Upload de foto do proprietário
+      $('fichaFotoProprietario').addEventListener('change', async (e)=>{
+        const file = e.target.files && e.target.files[0];
+        if(!file) return;
+        try {
+          await api.upload(`/proprietarios/${encodeURIComponent(propId)}/foto`, { fotoProprietario: file });
+          // Recarregar imagem
+          const novo = await api.get(`/proprietarios/${encodeURIComponent(propId)}`);
+          if(novo?.foto_proprietario_url){ const img=$('previewFotoProprietario'); img.src=novo.foto_proprietario_url; img.classList.remove('hidden'); }
+          toast('Foto do proprietário atualizada', 'ok');
+        } catch(err){ alert('Falha ao atualizar foto do proprietário: ' + err.message); }
+      });
+      // UI: file-control para proprietario
+      bindFileControl('fichaFotoProprietario','btnPickFotoProprietario','nomeFotoProprietario');
+
+      // 6) Fotos de bicicleta (ainda não suportado pelo backend)
+      $('fichaFotoBicicleta').addEventListener('change', async (e)=>{
+        const bid = $('bicicletaId').value; const file = e.target.files && e.target.files[0];
+        if(!bid || !file){ toast('Selecione uma bicicleta', 'err'); return; }
+        try {
+          const res = await api.upload(`/bicicletas/${encodeURIComponent(bid)}/foto`, { fotoBicicleta: file });
+          if(res?.foto_bicicleta_url){ const img=$('previewFotoBicicleta'); img.src=res.foto_bicicleta_url; img.classList.remove('hidden'); }
+          toast('Foto da bicicleta atualizada', 'ok');
+        } catch(err){ toast('Falha ao atualizar foto da bicicleta: ' + (err.message||err), 'err'); }
+      });
+      // UI: file-control para bike e dono+bike
+      bindFileControl('fichaFotoBicicleta','btnPickFotoBike','nomeFotoBike');
+      $('fichaFotoDonoComBicicleta').addEventListener('change', async (e)=>{
+        const bid = $('bicicletaId').value; const file = e.target.files && e.target.files[0];
+        if(!bid || !file){ toast('Selecione uma bicicleta', 'err'); return; }
+        try {
+          const res = await api.upload(`/bicicletas/${encodeURIComponent(bid)}/foto-dono`, { fotoDonoComBicicleta: file });
+          if(res?.foto_dono_com_bicicleta_url){ const img=$('previewFotoDonoComBicicleta'); img.src=res.foto_dono_com_bicicleta_url; img.classList.remove('hidden'); }
+          toast('Foto do dono com bicicleta atualizada', 'ok');
+        } catch(err){ toast('Falha ao atualizar foto do dono com bicicleta: ' + (err.message||err), 'err'); }
+      });
+      bindFileControl('fichaFotoDonoComBicicleta','btnPickFotoDonoBike','nomeFotoDonoBike');
+
+      // 7) Gerar Cartão de Acesso
+      $('btnGerarCartao').addEventListener('click', ()=>{
+        try {
+          const nome = $('fichaNome').value || '—';
+          const num = $('fichaBikeNumeroID').value || '—';
+          const marca = ($('fichaBikeMarca').value === 'Outro' ? ($('fichaMarcaOutro').value || '') : ($('fichaBikeMarca').value || ''));
+          const modelo = ($('fichaBikeModelo').value === 'Outro' ? ($('fichaModeloOutro').value || '') : ($('fichaBikeModelo').value || ''));
+          const infoBike = [marca, modelo].filter(Boolean).join(' ');
+          const fotoSrc = $('previewFotoProprietario').src || '';
+          $('cartaoNome').textContent = nome;
+          $('cartaoInfoBicicleta').textContent = infoBike;
+          $('cartaoNumeroGrande').textContent = num;
+          if(fotoSrc) $('cartaoFoto').src = fotoSrc;
+          const qrEl = $('cartaoQR'); qrEl.innerHTML = '';
+          const payload = JSON.stringify({ proprietario_id: propId, bicicleta_id: $('bicicletaId').value || null, numero: num, nome });
+          new QRCode(qrEl, { text: payload, width: 56, height: 56 });
+          $('modalCartao').classList.add('open');
+        } catch(e){ alert('Falha ao gerar cartão: ' + e.message); }
+      });
+
+      // 8) Submit (salvar alterações)
+      $('formFichaProprietario').addEventListener('submit', async (ev)=>{
+        ev.preventDefault();
+        const pid = $('proprietarioId').value;
+        const bid = $('bicicletaId').value;
+        const btnSalvar = $('btnSalvar');
+        const oldSalvarHtml = btnSalvar ? btnSalvar.innerHTML : '';
+        if(btnSalvar){ btnSalvar.disabled = true; btnSalvar.setAttribute('aria-busy','true'); btnSalvar.innerHTML = 'Salvando...'; }
+        try {
+          // Proprietário
+          const dadosProp = {
+            nome_completo: $('fichaNome').value.trim(),
+            cpf: $('fichaCpf').value.trim(),
+            email: $('fichaEmail').value.trim() || null,
+            contato: $('fichaContato').value.trim() || null,
+            endereco: $('fichaEndereco').value.trim() || null,
+          };
+          if(!dadosProp.nome_completo || !dadosProp.cpf){ alert('Preencha Nome e CPF do proprietário.'); return; }
+          await api.put(`/proprietarios/${encodeURIComponent(pid)}`, dadosProp);
+
+          // Bicicleta
+          if(bid){
+            const bikeAtual = (estado.bicicletas||[]).find(x => String(x.id)===String(bid)) || {};
+            const tipoVal = $('fichaBikeTipo').value.trim();
+            let marcaVal = $('fichaBikeMarca').value.trim();
+            if(marcaVal==='Outro') marcaVal = ($('fichaMarcaOutro').value || '').trim();
+            let modeloVal = $('fichaBikeModelo').value.trim();
+            if(modeloVal==='Outro') modeloVal = ($('fichaModeloOutro').value || '').trim();
+            const dadosBikeInputs = {
+              numero_identificacao: $('fichaBikeNumeroID').value.trim().toUpperCase(),
+              tipo_bike: tipoVal,
+              marca: marcaVal,
+              modelo: modeloVal,
+              observacoes_bike: $('fichaBikeObs').value.trim(),
+            };
+            const dadosBike = {
+              numero_identificacao: dadosBikeInputs.numero_identificacao || bikeAtual.numero_identificacao || '',
+              tipo_bike: dadosBikeInputs.tipo_bike || bikeAtual.tipo_bike || '',
+              marca: dadosBikeInputs.marca || bikeAtual.marca || '',
+              modelo: dadosBikeInputs.modelo || bikeAtual.modelo || '',
+              observacoes_bike: dadosBikeInputs.observacoes_bike || bikeAtual.observacoes_bike || bikeAtual.observacoes || '',
+            };
+            const getAtual = (k)=>{
+              if(k==='observacoes_bike') return (bikeAtual.observacoes_bike || bikeAtual.observacoes || '');
+              return (bikeAtual[k] || '');
+            };
+            const keysCmp = ['numero_identificacao','tipo_bike','marca','modelo','observacoes_bike'];
+            const changedKeys = keysCmp.filter(k => String((dadosBike[k]||'').trim()) !== String((getAtual(k)||'').trim()));
+            const hasDiff = changedKeys.length>0;
+            if(hasDiff){
+              const urlBike = `/bicicletas/${encodeURIComponent(bid)}`;
+              // 1) Tentar apenas campos alterados
+              const diffPayload = Object.fromEntries(changedKeys.map(k=>[k, dadosBike[k]]));
+              console.debug('[ficha] PUT diffPayload', diffPayload);
+              try {
+                await api.put(urlBike, diffPayload);
+              } catch(err1){
+                console.warn('[ficha] PUT diff falhou, tentando chaves alternativas (numero_identificacao/observacoes_bike).', err1.status, err1.message, err1.payload);
+                // 2) Tentar com chaves alternativas usadas no POST de criação
+                const altPayload = {};
+                changedKeys.forEach(k=>{
+                  if(k==='numero_identificacao') altPayload['numero_identificacao'] = dadosBike[k];
+                  else if(k==='observacoes_bike') altPayload['observacoes_bike'] = dadosBike[k];
+                  else altPayload[k] = dadosBike[k];
+                });
+                try {
+                  console.debug('[ficha] PUT altPayload', altPayload);
+                  await api.put(urlBike, altPayload);
+                } catch(err2){
+                  console.warn('[ficha] PUT alt falhou, tentando payload mínimo (comprovadamente aceito em detalhe-registro.js)', err2);
+                  // 3) Tentar payload mínimo (comprovadamente aceito em detalhe-registro.js)
+                  const safePayload = {};
+                  if(changedKeys.includes('marca')) safePayload.marca = dadosBike.marca;
+                  if(changedKeys.includes('modelo')) safePayload.modelo = dadosBike.modelo;
+                  if(Object.keys(safePayload).length){
+                    console.debug('[ficha] PUT safePayload', safePayload);
+                    await api.put(urlBike, safePayload);
+                  } else {
+                    // Última tentativa: se apenas numero_identificacao mudou, tentar isolado
+                    if(changedKeys.length===1 && changedKeys[0]==='numero_identificacao'){
+                      try { await api.put(urlBike, { numero_identificacao: dadosBike.numero_identificacao }); }
+                      catch(err3){ console.error('[ficha] PUT numero_identificacao isolado falhou', err3.status, err3.message, err3.payload); throw err3; }
+                    } else {
+                      throw err2;
+                    }
+                  }
+                }
+              }
+            }
+            if(!hasDiff){
+                console.debug('[ficha] Sem alterações na bicicleta; ignorando PUT');
+              }
+          }
+
+          toast('Alterações salvas!', 'ok');
+        } catch(err){
+          if(err && err.status === 409){ alert('Conflito: ' + (err.message || 'Verifique duplicidades de CPF ou número da bike.')); }
+          else { alert('Falha ao salvar: ' + (err.message || err)); }
+        } finally {
+          if(btnSalvar){ btnSalvar.disabled = false; btnSalvar.removeAttribute('aria-busy'); btnSalvar.innerHTML = oldSalvarHtml; }
+        }
+      });
+
+      // 9) Excluir bicicleta
+      $('btnExcluirBike').addEventListener('click', async ()=>{
+        const bid = $('bicicletaId').value; if(!bid){ toast('Nenhuma bicicleta selecionada', 'err'); return; }
+        const b = estado.bicicletas.find(x => String(x.id)===String(bid));
+        const ok = await confirmDialog('Excluir bicicleta', `Tem certeza que deseja excluir a bicicleta ${b?.numero_identificacao || ''}?`);
+        if(!ok) return;
+        try {
+          // Pré-checagem de dependências (registros de acesso)
+          const qtd = await contarRegistrosBike(b);
+          if(qtd>0){ toast(`Não é possível excluir: há ${qtd} registro(s) de acesso vinculados a esta bicicleta.`, 'err'); return; }
+          await api.del(`/bicicletas/${encodeURIComponent(bid)}`);
+          toast('Bicicleta excluída', 'ok', {
+            label: 'Desfazer',
+            onClick: async ()=>{
+              try {
+                const fd = new FormData();
+                fd.append('proprietario_id', String(estado.proprietario.id));
+                fd.append('numero_bike', b?.numero_identificacao || '');
+                fd.append('tipo_bike', b?.tipo_bike || '');
+                fd.append('marca', b?.marca || '');
+                fd.append('modelo', b?.modelo || '');
+                fd.append('observacoes', b?.observacoes_bike || '');
+                const novo = await api.request('POST', '/bicicletas', fd);
+                const newId = novo?.bicicleta?.id;
+                const nova = { id: newId, numero_identificacao: b?.numero_identificacao || '', tipo_bike: b?.tipo_bike || null, marca: b?.marca || '', modelo: b?.modelo || '' };
+                estado.bicicletas.push(nova);
+                popularSelectBikes(estado.bicicletas, newId);
+              } catch(err){ toast('Falha ao desfazer exclusão', 'err'); }
+            }
+          });
+          // Atualizar lista
+          estado.bicicletas = estado.bicicletas.filter(b => String(b.id)!==String(bid));
+          updateExcluirProprietarioBtn();
+          if(!estado.bicicletas.length){ popularSelectBikes([], null); preencherBike({}); return; }
+          popularSelectBikes(estado.bicicletas, estado.bicicletas[0].id);
+          preencherBike(estado.bicicletas[0]);
+        } catch(err){
+          const msg = (err && err.payload && (err.payload.erro || err.payload.message)) || (err && err.message) || 'Falha ao excluir bicicleta.';
+          const det = (err && err.payload && err.payload.detalhes) ? ` - ${err.payload.detalhes}` : '';
+          toast('Falha ao excluir bicicleta: ' + msg + det, 'err');
+        }
+      });
+
+      // 10) Excluir proprietário
+      $('btnExcluirProprietario').addEventListener('click', async ()=>{
+        const ok = await confirmDialog('Excluir proprietário', 'Todas as bicicletas devem estar desvinculadas e sem registros pendentes. Deseja continuar?');
+        if(!ok) return;
+        try {
+          await api.del(`/proprietarios/${encodeURIComponent(propId)}`);
+          toast('Proprietário excluído', 'ok');
+          setTimeout(()=> voltarParaLista(), 900);
+        } catch(err){
+          const msg = (err && err.payload && (err.payload.erro || err.payload.message)) || (err && err.message) || 'Falha ao excluir proprietário.';
+          toast(msg, 'err');
+        }
+      });
+
+      // Excluir todas as bicicletas (apenas FORA)
+      const btnAll = $('btnExcluirTodasBikes');
+      if(btnAll){
+        btnAll.addEventListener('click', async ()=>{
+          const bikes = Array.isArray(estado.bicicletas) ? estado.bicicletas.slice() : [];
+          const fora = bikes.filter(b => (b.status || 'FORA') !== 'DENTRO');
+          const dentro = bikes.filter(b => b.status === 'DENTRO');
+          if(fora.length === 0){ toast('Nenhuma bicicleta FORA para excluir.', 'info'); return; }
+          const ok = await confirmDialog('Excluir todas as bicicletas', `Serão excluídas ${fora.length} bicicleta(s) FORA. ${dentro.length ? 'As '+dentro.length+' DENTRO serão ignoradas.' : ''}`);
+          if(!ok) return;
+          const old = btnAll.innerHTML; btnAll.disabled = true; btnAll.setAttribute('aria-busy','true'); btnAll.innerHTML = 'Excluindo...';
+          const deletedIds = []; const failures = [];
+          for(const b of fora){
+            try {
+              // Pré-checagem de dependências
+              const qtd = await contarRegistrosBike(b);
+              if(qtd>0){ failures.push({ b, err: { message: `Há ${qtd} registro(s) de acesso vinculados.` } }); continue; }
+              await api.del(`/bicicletas/${encodeURIComponent(b.id)}`);
+              deletedIds.push(b.id);
+            } catch(err){ failures.push({ b, err }); }
+          }
+          // Atualizar estado/UI
+          estado.bicicletas = (estado.bicicletas||[]).filter(b => !deletedIds.includes(b.id));
+          if(!estado.bicicletas.length){
+            popularSelectBikes([], null); preencherBike({});
+          } else {
+            popularSelectBikes(estado.bicicletas, estado.bicicletas[0].id);
+            preencherBike(estado.bicicletas[0]);
+          }
+          updateExcluirProprietarioBtn();
+          if(deletedIds.length) toast(`${deletedIds.length} bicicleta(s) excluída(s).`, 'ok');
+          if(dentro.length) toast(`${dentro.length} bicicleta(s) DENTRO não foram excluídas. Faça check-out.`, 'info');
+          if(failures.length){
+            const first = failures[0]?.err;
+            const firstMsg = first?.payload?.erro || first?.message || '';
+            const firstDet = first?.payload?.detalhes || '';
+            const extra = firstDet ? ` - ${firstDet}` : '';
+            toast(`Falha ao excluir ${failures.length} bicicleta(s). ${firstMsg}${extra}`, 'err');
+          }
+          btnAll.disabled = false; btnAll.removeAttribute('aria-busy'); btnAll.innerHTML = old;
+        });
+      }
+
+      // 11) Adicionar nova bicicleta
+      $('formNovaBike').addEventListener('submit', async (ev)=>{
+        ev.preventDefault();
+        const addBtn = ev.submitter || document.querySelector('#formNovaBike button[type="submit"]');
+        const oldAddHtml = addBtn ? addBtn.innerHTML : '';
+        if(addBtn){ addBtn.disabled = true; addBtn.setAttribute('aria-busy','true'); addBtn.innerHTML = 'Adicionando...'; }
+        const numero = $('novaBikeNumero').value.trim();
+        const tipo = $('novaBikeTipo').value.trim();
+        const marcaSel = $('novaBikeMarca').value.trim();
+        const modeloSel = $('novaBikeModelo').value.trim();
+        const marcaOutro = ($('novaMarcaOutro')?.value || '').trim();
+        const modeloOutro = ($('novaModeloOutro')?.value || '').trim();
+        // Normaliza finais considerando 'Outro'
+        let marcaFinal = '';
+        let modeloFinal = '';
+        if (tipo === 'Outro' || marcaSel === 'Outro') { marcaFinal = marcaOutro; } else { marcaFinal = marcaSel; }
+        if (tipo === 'Outro' || marcaSel === 'Outro' || modeloSel === 'Outro') { modeloFinal = modeloOutro; } else { modeloFinal = modeloSel; }
+        const obs = $('novaBikeObs').value.trim();
+        const fotoBike = $('novaFotoBike').files[0] || null;
+        const fotoDono = $('novaFotoDono').files[0] || null;
+        // Validação mínima
+        if(!numero || !marcaFinal || !modeloFinal){
+          toast('Preencha número, marca e modelo.', 'err');
+          if(addBtn){ addBtn.disabled = false; addBtn.removeAttribute('aria-busy'); addBtn.innerHTML = oldAddHtml; }
+          return;
+        }
+        try {
+          const fd = new FormData();
+          fd.append('proprietario_id', String(propId));
+          fd.append('numero_bike', numero);
+          fd.append('tipo_bike', tipo||'');
+          fd.append('marca', marcaFinal);
+          fd.append('modelo', modeloFinal);
+          fd.append('observacoes', obs||'');
+          if(fotoBike) fd.append('fotoBicicleta', fotoBike);
+          if(fotoDono) fd.append('fotoDonoComBicicleta', fotoDono);
+          const novo = await api.request('POST', '/bicicletas', fd);
+          const newId = novo?.bicicleta?.id;
+          // Atualizar lista
+          const nova = { id: newId, numero_identificacao: numero, tipo_bike: tipo||null, marca: marcaFinal, modelo: modeloFinal };
+          estado.bicicletas.push(nova);
+          popularSelectBikes(estado.bicicletas, newId);
+          preencherBike(nova);
+          updateExcluirProprietarioBtn();
+          // Limpar
+          ['novaBikeNumero','novaBikeTipo','novaBikeMarca','novaBikeModelo','novaBikeObs'].forEach(id=> { const el=$(id); if(el) el.value=''; });
+          $('novaFotoBike').value=''; $('novaFotoDono').value='';
+          toast('Bicicleta adicionada!', 'ok');
+        } catch(err){ toast('Falha ao adicionar bicicleta: ' + (err.message||err), 'err'); }
+        finally { if(addBtn){ addBtn.disabled=false; addBtn.removeAttribute('aria-busy'); addBtn.innerHTML = oldAddHtml; } }
+      });
+    });
+
+    // Navegação
+    function voltarParaLista(){ window.history.length > 1 ? window.history.back() : window.location.href = 'listadecadastro.html'; }
+    function imprimirCartao(){ window.print(); }
+
+    // Máscaras e validações
+    function maskCPF(v){
+      v = (v||'').replace(/\D/g,'').slice(0,11);
+      if(v.length>9) return v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+      if(v.length>6) return v.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
+      if(v.length>3) return v.replace(/(\d{3})(\d{0,3})/, '$1.$2');
+      return v;
+    }
+    function isCPFValid(cpf){
+      const c = (cpf||'').replace(/\D/g,'');
+      if(c.length!==11 || /^([0-9])\1+$/.test(c)) return false;
+      let s=0; for(let i=0;i<9;i++) s+=parseInt(c.charAt(i))*(10-i); let d1=(s*10)%11; if(d1===10) d1=0; if(d1!==parseInt(c.charAt(9))) return false;
+      s=0; for(let i=0;i<10;i++) s+=parseInt(c.charAt(i))*(11-i); let d2=(s*10)%11; if(d2===10) d2=0; return d2===parseInt(c.charAt(10));
+    }
+    function maskPhone(v){
+      v = (v||'').replace(/\D/g,'').slice(0,11);
+      if(v.length>10) return v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+      if(v.length>6) return v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+      if(v.length>2) return v.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+      if(v.length>0) return '('+v;
+      return v;
+    }
+
+    // Lightbox
+    function setupLightbox(){
+      const lb = document.getElementById('lightbox');
+      const img = document.getElementById('lightboxImg');
+      const previews = ['previewFotoProprietario','previewFotoBicicleta','previewFotoDonoComBicicleta'].map(id=> document.getElementById(id));
+      previews.forEach(p=> p && p.addEventListener('click', ()=>{ if(p.src && !p.classList.contains('hidden')){ img.src = p.src; lb.classList.add('open'); } }));
+      lb.addEventListener('click', (e)=>{ if(e.target===lb) lb.classList.remove('open'); });
+      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') lb.classList.remove('open'); });
+    }
+
+    // Controles de arquivo customizados (file-control)
+    function bindFileControl(inputId, buttonId, nameId){
+      const input = document.getElementById(inputId);
+      const btn = document.getElementById(buttonId);
+      const nameEl = document.getElementById(nameId);
+      const container = (btn && btn.closest('.file-control')) || (nameEl && nameEl.parentElement);
+      if(!input || !btn) return;
+      btn.onclick = ()=> input.click();
+      input.addEventListener('change', ()=>{
+        const file = input.files && input.files[0];
+        if(nameEl){ nameEl.textContent = file ? file.name : 'Nenhum arquivo'; nameEl.title = file ? file.name : ''; }
+        if(container){ container.classList.toggle('has-file', !!file); }
+      });
+    }
+
+    // Confirm modal (acessibilidade: gerencia foco antes de alterar aria-hidden)
+    function confirmDialog(title, body){
+      return new Promise(resolve=>{
+        const ov = document.getElementById('confirmOverlay');
+        const t = document.getElementById('confirmTitle');
+        const b = document.getElementById('confirmBody');
+        const ok = document.getElementById('confirmOk');
+        const cancel = document.getElementById('confirmCancel');
+        const prevFocus = document.activeElement;
+        t.textContent = title || 'Confirmar';
+        b.textContent = body || '';
+        const moveFocusOut = ()=>{
+          try {
+            // Se o foco estiver dentro do overlay, devolve para o elemento anterior
+            if (ov.contains(document.activeElement)) {
+              if (prevFocus && typeof prevFocus.focus === 'function') {
+                prevFocus.focus();
+              } else {
+                // fallback: focar o body de forma segura
+                const hadTabindex = document.body.hasAttribute('tabindex');
+                if (!hadTabindex) document.body.setAttribute('tabindex','-1');
+                document.body.focus();
+                if (!hadTabindex) document.body.removeAttribute('tabindex');
+              }
+            }
+          } catch(_){}
+        };
+        const off = ()=>{
+          moveFocusOut();
+          ov.classList.remove('open');
+          ov.setAttribute('aria-hidden','true');
+          ok.onclick=null; cancel.onclick=null;
+        };
+        ok.onclick = ()=>{ off(); resolve(true); };
+        cancel.onclick = ()=>{ off(); resolve(false); };
+        ov.classList.add('open');
+        ov.setAttribute('aria-hidden','false');
+        // Focar no botão OK após abrir
+        setTimeout(()=>{ try{ ok.focus(); }catch(_){} }, 0);
+      });
+    }
+
+    // Toast helper (com ícone e ação opcional)
+    function toast(msg, variant='info', action){
+      try {
+        const area = document.getElementById('toastArea');
+        const el = document.createElement('div');
+        el.className = `toast ${variant}`; el.role='status';
+        const icon = document.createElement('span'); icon.className='icon'; icon.textContent = variant==='ok'?'✓':(variant==='err'?'⚠':'ℹ');
+        const text = document.createElement('span'); text.textContent = msg;
+        el.appendChild(icon); el.appendChild(text);
+        if(action && action.label && typeof action.onClick==='function'){
+          const btn = document.createElement('button'); btn.className='action'; btn.textContent = action.label;
+          btn.onclick = ()=>{ try{ action.onClick(); } finally { el.remove(); } };
+          el.appendChild(btn);
+        }
+        area.appendChild(el);
+        setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(-6px)'; setTimeout(()=> el.remove(), 180); }, 4000);
+      } catch(_) { alert(msg); }
+    }
+  </script>
+</body>
+</html>
