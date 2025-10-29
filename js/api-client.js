@@ -5,7 +5,10 @@
      api.get('/proprietarios/1/bicicletas').then(console.log)
 */
 (function(global){
-  const API_BASE_URL = global.API_BASE_URL || 'https://southamerica-east1-bicicletario-japeri-v3.cloudfunctions.net/api';
+  const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+  const API_BASE_URL = isLocal 
+    ? 'http://127.0.0.1:5001/bicicletario-japeri-v3/southamerica-east1/api' 
+    : 'https://api-daja3h3cva-rj.a.run.app';
   const DEFAULT_TIMEOUT_MS = 20000;
 
   function getStoredToken(){
