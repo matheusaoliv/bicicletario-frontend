@@ -5,7 +5,10 @@
   'use strict';
 
   // Pequena ajuda: base de API (usa config-local se existir)
-  const API_BASE = ((window.API_BASE_URL && window.API_BASE_URL.trim()) || 'https://southamerica-east1-bicicletario-japeri-v3.cloudfunctions.net/api').replace(/\/$/, '');
+  const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+  const API_BASE = (isLocal 
+    ? 'http://127.0.0.1:5001/bicicletario-japeri-v3/southamerica-east1/api' 
+    : 'https://api-daja3h3cva-rj.a.run.app').replace(/\/$/, '');
 
   // Utilitário: obter token
   function getToken(){
