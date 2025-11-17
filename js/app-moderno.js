@@ -386,23 +386,10 @@
         const data = await apiFetch(`/proprietarios?${params.toString()}`, { signal: buscarAborter.signal });
         const arr = Array.isArray(data) ? data : [];
         
-        // Para os primeiros 10 resultados, buscar as bicicletas associadas
-        const arrayComBicicletas = await Promise.all(arr.slice(0, 10).map(async (proprietario) => {
-          try {
-            const bicicletas = await apiFetch(`/proprietarios/${proprietario.id}/bicicletas`, { signal: buscarAborter.signal });
-            if (Array.isArray(bicicletas) && bicicletas.length > 0) {
-              // Pegar a primeira bicicleta como principal
-              return { ...proprietario, bicicleta: bicicletas[0] };
-            }
-          } catch (err) {
-            console.warn(`Erro ao buscar bicicletas para proprietário ${proprietario.id}:`, err);
-          }
-          return proprietario;
-        }));
-        
-        // Manter o resto dos proprietários sem buscar bicicletas (para performance)
-        const proprietariosRestantes = arr.slice(10);
-        const todosResultados = [...arrayComBicicletas, ...proprietariosRestantes];
+        // Usar dados diretos de proprietários por enquanto
+        // TODO: Implementar busca de bicicletas quando endpoint estiver disponível
+        console.log('Dados de proprietários carregados:', arr.length);
+        const todosResultados = arr;
         
         const filtered = filterResults(todosResultados, filters);
         renderizarResultados(filtered);
@@ -525,9 +512,9 @@
         const waLink = brDigits ? `https://wa.me/55${brDigits}` : '';
         function fmtPhone(pt){ const d=String(pt||'').replace(/\D+/g,''); if(d.length>=11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7,11)}`; if(d.length===10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6,10)}`; if(d.length===9) return `${d.slice(0,5)}-${d.slice(5,9)}`; return pt||''; }
         const contatoFmt = fmtPhone(contatoRaw);
-        const bikeMarca = item.bicicleta?.marca || '-';
-        const bikeModelo = item.bicicleta?.modelo || '';
-        const numeroId = item.bicicleta?.numero_identificacao || '-';
+        const bikeMarca = bicicletaData?.marca || 'Não cadastrada';
+        const bikeModelo = bicicletaData?.modelo || '';
+        const numeroId = bicicletaData?.numero_identificacao || 'Sem ID';
         const badgeClass = status === 'DENTRO' ? 'status-dentro' : (status === 'FORA' ? 'status-fora' : 'status-neutro');
 
         const card = document.createElement('div');

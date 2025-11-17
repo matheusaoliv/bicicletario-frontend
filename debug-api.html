@@ -20,6 +20,7 @@
         <button onclick="testProprietarios()">Testar Proprietários</button>
         <button onclick="testBusca()">Testar Busca</button>
         <button onclick="testBuscaCombinada()">Testar Busca Combinada</button>
+        <button onclick="testBicicletasPorProprietario()">Testar Bicicletas por Proprietário</button>
         <button onclick="testAuth()">Testar Auth</button>
     </div>
     
@@ -199,6 +200,72 @@
                 } catch (error) {
                     log(`❌ ${endpoint}: ${error.message}`, 'error');
                 }
+            }
+        }
+        
+        async function testBicicletasPorProprietario() {
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                log(`❌ Token não encontrado. Faça login primeiro.`, 'error');
+                return;
+            }
+            
+            log('🚲 Testando endpoint de bicicletas por proprietário...', 'info');
+            
+            // Pegar o primeiro proprietário da lista
+            try {
+                const proprietariosResponse = await fetch(`${API_BASE}/proprietarios?limite=1`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!proprietariosResponse.ok) {
+                    log(`❌ Erro ao buscar proprietários: ${proprietariosResponse.status}`, 'error');
+                    return;
+                }
+                
+                const proprietarios = await proprietariosResponse.json();
+                if (!Array.isArray(proprietarios) || proprietarios.length === 0) {
+                    log(`❌ Nenhum proprietário encontrado para teste`, 'error');
+                    return;
+                }
+                
+                const primeiroProprietario = proprietarios[0];
+                log(`📄 Testando com proprietário: ${primeiroProprietario.nome_completo} (ID: ${primeiroProprietario.id})`, 'info');
+                
+                // Testar endpoint de bicicletas
+                const bicicletasResponse = await fetch(`${API_BASE}/proprietarios/${primeiroProprietario.id}/bicicletas`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                log(`📋 Endpoint testado: /proprietarios/${primeiroProprietario.id}/bicicletas`, 'info');
+                
+                if (bicicletasResponse.ok) {
+                    const bicicletas = await bicicletasResponse.json();
+                    log(`✅ Bicicletas: ${Array.isArray(bicicletas) ? bicicletas.length : 'não é array'} encontradas`, 'success');
+                    
+                    if (Array.isArray(bicicletas) && bicicletas.length > 0) {
+                        const primeira = bicicletas[0];
+                        log(`🚲 Primeira bicicleta:`, 'info');
+                        log(`   - Marca: ${primeira.marca || 'não encontrado'}`, 'info');
+                        log(`   - Modelo: ${primeira.modelo || 'não encontrado'}`, 'info');
+                        log(`   - Número ID: ${primeira.numero_identificacao || 'não encontrado'}`, 'info');
+                        console.log('Primeira bicicleta completa:', primeira);
+                    } else {
+                        log(`ℹ️ Proprietário não possui bicicletas cadastradas`, 'info');
+                    }
+                } else {
+                    const responseText = await bicicletasResponse.text();
+                    log(`❌ Erro bicicletas: ${bicicletasResponse.status} - ${responseText}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Erro teste bicicletas: ${error.message}`, 'error');
             }
         }
         
