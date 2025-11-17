@@ -1,52 +1,7 @@
-# Dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Frontend - Bicicletário Municipal de Japeri
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Logs
-logs
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# Dependency directories
-node_modules/
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# Local uploads (não precisamos mais)
-uploads/
-
-# SQLite databases (não usamos mais)
-*.db
-*.sqlite
-*.sqlite3
+# Local development config (não commitar)
+BicicletarioMunicipaldeJaperi/js/config-local.js
 
 # OS generated files
 .DS_Store
@@ -67,23 +22,11 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+*.tmp
 
-# Local-only frontend config (do not commit)
-BicicletarioMunicipaldeJaperi/js/config-local.js
+# Logs
+*.log
 
-# Arquivos sensíveis da migração (não commitar)
-banco de dados/serviceAccountKey.json
-banco de dados/backup-firestore/
-banco de dados/logs-migracao/
-banco de dados/*.csv
-banco de dados/node_modules/
-
-# Firebase debug
-firestore-debug.log
-ui-debug.log
-firebase-debug.log
-
-# Backups e arquivos temporários
+# Backup files
 *.bak
 *.backup
-server.js.bak.*
