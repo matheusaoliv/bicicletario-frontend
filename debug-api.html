@@ -48,15 +48,35 @@
         async function testProprietarios() {
             try {
                 log('👥 Testando endpoint de proprietários...', 'info');
-                const response = await fetch(`${API_BASE}/proprietarios`);
-                const data = await response.json();
-                if (response.ok) {
-                    log(`✅ Proprietários: ${Array.isArray(data) ? data.length : 'não é array'} registros`, 'success');
-                    if (Array.isArray(data) && data.length > 0) {
-                        log(`📋 Primeiro proprietário: ${JSON.stringify(data[0], null, 2)}`, 'info');
+                const token = sessionStorage.getItem('token');
+                
+                // Teste sem token
+                let response = await fetch(`${API_BASE}/proprietarios`);
+                log(`🔓 Sem token: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                // Teste com token
+                if (token) {
+                    response = await fetch(`${API_BASE}/proprietarios`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    log(`🔐 Com token: ${response.status}`, response.ok ? 'success' : 'error');
+                    log(`📋 Headers enviados: Authorization: Bearer ${token.substring(0, 20)}...`, 'info');
+                    
+                    const responseText = await response.text();
+                    log(`📄 Resposta raw: ${responseText}`, response.ok ? 'success' : 'error');
+                    
+                    if (response.ok) {
+                        try {
+                            const data = JSON.parse(responseText);
+                            log(`✅ Proprietários: ${Array.isArray(data) ? data.length : 'não é array'} registros`, 'success');
+                        } catch (e) {
+                            log(`❌ Erro parsing JSON: ${e.message}`, 'error');
+                        }
                     }
-                } else {
-                    log(`❌ Erro proprietários: ${response.status} - ${JSON.stringify(data)}`, 'error');
                 }
             } catch (error) {
                 log(`❌ Erro proprietários: ${error.message}`, 'error');
