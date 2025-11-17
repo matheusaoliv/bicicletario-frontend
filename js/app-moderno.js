@@ -383,7 +383,7 @@
         if(filters.marca) params.append('marca', filters.marca);
         if(filters.modelo) params.append('modelo', filters.modelo);
         if(filters.linha) params.append('linha', filters.linha);
-        const data = await apiFetch(`/controle-acesso/buscar?${params.toString()}`, { signal: buscarAborter.signal });
+        const data = await apiFetch(`/proprietarios?${params.toString()}`, { signal: buscarAborter.signal });
         const arr = Array.isArray(data) ? data : [];
         const filtered = filterResults(arr, filters);
         renderizarResultados(filtered);
