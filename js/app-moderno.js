@@ -481,16 +481,24 @@
         return;
       }
 
-      // Ordena por nome
-      resultados.sort((a,b)=> (a.proprietario?.nome_completo||'').localeCompare(b.proprietario?.nome_completo||''));
+      // Ordena por nome (compatível com proprietários diretos ou dados de controle de acesso)
+      resultados.sort((a,b)=> {
+        const nomeA = (a.proprietario?.nome_completo || a.nome_completo || '');
+        const nomeB = (b.proprietario?.nome_completo || b.nome_completo || '');
+        return nomeA.localeCompare(nomeB);
+      });
 
       resultados.forEach(item => {
-        // Priorizar status da bicicleta, depois verificar registro ativo
-        const status = item.bicicleta?.status || item.status || (item.registro_entrada_atual || item.bicicleta?.open_registro_id ? 'DENTRO' : (item.bicicleta?.id ? 'FORA' : 'SEM_BICICLETA'));
-        const foto = item.proprietario?.foto_proprietario_url || 'imagens/image.png';
-        const nome = item.proprietario?.nome_completo || '-';
-        const cpf = item.proprietario?.cpf || '-';
-        const contatoRaw = item.proprietario?.contato || '';
+        // Detectar se é dado de proprietário direto ou de controle de acesso
+        const isProprietarioDireto = !item.proprietario;
+        const proprietarioData = isProprietarioDireto ? item : item.proprietario;
+        const bicicletaData = item.bicicleta;
+        
+        const status = bicicletaData?.status || item.status || (item.registro_entrada_atual || bicicletaData?.open_registro_id ? 'DENTRO' : (bicicletaData?.id ? 'FORA' : 'SEM_BICICLETA'));
+        const foto = proprietarioData?.foto_proprietario_url || 'imagens/image.png';
+        const nome = proprietarioData?.nome_completo || '-';
+        const cpf = proprietarioData?.cpf || '-';
+        const contatoRaw = proprietarioData?.contato || '';
         const contatoDigits = String(contatoRaw||'').replace(/\D+/g,'');
         const brDigits = contatoDigits.length === 11 ? contatoDigits : (contatoDigits.length === 10 ? ('9'+contatoDigits) : contatoDigits);
         const waLink = brDigits ? `https://wa.me/55${brDigits}` : '';
@@ -517,7 +525,7 @@
           </div>
           <div class="card-footer">
             <p><strong>ID da Bike:</strong> ${escapeHtml(numeroId)}</p>
-            ${item.proprietario?.numero_lacre ? `<p><strong>Lacre:</strong> ${escapeHtml(item.proprietario.numero_lacre)}</p>` : ''}
+            ${proprietarioData?.numero_lacre ? `<p><strong>Lacre:</strong> ${escapeHtml(proprietarioData.numero_lacre)}</p>` : ''}
             <span class="status-badge ${badgeClass}">${escapeHtml(status)}</span>
           </div>
         `;

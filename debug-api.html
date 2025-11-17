@@ -85,13 +85,31 @@
         
         async function testBusca() {
             try {
-                log('🔍 Testando busca...', 'info');
-                const response = await fetch(`${API_BASE}/controle-acesso/buscar?termo=a`);
-                const data = await response.json();
-                if (response.ok) {
-                    log(`✅ Busca: ${Array.isArray(data) ? data.length : 'não é array'} resultados`, 'success');
+                log('🔍 Testando busca de proprietários...', 'info');
+                const token = sessionStorage.getItem('token');
+                
+                if (token) {
+                    const response = await fetch(`${API_BASE}/proprietarios?termo=a`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    log(`📋 Endpoint testado: /proprietarios?termo=a`, 'info');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log(`✅ Busca: ${Array.isArray(data) ? data.length : 'não é array'} proprietários encontrados`, 'success');
+                        if (Array.isArray(data) && data.length > 0) {
+                            log(`📄 Primeiro resultado: ${data[0].nome_completo || 'Nome não encontrado'}`, 'info');
+                        }
+                    } else {
+                        const responseText = await response.text();
+                        log(`❌ Erro busca: ${response.status} - ${responseText}`, 'error');
+                    }
                 } else {
-                    log(`❌ Erro busca: ${response.status} - ${JSON.stringify(data)}`, 'error');
+                    log(`❌ Token não encontrado. Faça login primeiro.`, 'error');
                 }
             } catch (error) {
                 log(`❌ Erro busca: ${error.message}`, 'error');
