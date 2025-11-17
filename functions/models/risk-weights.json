@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "trained_at": "2025-10-23T15:41:25.875Z",
+  "params": {
+    "days": 365,
+    "limit": 5000,
+    "topk_locals": 10,
+    "lr": 0.05,
+    "l2": 0.0005,
+    "max_iters": 800,
+    "tol": 1e-7,
+    "tzOffsetMinutes": 0
+  },
+  "schema": {
+    "order": [
+      "bias",
+      "sinHour",
+      "cosHour",
+      "sinDOW",
+      "cosDOW",
+      "locals_onehot",
+      "locals_other_bucket_last"
+    ]
+  },
+  "locals_vocab": [
+    "Engenheiro Pedreira",
+    "Japeri",
+    "Outro"
+  ],
+  "weights": [
+    -1.8073626871652526,
+    -0.3238891590522616,
+    0.5886429866139107,
+    -0.8330857184095231,
+    0.20228642424962426,
+    -1.7803670786575263,
+    0.008430905444951247,
+    -0.007501001466855905,
+    0
+  ]
+}
