@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso de Funcionários - Bicicletário de Japeri</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="imagens/logobicicletario.png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Config local removido para produção -->
+    <script>
+      // Aplica o tema salvo o mais cedo possível para evitar flash
+      (function(){
+        try { var tema = localStorage.getItem('theme');
+          if (tema === 'dark') { document.documentElement.classList.add('dark-theme'); }
+          else { document.documentElement.classList.remove('dark-theme'); }
+        } catch(e){}
+      })();
+    </script>
+    <style>
+      body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background-color: #f0f2f5;
+        position: relative;
+        overflow: hidden;
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background: url('imagens/estacaojaperi.jpg') center center / cover no-repeat;
+        filter: blur(2px);
+        opacity: 0.25;
+        pointer-events: none;
+      }
+      .container-acesso {
+        position: relative;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        padding: 25px 35px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+      }
+      .logos-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 15px;
+      }
+      .logos-container img {
+        height: 60px; /* Ajuste a altura conforme necessário */
+        width: auto;
+      }
+      .container-acesso h1 {
+        font-size: 1.4em;
+        color: #005f73;
+        margin: 0 0 25px 0;
+      }
+      .form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .input-group {
+        width: 100%;
+        margin-bottom: 15px;
+        text-align: left;
+      }
+      label {
+        font-weight: 500;
+        margin-bottom: 6px;
+        color: #333;
+        display: block;
+      }
+      input[type="text"], input[type="password"], input[type="email"] {
+        width: calc(100% - 22px);
+        padding: 11px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #f8f9fa;
+        font-size: 1em;
+        transition: border-color 0.2s;
+      }
+      input:focus {
+        border-color: #2a9d8f;
+        outline: none;
+      }
+      .btn-principal {
+        padding: 12px 0;
+        background: #2a9d8f;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-top: 5px;
+      }
+      .btn-principal:hover {
+        background: #21867a;
+      }
+      .links-alternar {
+        margin-top: 20px;
+        font-size: 0.9em;
+      }
+      .links-alternar span {
+        color: #555;
+      }
+      .links-alternar button {
+        background: none;
+        border: none;
+        color: #007bff;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 1em;
+        padding: 5px;
+      }
+      .links-alternar button:hover {
+        text-decoration: underline;
+      }
+      .mensagem {
+        margin-top: 15px;
+        font-size: 0.95em;
+        min-height: 20px;
+      }
+      .mensagem.sucesso { color: #21867a; }
+      .mensagem.erro { color: #d32f2f; }
+      /* Toggle de tema flutuante */
+      .theme-toggle-floating { position: fixed; right: 14px; top: 14px; display: inline-flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.95); color: #333; border: 1px solid #e5e7eb; padding: 8px 12px; border-radius: 12px; z-index: 60; box-shadow: 0 6px 18px rgba(0,0,0,0.15); }
+      .theme-toggle-floating .label { font-size: 0.9rem; opacity: .9; }
+      .theme-switch { position: relative; display: inline-block; width: 52px; height: 28px; }
+      .theme-switch input { opacity: 0; width: 0; height: 0; }
+      .theme-switch .slider { position: absolute; cursor: pointer; inset: 0; background: #e5e7eb; border: 1px solid #e5e7eb; transition: .2s ease; border-radius: 999px; }
+      .theme-switch .slider::before { content: ''; position: absolute; height: 22px; width: 22px; left: 3px; top: 50%; transform: translateY(-50%); background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: .2s ease; }
+      .theme-switch input:checked + .slider { background: #dbeafe; border-color: #93c5fd; }
+      .theme-switch input:checked + .slider::before { transform: translate(24px, -50%); }
+      @media (max-width: 700px) { .theme-toggle-floating { right: 10px; top: 10px; padding: 6px 10px; } .theme-toggle-floating .label { display: none; } }
+      /* Modo escuro básico para esta tela */
+      :root.dark-theme body { background-color: #0e1725; color: #e5e7eb; }
+      :root.dark-theme .container-acesso { background: rgba(17,24,39,0.98); color: #e5e7eb; }
+      :root.dark-theme label { color: #e5e7eb; }
+      :root.dark-theme input[type="text"], :root.dark-theme input[type="password"], :root.dark-theme input[type="email"] {
+        background-color: #111827; color: #e5e7eb; border-color: #243244;
+      }
+      :root.dark-theme .btn-principal { background: #0ea5e9; }
+      :root.dark-theme .btn-principal:hover { background: #0284c7; }
+    </style>
+</head>
+<body>
+    <!-- Toggle de Tema -->
+    <div class="theme-toggle-floating" aria-label="Alternar modo noturno">
+      <span class="label">Modo Noturno</span>
+      <label class="theme-switch" for="themeToggleAcesso">
+        <input type="checkbox" id="themeToggleAcesso" aria-label="Alternar modo escuro" />
+        <span class="slider"></span>
+      </label>
+    </div>
+    <main class="container-acesso">
+      <div class="logos-container">
+        <img src="imagens/image.png" alt="Logo da Prefeitura de Japeri">
+        <img src="imagens/logobicicletario.png" alt="Logo do Bicicletário">
+      </div>
+      
+              <form id="loginForm" class="form" style="display:flex">
+        <h1>Login de Funcionário</h1>
+        <div class="input-group">
+          <label for="loginUsuario">Nome de Usuário:</label>
+          <input type="text" id="loginUsuario" required>
+        </div>
+        <div class="input-group">
+          <label for="loginSenha">Senha:</label>
+          <input type="password" id="loginSenha" required>
+        </div>
+        <button type="submit" class="btn-principal">Entrar</button>
+        <div id="loginMensagem" class="mensagem"></div>
+        <div class="links-alternar">
+          <span>Não tem uma conta?</span>
+          <button type="button" id="btnIrParaCadastro">Cadastre-se</button>
+        </div>
+      </form>
+
+      <form id="cadastroForm" class="form" style="display:none;">
+        <h1>Cadastro de Funcionário</h1>
+        <div class="input-group">
+            <label for="cadastroNomeCompleto">Nome Completo:</label>
+            <input type="text" id="cadastroNomeCompleto" required>
+        </div>
+        <div class="input-group">
+          <label for="cadastroUsuario">Nome de Usuário:</label>
+          <input type="text" id="cadastroUsuario" required>
+        </div>
+        <div class="input-group">
+            <label for="cadastroEmail">E-mail (opcional):</label>
+            <input type="email" id="cadastroEmail">
+        </div>
+        <div class="input-group">
+          <label for="cadastroSenha">Senha:</label>
+          <input type="password" id="cadastroSenha" required>
+        </div>
+        <button type="submit" class="btn-principal">Cadastrar</button>
+        <div id="cadastroMensagem" class="mensagem"></div>
+        <div class="links-alternar">
+          <span>Já tem uma conta?</span>
+          <button type="button" id="btnIrParaLogin">Faça Login</button>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      // Base unificada da API: SEMPRE usar produção
+      const DEFAULT_BASE = 'https://api-daja3h3cva-rj.a.run.app';
+      const BASE_API = (
+        (window.API_BASE_URL && window.API_BASE_URL.trim())
+          ? window.API_BASE_URL.trim().replace(/\/api\/?$/, '')
+          : DEFAULT_BASE
+      ).replace(/\/$/, '');
+
+      // Elementos dos formulários
+      const loginForm = document.getElementById('loginForm');
+      const cadastroForm = document.getElementById('cadastroForm');
+
+      // Botões para alternar
+      const btnIrParaCadastro = document.getElementById('btnIrParaCadastro');
+      const btnIrParaLogin = document.getElementById('btnIrParaLogin');
+      
+      // Mensagens de feedback
+      const loginMensagem = document.getElementById('loginMensagem');
+      const cadastroMensagem = document.getElementById('cadastroMensagem');
+
+      // --- Lógica para Alternar Formulários ---
+      btnIrParaCadastro.addEventListener('click', () => {
+        loginForm.style.display = 'none';
+        cadastroForm.style.display = 'flex';
+        // Limpar mensagens quando alternar formulários
+        loginMensagem.textContent = '';
+        loginMensagem.className = 'mensagem';
+      });
+
+      btnIrParaLogin.addEventListener('click', () => {
+        cadastroForm.style.display = 'none';
+        loginForm.style.display = 'flex';
+        // Limpar mensagens quando alternar formulários
+        cadastroMensagem.textContent = '';
+        cadastroMensagem.className = 'mensagem';
+      });
+
+      // --- Lógica de Login (Conectada à API) ---
+      loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    loginMensagem.textContent = '';
+    
+    const nome_usuario = document.getElementById('loginUsuario').value.trim();
+    const senha = document.getElementById('loginSenha').value;
+
+    if (!nome_usuario || !senha) {
+        loginMensagem.textContent = 'Por favor, preencha usuário e senha.';
+        loginMensagem.className = 'mensagem erro';
+        return;
+    }
+    try {
+      loginMensagem.textContent = 'Autenticando...';
+      loginMensagem.className = 'mensagem';
+
+      const response = await fetch(`${BASE_API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome_usuario, senha })
+      });
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        loginMensagem.textContent = 'Login bem-sucedido! Redirecionando...';
+        loginMensagem.className = 'mensagem sucesso';
+
+        sessionStorage.setItem('funcionarioLogado', JSON.stringify(data.funcionario));
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('autenticado', 'true');
+
+        setTimeout(() => { window.location.href = 'area-funcionario.html'; }, 1000);
+      } else {
+        loginMensagem.textContent = data.erro || `Erro no login: ${response.statusText}`;
+        loginMensagem.className = 'mensagem erro';
+      }
+    } catch (error) {
+      console.error('Erro de conexão:', error);
+      loginMensagem.textContent = 'Erro de conexão com o servidor.';
+      loginMensagem.className = 'mensagem erro';
+    }
+  });
+
+      // --- Lógica de Cadastro de Funcionário (Conectada à API) ---
+      cadastroForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        cadastroMensagem.textContent = '';
+
+        const nome_completo = document.getElementById('cadastroNomeCompleto').value.trim();
+        const nome_usuario = document.getElementById('cadastroUsuario').value.trim();
+        const email = document.getElementById('cadastroEmail').value.trim();
+        const senha = document.getElementById('cadastroSenha').value;
+
+        if (!nome_completo || !nome_usuario || !senha) {
+          cadastroMensagem.textContent = 'Por favor, preencha todos os campos obrigatórios.';
+          cadastroMensagem.className = 'mensagem erro';
+          return;
+        }
+
+        // Validar comprimento mínimo da senha
+        if (senha.length < 6) {
+          cadastroMensagem.textContent = 'A senha deve ter pelo menos 6 caracteres.';
+          cadastroMensagem.className = 'mensagem erro';
+          return;
+        }
+
+        try {
+          const response = await fetch(`${BASE_API}/funcionarios/cadastro`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome_completo, nome_usuario, senha, email })
+          });
+          const data = await response.json();
+          if (response.ok) {
+            cadastroMensagem.textContent = 'Cadastro realizado com sucesso! Você já pode fazer o login.';
+            cadastroMensagem.className = 'mensagem sucesso';
+            cadastroForm.reset();
+            // Alterna para a tela de login automaticamente após o sucesso
+            setTimeout(() => {
+                btnIrParaLogin.click();
+                cadastroMensagem.textContent = '';
+            }, 2000);
+          } else {
+            cadastroMensagem.textContent = data.erro || 'Erro ao cadastrar.';
+            cadastroMensagem.className = 'mensagem erro';
+          }
+        } catch (error) {
+          console.error("Erro de conexão:", error);
+          cadastroMensagem.textContent = 'Erro de conexão com o servidor.';
+          cadastroMensagem.className = 'mensagem erro';
+        }
+      });
+    </script>
+    <script>
+      // Sincroniza body e toggle com o tema salvo
+      document.addEventListener('DOMContentLoaded', function(){
+        try {
+          var tema = localStorage.getItem('theme');
+          if (tema === 'dark') { document.body.classList.add('dark-theme'); }
+          else { document.body.classList.remove('dark-theme'); }
+          var toggle = document.getElementById('themeToggleAcesso');
+          if (toggle) {
+            toggle.checked = (tema === 'dark');
+            toggle.addEventListener('change', function(){
+              if (toggle.checked) {
+                document.documentElement.classList.add('dark-theme');
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('theme','dark');
+              } else {
+                document.documentElement.classList.remove('dark-theme');
+                document.body.classList.remove('dark-theme');
+                localStorage.setItem('theme','light');
+              }
+            });
+          }
+        } catch(e){}
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Bicicletário de Japeri</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="imagens/logobicicletario.png">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Config local removido para produção -->
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script>
+    // Aplica tema salvo cedo para evitar flash
+    (function(){
+      try {
+        var tema = localStorage.getItem('theme');
+        if (tema === 'dark') {
+          document.documentElement.classList.add('dark-theme');
+        } else {
+          document.documentElement.classList.remove('dark-theme');
+        }
+      } catch(e){}
+    })();
+  </script>
+  <style>
+    body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Roboto', Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(120deg, #e0f7fa 0%, #b2dfdb 100%), url('imagens/estacaojaperi.jpg') center center / cover no-repeat;
+  opacity: 0.23; /* Alta transparência */
+  pointer-events: none;
+}
+
+    .login-container {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.login-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url('imagens/estacaojaperi.jpg') center center / cover no-repeat;
+  opacity: 0.23;
+  pointer-events: none;
+}
+.login-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+    .login-box {
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  border-radius: 16px;
+  padding: 38px 32px 28px 32px;
+  max-width: 380px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+    .logo img {
+      width: 90px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 1.5em;
+      color: #005f73;
+      margin: 0 0 18px 0;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label {
+      font-weight: 500;
+      color: #333;
+    }
+    input[type="text"],
+    input[type="password"] {
+      width: 95%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ade8f4;
+      background-color: #f8f9fa;
+      font-size: 1em;
+      margin-bottom: 2px;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(0,123,255,.13);
+    }
+    .remember-me {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.97em;
+      color: #444;
+    }
+    button[type="submit"] {
+      margin-top: 10px;
+      padding: 12px 0;
+      background: #2a9d8f;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    button[type="submit"]:hover {
+      background: #21867a;
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.09);
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 20px 0;
+      color: #666;
+    }
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #ddd;
+    }
+    .divider span {
+      padding: 0 10px;
+      font-size: 0.9em;
+    }
+    .google-btn {
+      width: 100%;
+      padding: 12px 0;
+      background: white;
+      color: #444;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .google-btn:hover {
+      background: #f8f9fa;
+      border-color: #4285f4;
+      box-shadow: 0 2px 8px rgba(66, 133, 244, 0.2);
+    }
+    .google-btn img {
+      width: 20px;
+      height: 20px;
+    }
+    :root.dark-theme .google-btn {
+      background: #1f2937;
+      color: #e5e7eb;
+      border-color: #374151;
+    }
+    :root.dark-theme .google-btn:hover {
+      background: #374151;
+      border-color: #4285f4;
+    }
+    .error-message {
+      color: #d32f2f;
+      background: #ffebee;
+      border-radius: 5px;
+      padding: 8px 12px;
+      margin-top: 10px;
+      font-size: 0.98em;
+      text-align: center;
+      display: none;
+      min-height: 24px;
+    }
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 18px 6vw 18px 6vw;
+        max-width: 98vw;
+      }
+      .logo img {
+  width: 60px;
+}
+@media (min-width: 481px) {
+  .logo img {
+    width: 90px;
+  }
+}
+    }
+  /* Toggle de tema flutuante */
+  .theme-toggle-floating { position: fixed; right: 14px; top: 14px; display: inline-flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.95); color: #333; border: 1px solid #e5e7eb; padding: 8px 12px; border-radius: 12px; z-index: 60; box-shadow: 0 6px 18px rgba(0,0,0,0.15); }
+  .theme-toggle-floating .label { font-size: 0.9rem; opacity: .9; }
+  .theme-switch { position: relative; display: inline-block; width: 52px; height: 28px; }
+  .theme-switch input { opacity: 0; width: 0; height: 0; }
+  .theme-switch .slider { position: absolute; cursor: pointer; inset: 0; background: #e5e7eb; border: 1px solid #e5e7eb; transition: .2s ease; border-radius: 999px; }
+  .theme-switch .slider::before { content: ''; position: absolute; height: 22px; width: 22px; left: 3px; top: 50%; transform: translateY(-50%); background: #fff; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: .2s ease; }
+  .theme-switch input:checked + .slider { background: #dbeafe; border-color: #93c5fd; }
+  .theme-switch input:checked + .slider::before { transform: translate(24px, -50%); }
+  @media (max-width: 700px) { .theme-toggle-floating { right: 10px; top: 10px; padding: 6px 10px; } .theme-toggle-floating .label { display: none; } }
+  /* Modo escuro básico */
+  :root.dark-theme body { background: #0e1725; color: #e5e7eb; }
+  :root.dark-theme .login-box { background: rgba(17,24,39,0.95); color: #e5e7eb; }
+  :root.dark-theme label { color: #e5e7eb; }
+  :root.dark-theme input[type="text"], :root.dark-theme input[type="password"] { background: #111827; color: #e5e7eb; border-color: #243244; }
+  :root.dark-theme button[type="submit"] { background: #0ea5e9; }
+  :root.dark-theme button[type="submit"]:hover { background: #0284c7; }
+  </style>
+</head>
+<body>
+  <!-- Toggle de Tema (flutuante) -->
+  <div class="theme-toggle-floating" aria-label="Alternar modo noturno">
+    <span class="label">Modo Noturno</span>
+    <label class="theme-switch" for="themeToggleLogin">
+      <input type="checkbox" id="themeToggleLogin" aria-label="Alternar modo escuro" />
+      <span class="slider"></span>
+    </label>
+  </div>
+  <main class="login-container">
+    <div class="login-box">
+      <div class="logo" style="display: flex; align-items: center; justify-content: center; gap: 18px;">
+  <img src="imagens/image.png" alt="Logo da Prefeitura de Japeri" style="width: 90px; height: auto;">
+  <img src="imagens/logobicicletario.png" alt="Logo do Bicicletário" style="width: 90px; height: auto;">
+</div>
+      <h1>Bicicletário - Acesso Restrito</h1>
+      <form id="loginForm" action="#" method="POST" autocomplete="off">
+        <div class="input-group">
+          <label for="username">Usuário:</label>
+          <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+        </div>
+        <div class="input-group">
+          <label for="password">Senha:</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit">Entrar</button>
+      </form>
+      
+      <div class="divider">
+        <span>ou</span>
+      </div>
+      
+      <button type="button" id="btnGoogleLogin" class="google-btn">
+        <img src="imagens/google-light.png" alt="Google" class="google-icon-light">
+        <img src="imagens/google-noturno.png" alt="Google" class="google-icon-dark" style="display: none;">
+        <span>Entrar com Google</span>
+      </button>
+      
+      <div style="margin-top: 18px; text-align: center;">
+  <a href="cadastro-funcionario.html" id="showCadastroBtn" style="background: #268378; color: white; border: none; border-radius: 7px; padding: 8px 16px; font-size: 1em; cursor: pointer; text-decoration: none;">Cadastrar Funcionário</a>
+</div>
+      <p class="error-message"></p>
+    </div>
+  </main>
+  <script>
+    // Base unificada da API: SEMPRE usar produção
+    const DEFAULT_BASE = 'https://api-daja3h3cva-rj.a.run.app';
+    const BASE_API = (
+      (window.API_BASE_URL && window.API_BASE_URL.trim())
+        ? window.API_BASE_URL.trim().replace(/\/api\/?$/, '')
+        : DEFAULT_BASE
+    ).replace(/\/$/, '');
+
+    // Pegando os elementos do DOM uma vez para reutilização
+    const form = document.querySelector('form');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const errorMessageElement = document.querySelector('.error-message');
+
+    // Função para mostrar mensagem de erro
+    function mostrarMensagemErro(mensagem) {
+      errorMessageElement.textContent = mensagem;
+      errorMessageElement.style.display = 'block'; // Exibe a mensagem de erro
+    }
+
+    // Função para limpar/esconder a mensagem de erro
+    function limparMensagemErro() {
+      errorMessageElement.textContent = ''; // Limpa o texto da mensagem
+      errorMessageElement.style.display = 'none'; // Esconde a mensagem de erro
+    }
+
+    // Função para validar o formulário
+    async function validarFormulario(event) {
+      event.preventDefault();
+      const usuario = usernameInput.value.trim();
+      const senha = passwordInput.value.trim();
+      if (!usuario || !senha) {
+        mostrarMensagemErro('Por favor, preencha todos os campos.');
+        if (!usuario) {
+          usernameInput.focus();
+        } else {
+          passwordInput.focus();
+        }
+        return;
+      }
+      try {
+        // Autenticação via API (usa BASE_API já normalizada)
+        const response = await fetch(`${BASE_API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome_usuario: usuario, senha })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          mostrarMensagemErro(result.erro || 'Nome de usuário ou senha inválidos.');
+          usernameInput.focus();
+          usernameInput.select();
+          passwordInput.value = '';
+          return;
+        }
+        limparMensagemErro();
+        const token = result.token;
+        console.log('🔵 Token recebido do backend:', token);
+        const cleanToken = token.replace(/[^A-Za-z0-9-_\.]/g, '');
+        sessionStorage.setItem('token', cleanToken);
+        sessionStorage.setItem('autenticado', 'true');
+        sessionStorage.setItem('usuario', JSON.stringify(result.funcionario));
+        mostrarMensagemErro('Login bem-sucedido! Redirecionando...');
+        errorMessageElement.style.color = '#2a9d8f';
+        setTimeout(() => {
+          window.location.href = 'area-funcionario.html';
+        }, 1000);
+      } catch (error) {
+        console.error('Erro de conexão:', error);
+        mostrarMensagemErro('Erro de conexão com o servidor.');
+      }
+}
+
+// Adicionando o evento de envio ao formulário
+form.addEventListener('submit', validarFormulario);
+
+// Adicionando eventos para limpar a mensagem de erro ao digitar
+usernameInput.addEventListener('input', limparMensagemErro);
+passwordInput.addEventListener('input', limparMensagemErro);
+
+// Opcional: Limpar mensagem de erro ao focar nos campos também
+usernameInput.addEventListener('focus', limparMensagemErro);
+passwordInput.addEventListener('focus', limparMensagemErro);
+  </script>
+  
+  <script>
+    // ===== FIREBASE AUTHENTICATION =====
+    // Inicializar Firebase IMEDIATAMENTE (antes do DOMContentLoaded)
+    (function() {
+      const firebaseConfig = {
+        apiKey: "AIzaSyCNSGHAWr4ZuTuEl3xmMqGe0mfhSH4dheo",
+        authDomain: "bicicletario-japeri-v3.firebaseapp.com",
+        projectId: "bicicletario-japeri-v3",
+        storageBucket: "bicicletario-japeri-v3.firebasestorage.app",
+        messagingSenderId: "366886346323",
+        appId: "1:366886346323:web:2a4a16e8a4d5faac8470a6",
+        measurementId: "G-Q3L2V32QK1"
+      };
+      
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+    })();
+    
+    // Funções globais para acesso
+    function getAuth() {
+      return firebase.auth();
+    }
+    
+    // Função de login com Google
+    async function loginComGoogle() {
+      try {
+        console.log('🔐 Iniciando login com Google...');
+        
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({
+          prompt: 'select_account'
+        });
+        
+        console.log('🚀 Abrindo popup do Google...');
+        // Usar POPUP em vez de redirect (mais confiável)
+        const result = await getAuth().signInWithPopup(provider);
+        
+        if (!result || !result.user) {
+          throw new Error('Nenhum usuário retornado do Google');
+        }
+        
+        const user = result.user;
+        console.log('✅ Autenticado com Google:', user.email);
+        console.log('👤 Dados do usuário:', {
+          email: user.email,
+          nome: user.displayName,
+          foto: user.photoURL
+        });
+        
+        // Processar login
+        await processarLoginGoogle(user);
+        
+      } catch (error) {
+        console.error('❌ Erro no login Google:', error);
+        if (error.code === 'auth/popup-blocked') {
+          mostrarMensagemErro('Popup bloqueado! Permita popups para este site.');
+        } else if (error.code === 'auth/popup-closed-by-user') {
+          mostrarMensagemErro('Login cancelado.');
+        } else {
+          mostrarMensagemErro('Erro no login com Google: ' + (error.message || 'Erro desconhecido'));
+        }
+      }
+    }
+    
+    // Processar login do Google (usado tanto por popup quanto redirect)
+    async function processarLoginGoogle(user) {
+      try {
+        // Pegar token do Firebase
+        console.log('🔑 Obtendo token do Firebase...');
+        const firebaseToken = await user.getIdToken();
+        console.log('✅ Token obtido');
+        
+        // Enviar para backend validar
+        console.log('📡 Enviando para backend:', `${BASE_API}/auth/google-login-funcionario`);
+        const resp = await fetch(`${BASE_API}/auth/google-login-funcionario`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            firebaseToken,
+            email: user.email,
+            nome: user.displayName,
+            foto: user.photoURL
+          })
+        });
+        
+        console.log('📥 Resposta do backend:', resp.status, resp.statusText);
+        const data = await resp.json().catch(() => ({}));
+        console.log('📦 Dados recebidos:', data);
+        
+        if (resp.status === 404) {
+          mostrarMensagemErro('Email não cadastrado! Cadastre-se primeiro.');
+          await getAuth().signOut();
+          return;
+        }
+        
+        if (!resp.ok) {
+          throw new Error(data.erro || 'Erro ao processar login com Google.');
+        }
+        
+        const token = data.token;
+        
+        if (!token) {
+          mostrarMensagemErro('Erro ao receber token de autenticação.');
+          await getAuth().signOut();
+          return;
+        }
+        
+        // Salvar dados na sessão (no formato esperado por area-funcionario.html)
+        const cleanToken = token.replace(/[^A-Za-z0-9-_\.]/g, '');
+        sessionStorage.setItem('token', cleanToken);
+        sessionStorage.setItem('autenticado', 'true');
+        sessionStorage.setItem('usuario', JSON.stringify(data.funcionario));
+        sessionStorage.setItem('funcionarioLogado', JSON.stringify(data.funcionario));
+        
+        mostrarMensagemErro('Login Google bem-sucedido! Redirecionando...');
+        errorMessageElement.style.color = '#2a9d8f';
+        
+        setTimeout(() => {
+          window.location.href = 'area-funcionario.html';
+        }, 1000);
+        
+      } catch (error) {
+        console.error('❌ Erro ao processar login Google:', error);
+        mostrarMensagemErro('Erro ao processar login: ' + (error.message || 'Erro desconhecido'));
+      }
+    }
+    
+    // Adicionar eventos ao carregar a página
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      // Adicionar evento ao botão Google
+      const btnGoogleLogin = document.getElementById('btnGoogleLogin');
+      if (btnGoogleLogin) {
+        btnGoogleLogin.addEventListener('click', loginComGoogle);
+      }
+      
+      // Alternar ícone do Google baseado no tema
+      const toggleThemeIcon = () => {
+        const isDark = document.documentElement.classList.contains('dark-theme');
+        const lightIcon = document.querySelector('.google-icon-light');
+        const darkIcon = document.querySelector('.google-icon-dark');
+        
+        if (lightIcon && darkIcon) {
+          if (isDark) {
+            lightIcon.style.display = 'none';
+            darkIcon.style.display = 'block';
+          } else {
+            lightIcon.style.display = 'block';
+            darkIcon.style.display = 'none';
+          }
+        }
+      };
+      
+      toggleThemeIcon();
+      
+      // Observar mudanças no tema
+      const observer = new MutationObserver(toggleThemeIcon);
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    });
+  </script>
+  
+  <script>
+    // Sincroniza body e toggle com o tema salvo
+    document.addEventListener('DOMContentLoaded', function(){
+      try {
+        var tema = localStorage.getItem('theme');
+        if (tema === 'dark') { document.body.classList.add('dark-theme'); }
+        else { document.body.classList.remove('dark-theme'); }
+        var toggle = document.getElementById('themeToggleLogin');
+        if (toggle) {
+          toggle.checked = (tema === 'dark');
+          toggle.addEventListener('change', function(){
+            if (toggle.checked) {
+              document.documentElement.classList.add('dark-theme');
+              document.body.classList.add('dark-theme');
+              localStorage.setItem('theme','dark');
+            } else {
+              document.documentElement.classList.remove('dark-theme');
+              document.body.classList.remove('dark-theme');
+              localStorage.setItem('theme','light');
+            }
+          });
+        }
+      } catch(e){}
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar Bicicleta - Bicicletário</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="imagens/logobicicletario.png">
+    <!-- Config local removido para produção -->
+    <script src="js/catalogo-bikes-ui.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { margin: 0; font-family: Arial, sans-serif; color: #1b1b1b; }
+
+        /* Layout de fundo em tela cheia */
+        .hero {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 24px;
+        }
+        .hero .bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.7);
+            pointer-events: none;
+        }
+        .hero .decor {
+            position: absolute;
+            right: 16px;
+            bottom: 16px;
+            width: clamp(96px, 15vw, 180px);
+            opacity: 0.9;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Card glassmorphism */
+        .login {
+            position: relative;
+            z-index: 3;
+            width: min(95vw, 760px);
+            padding: clamp(24px, 4vw, 40px);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-right-color: rgba(255, 255, 255, 0.35);
+            border-bottom-color: rgba(255, 255, 255, 0.35);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            justify-content: center;
+        }
+        .card-header .logo {
+            height: clamp(48px, 8vw, 72px);
+            width: auto;
+        }
+        .card-header h2 {
+            margin: 0;
+            font-size: clamp(1.4rem, 3.5vw, 2rem);
+            font-weight: 700;
+            color: #0f2f2a; /* tom esverdeado para combinar */
+            text-align: center;
+        }
+
+        /* Grid simples para grupos do formulário */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 720px) {
+            .form-grid.two-col {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #0f2f2a; }
+        input, select, textarea { width: 100%; padding: 12px 14px; border: none; border-radius: 8px; background: #ffffff; color: #1b1b1b; font-size: 14px; }
+        input[type="file"] { padding: 10px; background: #ffffffe6; }
+        small { color: #173f38; opacity: 0.9; }
+
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        button { background: #2a9d8f; color: #fff; padding: 12px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        button:hover { background: #21867a; }
+        button:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .message { margin-top: 6px; padding: 10px; border-radius: 8px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* Ajustes do datalist/auto-complete */
+        #buscar_proprietario { background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%232a9d8f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 12px center; padding-left: 40px; }
+
+        /* Selects com busca (Marca/Modelo) */
+        .select-search { background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%232a9d8f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat; background-position: 12px 50%; background-size: 16px 16px; padding-left: 48px; margin-bottom: 6px; }
+        .select-search-row { display: flex; align-items: center; gap: 8px; }
+        .select-clear { border: none; background: #e9ecef; color: #1b1b1b; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .select-clear:disabled { opacity: .5; cursor: not-allowed; }
+        .select-suggestions { display: none; background: #fff; border: 1px solid #e1e5ea; border-radius: 8px; margin: 4px 0; max-height: 160px; overflow: auto; }
+        .select-suggestions.show { display: block; }
+        .select-suggestions .item { padding: 8px 10px; cursor: pointer; }
+        .select-suggestions .item:hover { background: #f3f4f6; }
+        .select-suggestions mark { background: #ffea99; padding: 0 2px; border-radius: 2px; }
+        .select-search:disabled { opacity: .6; cursor: not-allowed; }
+        .outro-wrap { margin-top: 10px; }
+        .outro-wrap.hidden { display: none !important; }
+
+        /* Toasts mínimos para esta página */
+        #toastArea { position: fixed; right: 16px; top: 16px; display: grid; gap: 10px; z-index: 99999; }
+        .toast { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; color: #fff; box-shadow: 0 6px 24px rgba(0,0,0,0.2); font-weight: 700; }
+        .toast.info { background: #0a9396; } .toast.ok { background: #2a9d8f; } .toast.err { background: #dc3545; }
+        .toast .icon { opacity: .95; }
+
+        /* Ajustes do textarea */
+        textarea { min-height: 84px; resize: vertical; }
+
+        /* File control customizado */
+        .file-control { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #fff; border: 1px solid #e1e5ea; border-radius: 8px; }
+        .file-control .hidden-input { display: none; }
+        .file-trigger { background: #2a9d8f; color: #fff; border: none; border-radius: 8px; padding: 10px 12px; font-weight: 600; cursor: pointer; }
+        .file-trigger:hover { background: #21867a; }
+        .file-name { flex: 1; color: #555; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-control.has-file { border-color: #cdeae7; box-shadow: 0 0 0 3px rgba(42,157,143,.12); }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <img src="./imagens/estacaojaperi.jpg" alt="Fundo Estação Japeri" class="bg">
+        <img src="./imagens/image.png" alt="Decoração" class="decor">
+
+        <div class="login">
+            <div class="card-header">
+                <img src="./imagens/logobicicletario.png" alt="Logo Bicicletário" class="logo">
+                <h2>Adicionar Bicicleta</h2>
+            </div>
+
+            <form id="formBicicleta" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="buscar_proprietario">Buscar Proprietário (sem bicicleta)</label>
+                        <input type="text" id="buscar_proprietario" list="listaProprietariosSemBike" placeholder="Digite ao menos 2 letras do nome ou CPF">
+                        <datalist id="listaProprietariosSemBike"></datalist>
+                        <small>Apenas proprietários sem bicicleta aparecem nos resultados.</small>
+                    </div>
+                </div>
+
+                <div class="form-grid two-col">
+                    <div class="form-group">
+                        <label for="proprietario_id">ID do Proprietário</label>
+                        <input type="number" id="proprietario_id" required>
+                        <small>Ex.: Jorge Luan: 496 | Jose Roberto: 178</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="numero_bike">Número de Identificação da Bicicleta</label>
+                        <div class="actions">
+                            <input type="text" id="numero_bike" required style="flex:1;" pattern="JPR-[A-Z0-9]{14}" title="Use o formato JPR-XXXXXXXXXXXXXX (letras maiúsculas e números)">
+                            <button type="button" id="gerar_numero_btn">Gerar Número</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid two-col">
+                    <div class="form-group">
+                        <label for="tipo_bike">Tipo de Bicicleta</label>
+                        <select id="tipo_bike" required>
+                            <option value="">Selecione o Tipo</option>
+                            <option value="Mountain Bike">Mountain Bike</option>
+                            <option value="Speed">Speed</option>
+                            <option value="Urbana">Urbana</option>
+                            <option value="Elétrica">Elétrica</option>
+                            <option value="Dobrável">Dobrável</option>
+                            <option value="Infantil">Infantil</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="marca">Marca</label>
+                        <div class="select-search-row">
+                            <input type="text" id="marcaSearch" class="select-search" placeholder="Pesquisar marca..." disabled role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="marcaSuggestions" aria-expanded="false">
+                            <button type="button" id="marcaClear" class="select-clear" disabled>Limpar</button>
+                        </div>
+                        <div id="marcaSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de marca"></div>
+                        <select id="marca" required disabled>
+                            <option value="">Selecione a Marca</option>
+                        </select>
+                        <div id="marcaOutroWrap" class="outro-wrap hidden">
+                            <label for="marcaOutro">Marca (Outro)</label>
+                            <input type="text" id="marcaOutro" placeholder="Informe a marca">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid two-col">
+                    <div class="form-group">
+                        <div id="linhaFilterWrap" class="outro-wrap hidden">
+                            <label for="linhaSearch">Linha (opcional)</label>
+                            <div class="select-search-row">
+                                <input type="text" id="linhaSearch" class="select-search" placeholder="Filtrar por linha..." disabled role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="linhaSuggestions" aria-expanded="false">
+                                <button type="button" id="linhaClear" class="select-clear" disabled>Limpar</button>
+                            </div>
+                            <div id="linhaSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de linha"></div>
+                        </div>
+                        <label for="modelo">Modelo</label>
+                        <div class="select-search-row">
+                            <input type="text" id="modeloSearch" class="select-search" placeholder="Pesquisar modelo..." disabled role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="modeloSuggestions" aria-expanded="false">
+                            <button type="button" id="modeloClear" class="select-clear" disabled>Limpar</button>
+                        </div>
+                        <div id="modeloSuggestions" class="select-suggestions" role="listbox" aria-label="Sugestões de modelo"></div>
+                        <select id="modelo" required disabled>
+                            <option value="">Selecione o Modelo</option>
+                        </select>
+                        <div id="modeloOutroWrap" class="outro-wrap hidden">
+                            <label for="modeloOutro">Modelo (Outro)</label>
+                            <input type="text" id="modeloOutro" placeholder="Informe o modelo">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-grid two-col">
+                    <div class="form-group">
+                        <label for="fotoBicicleta">Foto da Bicicleta (opcional)</label>
+                        <div class="file-control" id="fcFotoBicicleta">
+                            <input type="file" id="fotoBicicleta" class="hidden-input" accept="image/jpeg,image/png,image/jpg">
+                            <button type="button" id="btnPickFotoBicicleta" class="file-trigger">Escolher arquivo</button>
+                            <span class="file-name" id="nomeFotoBicicleta" aria-live="polite" aria-atomic="true">Nenhum arquivo</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="fotoDonoComBicicleta">Foto do Dono com Bicicleta (opcional)</label>
+                        <div class="file-control" id="fcFotoDonoComBike">
+                            <input type="file" id="fotoDonoComBicicleta" class="hidden-input" accept="image/jpeg,image/png,image/jpg">
+                            <button type="button" id="btnPickFotoDonoComBike" class="file-trigger">Escolher arquivo</button>
+                            <span class="file-name" id="nomeFotoDonoComBike" aria-live="polite" aria-atomic="true">Nenhum arquivo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions" style="justify-content: flex-end; margin-top: 6px;">
+                    <button type="submit">Adicionar Bicicleta</button>
+                </div>
+            </form>
+
+            <div id="message" class="message" aria-live="polite"></div>
+        </div>
+    </section>
+
+    <script>
+        // Base unificada da API: aceita window.API_BASE_URL com ou sem /api
+        const BASE_API = (
+          (window.API_BASE_URL && window.API_BASE_URL.trim())
+            ? window.API_BASE_URL
+            : 'https://api-daja3h3cva-rj.a.run.app'
+        ).replace(/\/$/, '');
+
+        const form = document.getElementById('formBicicleta');
+        const messageDiv = document.getElementById('message');
+        const submitButton = form.querySelector('button[type="submit"]');
+        const buscarInput = document.getElementById('buscar_proprietario');
+        const datalist = document.getElementById('listaProprietariosSemBike');
+        const proprietarioIdInput = document.getElementById('proprietario_id');
+        const gerarNumeroBtn = document.getElementById('gerar_numero_btn');
+        const numeroBikeInput = document.getElementById('numero_bike');
+
+        async function buscarProprietariosSemBike(termo) {
+            const token = sessionStorage.getItem('token');
+            if (!token) return [];
+            try {
+                const resp = await fetch(`${BASE_API}/controle-acesso/buscar?termo=${encodeURIComponent(termo)}`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (resp.status === 401) {
+                    window.location.href = 'login.html';
+                    return [];
+                }
+                if (!resp.ok) return [];
+                const data = await resp.json();
+                return (data || []).filter(item => item.status === 'SEM_BICICLETA');
+            } catch (_) {
+                return [];
+            }
+        }
+
+        let buscaTimeout = null;
+        buscarInput.addEventListener('input', () => {
+            const termo = buscarInput.value.trim();
+            datalist.innerHTML = '';
+            if (termo.length < 2) return;
+            clearTimeout(buscaTimeout);
+            buscaTimeout = setTimeout(async () => {
+                const resultados = await buscarProprietariosSemBike(termo);
+                datalist.innerHTML = '';
+                resultados.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = `${r.proprietario.nome_completo} (ID: ${r.proprietario.id})`;
+                    datalist.appendChild(opt);
+                });
+            }, 250);
+        });
+
+        function extrairIdDoTexto(texto) {
+            const m = texto.match(/ID:\s*(\d+)/);
+            return m ? parseInt(m[1], 10) : null;
+        }
+
+        function tentarPreencherId() {
+            const id = extrairIdDoTexto(buscarInput.value);
+            if (id) {
+                proprietarioIdInput.value = id;
+            }
+        }
+
+        buscarInput.addEventListener('change', tentarPreencherId);
+        buscarInput.addEventListener('blur', tentarPreencherId);
+
+        function gerarCodigoAlfanumericoUnico(tamanho = 10) {
+            const prefixo = 'JPR-';
+            const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let codigo = '';
+            for (let i = 0; i < tamanho; i++) {
+                codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+            }
+            const timestampPart = Date.now().toString().slice(-4);
+            return prefixo + codigo + timestampPart;
+        }
+
+        function isNumeroBikeValido(valor) {
+            return /^JPR-[A-Z0-9]{14}$/.test(valor);
+        }
+
+        gerarNumeroBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            numeroBikeInput.value = gerarCodigoAlfanumericoUnico();
+        }, true);
+
+        // Normaliza para maiúsculas ao sair do campo
+        numeroBikeInput.addEventListener('blur', () => {
+            if (numeroBikeInput.value) numeroBikeInput.value = numeroBikeInput.value.toUpperCase();
+        });
+
+        // Catálogo: carregar JSON e fallback
+        const tipoSel = document.getElementById('tipo_bike');
+        const marcaSel = document.getElementById('marca');
+        const modeloSel = document.getElementById('modelo');
+        const marcaSearch = document.getElementById('marcaSearch');
+        const modeloSearch = document.getElementById('modeloSearch');
+        const marcaOutroWrap = document.getElementById('marcaOutroWrap');
+        const modeloOutroWrap = document.getElementById('modeloOutroWrap');
+        const marcaOutroInp = document.getElementById('marcaOutro');
+        const modeloOutroInp = document.getElementById('modeloOutro');
+        const marcaSug = document.getElementById('marcaSuggestions');
+        const modeloSug = document.getElementById('modeloSuggestions');
+        const marcaClear = document.getElementById('marcaClear');
+        const modeloClear = document.getElementById('modeloClear');
+        const linhaFilterWrap = document.getElementById('linhaFilterWrap');
+        const linhaSearch = document.getElementById('linhaSearch');
+        const linhaClear = document.getElementById('linhaClear');
+        const linhaSug = document.getElementById('linhaSuggestions');
+
+        // Inicializar módulo compartilhado (Tipo → Marca → Modelo + Linha)
+        if (window.CatalogoBikesUI) {
+            CatalogoBikesUI.loadCatalog();
+            CatalogoBikesUI.setupDependentSelects({
+                tipoSel: '#tipo_bike',
+                marcaSel: '#marca',
+                modeloSel: '#modelo',
+                marcaSearch: '#marcaSearch',
+                modeloSearch: '#modeloSearch',
+                marcaClear: '#marcaClear',
+                modeloClear: '#modeloClear',
+                marcaOutroWrap: '#marcaOutroWrap',
+                modeloOutroWrap: '#modeloOutroWrap',
+                marcaOutroInput: '#marcaOutro',
+                modeloOutroInput: '#modeloOutro',
+                marcaSuggestions: '#marcaSuggestions',
+                modeloSuggestions: '#modeloSuggestions',
+                includeOutroOption: true,
+                includeLinhaFilter: true,
+                linhaFilterWrap: '#linhaFilterWrap',
+                linhaSearch: '#linhaSearch',
+                linhaClear: '#linhaClear',
+                linhaSuggestions: '#linhaSuggestions',
+            });
+        }
+        
+        // File controls: função auxiliar e inicialização
+        function bindFileControl(inputId, buttonId, nameId, containerId){
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(buttonId);
+            const nameEl = document.getElementById(nameId);
+            const container = document.getElementById(containerId);
+            if(!input || !btn) return;
+            btn.onclick = ()=> input.click();
+            input.addEventListener('change', ()=>{
+                const file = input.files && input.files[0];
+                if(nameEl){ nameEl.textContent = file ? file.name : 'Nenhum arquivo'; nameEl.title = file ? file.name : ''; }
+                if(container){ container.classList.toggle('has-file', !!file); }
+            });
+        }
+        // Inicializar file controls personalizados
+        bindFileControl('fotoBicicleta','btnPickFotoBicicleta','nomeFotoBicicleta','fcFotoBicicleta');
+        bindFileControl('fotoDonoComBicicleta','btnPickFotoDonoComBike','nomeFotoDonoComBike','fcFotoDonoComBike');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            submitButton.disabled = true;
+
+            // Garante formato correto antes de enviar
+            if (!isNumeroBikeValido(numeroBikeInput.value)) {
+                numeroBikeInput.value = gerarCodigoAlfanumericoUnico();
+            }
+
+            const formData = new FormData();
+            const proprietarioId = document.getElementById('proprietario_id').value;
+            const numeroBike = document.getElementById('numero_bike').value.trim();
+            const tipoBike = document.getElementById('tipo_bike').value;
+            let marcaFinal = '';
+            let modeloFinal = '';
+            if (tipoBike === 'Outro' || (marcaSel && marcaSel.value === 'Outro')) {
+                marcaFinal = (document.getElementById('marcaOutro').value || '').trim();
+            } else {
+                marcaFinal = (marcaSel.value || '').trim();
+            }
+            if (tipoBike === 'Outro' || (marcaSel && marcaSel.value === 'Outro') || (modeloSel && modeloSel.value === 'Outro')) {
+                modeloFinal = (document.getElementById('modeloOutro').value || '').trim();
+            } else {
+                modeloFinal = (modeloSel.value || '').trim();
+            }
+            const observacoes = document.getElementById('observacoes').value.trim();
+
+            if(!marcaFinal){ showToast('Informe a marca da bicicleta.', 'err'); (marcaOutroWrap.classList.contains('hidden') ? marcaSel : document.getElementById('marcaOutro')).focus(); submitButton.disabled = false; return; }
+            if(!modeloFinal){ showToast('Informe o modelo da bicicleta.', 'err'); (modeloOutroWrap.classList.contains('hidden') ? modeloSel : document.getElementById('modeloOutro')).focus(); submitButton.disabled = false; return; }
+
+            formData.append('proprietario_id', proprietarioId);
+            formData.append('numero_bike', numeroBike);
+            formData.append('tipo_bike', tipoBike);
+            formData.append('marca', marcaFinal);
+            formData.append('modelo', modeloFinal);
+            formData.append('observacoes', observacoes);
+
+            const fotoBicicleta = document.getElementById('fotoBicicleta').files[0];
+            if (fotoBicicleta) formData.append('fotoBicicleta', fotoBicicleta);
+            const fotoDonoComBicicleta = document.getElementById('fotoDonoComBicicleta').files[0];
+            if (fotoDonoComBicicleta) formData.append('fotoDonoComBicicleta', fotoDonoComBicicleta);
+
+            try {
+                const response = await fetch(`${BASE_API}/bicicletas`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: formData
+                });
+                
+                let result = null;
+                let fallbackText = '';
+                try {
+                    result = await response.json();
+                } catch (_) {
+                    fallbackText = await response.text();
+                }
+
+                if (response.ok) {
+                    messageDiv.innerHTML = `<div class="success">${(result && result.mensagem) ? result.mensagem : 'Bicicleta adicionada com sucesso.'}</div>`;
+                    showToast('Bicicleta adicionada com sucesso!', 'ok');
+                    form.reset();
+                } else {
+                    const erroServidor = (result && result.erro) ? result.erro : (fallbackText || `Erro HTTP ${response.status}`);
+                    const msg = response.status === 409 ? (result && result.erro ? result.erro : 'Número da bicicleta já existe.') : erroServidor;
+                    messageDiv.innerHTML = `<div class="error">Erro: ${msg}</div>`;
+                    showToast('Erro: ' + msg, 'err');
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `<div class="error">Erro: ${error.message}</div>`;
+                showToast('Erro: ' + error.message, 'err');
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+
+        function showToast(message, type='info'){
+            let area = document.getElementById('toastArea');
+            if(!area){
+                area = document.createElement('div');
+                area.id = 'toastArea';
+                document.body.appendChild(area);
+            }
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + (type || 'info');
+            const icon = document.createElement('span'); icon.className = 'icon'; icon.textContent = type==='ok' ? '✔' : (type==='err' ? '⚠' : 'ℹ');
+            const text = document.createElement('span'); text.textContent = message;
+            toast.appendChild(icon); toast.appendChild(text);
+            area.appendChild(toast);
+            setTimeout(()=> toast.remove(), 4200);
+        }
+
+        function limparCampos(){
+            marcaSearch.value = '';
+            modeloSearch.value = '';
+            marcaSug.classList.remove('show');
+            modeloSug.classList.remove('show');
+        }
+
+    </script>
+    <div id="toastArea" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
