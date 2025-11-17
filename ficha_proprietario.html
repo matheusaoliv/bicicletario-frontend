@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ficha Detalhada do Proprietário - Bicicletário</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif; margin: 0; background-color: #e9f5f1;
+      display: flex; flex-direction: column; align-items: center; color: #333; min-height: 100vh;
+    }
+    header {
+      width: 100%; background-color: #005f73; color: white; padding: 20px 0;
+      text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px;
+    }
+    header h1 { font-size: 1.7em; margin: 0; }
+    .container-ficha {
+      width: 95%; max-width: 700px; margin: 20px auto; background: #fff;
+      padding: 25px 30px; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    }
+    .container-ficha h2 { color: #005f73; text-align: center; margin-top: 0; margin-bottom: 25px; }
+    label { margin-top: 15px; display: block; font-weight: bold; color: #333; margin-bottom: 5px; }
+    input[type="text"], input[type="email"], input[type="tel"], select, textarea {
+      width: 100%; padding: 10px; margin-top: 4px; border-radius: 6px;
+      border: 1px solid #ade8f4; box-sizing: border-box; background-color: #f8f9fa;
+    }
+    input[type="file"] { margin-top: 5px; }
+    .foto-preview { max-width: 150px; max-height: 150px; margin-top: 10px; border: 1px solid #ddd; }
+    .botoes-acao { margin-top: 30px; text-align: right; }
+    .botoes-acao button {
+      padding: 10px 20px; background: #2a9d8f; color: white; border: none;
+      border-radius: 8px; cursor: pointer; font-size: 1em; margin-left: 10px;
+    }
+    .botoes-acao button.secundario { background-color: #007bff; }
+    .botoes-acao button.perigo { background-color: #dc3545; }
+    @media print {
+      body * { visibility: hidden; }
+      #modalCartao, #modalCartao > div, #cartaoAcesso, #cartaoAcesso * { visibility: visible; }
+      #modalCartao { position: static !important; width: auto !important; height: auto !important; background: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; display: block !important; overflow: visible !important; }
+      #modalCartao > div { box-shadow: none !important; padding: 0 !important; margin: 0 !important; border: none !important; max-width: none !important; width: auto !important; background: none !important; }
+      #cartaoAcesso { width: 8.56cm !important; height: 5.398cm !important; box-shadow: none !important; margin: 1cm auto; border: 1px dashed #888; border-radius: 3.18mm; overflow: hidden; box-sizing: border-box; }
+      #modalCartao span[onclick*="modalCartao"], #modalCartao div[style*="text-align:center; margin-top:18px;"] { display: none !important; }
+      img { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      @page { size: A4 portrait; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Ficha Detalhada do Proprietário</h1>
+  </header>
+  <div class="container-ficha">
+    <form id="formFichaProprietario">
+      <h2>Dados do Proprietário</h2>
+      <input type="hidden" id="proprietarioId">
+      <label for="fichaNome">Nome Completo:</label>
+      <input type="text" id="fichaNome" required>
+      <label for="fichaEmail">Email:</label>
+      <input type="email" id="fichaEmail">
+      <label for="fichaCpf">CPF:</label>
+      <input type="text" id="fichaCpf" required>
+      <label for="fichaContato">Contato:</label>
+      <input type="tel" id="fichaContato">
+      <label for="fichaEndereco">Endereço:</label>
+      <textarea id="fichaEndereco" rows="3"></textarea>
+      <div>
+        <label>Foto do Proprietário Atual:</label>
+        <img id="previewFotoProprietario" src="#" alt="Foto do Proprietário" class="foto-preview" style="display:none;">
+        <label for="fichaFotoProprietario" style="margin-top: 5px; display: block;">Alterar Foto do Proprietário:</label>
+        <input type="file" id="fichaFotoProprietario" accept="image/*">
+      </div>
+      <hr style="margin: 30px 0;">
+      <h2>Dados da Bicicleta Principal</h2>
+      <input type="hidden" id="bicicletaId">
+      <label for="fichaBikeNumeroID">Número de Identificação da Bicicleta:</label>
+      <input type="text" id="fichaBikeNumeroID" required>
+      <label for="fichaBikeTipo">Tipo:</label>
+      <select id="fichaBikeTipo" required>
+        <option value="">Selecione o Tipo</option>
+        <option value="Mountain Bike">Mountain Bike</option>
+        <option value="Speed">Speed</option>
+        <option value="Urbana">Urbana</option>
+        </select>
+      <label for="fichaBikeMarca">Marca:</label>
+      <input type="text" id="fichaBikeMarca" required>
+      <label for="fichaBikeModelo">Modelo:</label>
+      <input type="text" id="fichaBikeModelo" required>
+      <label for="fichaBikeObs">Observações da Bicicleta:</label>
+      <textarea id="fichaBikeObs" rows="3"></textarea>
+      <div>
+        <label>Foto da Bicicleta Atual:</label>
+        <img id="previewFotoBicicleta" src="#" alt="Foto da Bicicleta" class="foto-preview" style="display:none;">
+        <label for="fichaFotoBicicleta" style="margin-top: 5px; display: block;">Alterar Foto da Bicicleta:</label>
+        <input type="file" id="fichaFotoBicicleta" accept="image/*">
+      </div>
+      <div>
+        <label>Foto do Dono com Bicicleta Atual:</label>
+        <img id="previewFotoDonoComBicicleta" src="#" alt="Foto Dono com Bicicleta" class="foto-preview" style="display:none;">
+        <label for="fichaFotoDonoComBicicleta" style="margin-top: 5px; display: block;">Alterar Foto do Dono com Bicicleta:</label>
+        <input type="file" id="fichaFotoDonoComBicicleta" accept="image/*">
+      </div>
+      <div class="botoes-acao">
+        <button type="button" onclick="voltarParaLista()">Voltar</button>
+        <button type="button" class="secundario" id="btnGerarCartao">Gerar Cartão de Acesso</button>
+        <button type="submit">Salvar Alterações</button>
+      </div>
+    </form>
+  </div>
+  <div id="modalCartao" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:9999;">
+    <div style="background:white; border-radius:16px; padding:24px; box-shadow:0 8px 32px rgba(0,0,0,0.3); position:relative; max-width:450px; margin:auto;">
+      <span onclick="document.getElementById('modalCartao').style.display='none'" style="position:absolute; top:10px; right:18px; font-size:2em; color:#888; cursor:pointer;">&times;</span>
+      <div id="cartaoAcesso" style="width:390px; height:260px; position:relative; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.20);">
+        <img src="imagens/cartao-fundo.png" alt="Fundo do Cartão" style="position:absolute; left:0; top:0; width:100%; height:100%; object-fit:cover; border-radius:12px; z-index:0; pointer-events:none;" />
+        <img id="cartaoFoto" src="" alt="Foto do Proprietário" style="position: absolute; left: 50px; top: 99px; width: 78px; height: 78px; border-radius: 7px; object-fit: cover; border: none; background: transparent; z-index: 1;" />
+        <div id="cartaoNumeroGrande" style="position: absolute; left: 142px; top: 120px; width: 195px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 1.2em; font-weight: bold; color: #0D47A1; letter-spacing: 0.5px; background: transparent; z-index: 1; text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.3);"></div>
+        <div id="cartaoQR" style="position: absolute; right: 43px; bottom: 50px; width: 58px; height: 58px; background: white; border-radius: 0px; display: flex; align-items: center; justify-content: center; padding: 1px; z-index: 1;"></div>
+        <div id="cartaoNome" style="position: absolute; left: 51px; top: 177px; font-size: 0.75em; font-weight: bold; color: #333333; width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 1;"></div>
+        <div id="cartaoInfoBicicleta" style="position: absolute; left: 51px; top: 194px; font-size: 0.8em; color: #1A1A1A; width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 1;"></div>
+        <div id="cartaoRodapeTexto" style="position: absolute; left: 51px; bottom: 37px; font-size: 0.46875em; color: #1A1A1A; width: 400px; line-height: 1.2; z-index: 1;">Documento pessoal e intransferível. Em caso de perda, comunique à administração.</div>
+      </div>
+      <div style="text-align:center; margin-top:18px;">
+        <button onclick="imprimirCartao()" style="padding:8px 18px; border:none; background:#2a9d8f; color:white; border-radius:8px; font-size:1em; cursor:pointer;">Imprimir Cartão</button>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    // (Funções JS conforme enviado pelo usuário - removido aqui para brevidade)
+  </script>
+</body>
+</html>
