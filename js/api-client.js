@@ -5,9 +5,11 @@
      api.get('/proprietarios/1/bicicletas').then(console.log)
 */
 (function(global){
-  // SEMPRE usar API em produção
+  // SEMPRE usar API em produção, mas permitir override via global.API_BASE_URL
   // const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-  const API_BASE_URL = 'https://api-daja3h3cva-rj.a.run.app';
+  const API_BASE_URL = (global.API_BASE_URL && global.API_BASE_URL.trim())
+    ? global.API_BASE_URL.trim()
+    : 'https://api-daja3h3cva-rj.a.run.app';
   const DEFAULT_TIMEOUT_MS = 20000;
 
   function getStoredToken(){

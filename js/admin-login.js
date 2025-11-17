@@ -38,7 +38,9 @@ if (loginForm) {
     const senha = passEl?.value || '';
     if (!login || !senha) { alert('Preencha usuário e senha.'); return; }
     try {
-      const API_BASE = ((window.API_BASE_URL && window.API_BASE_URL.trim()) ? window.API_BASE_URL : '/api').replace(/\/$/, '');
+      const API_BASE = ((window.API_BASE_URL && window.API_BASE_URL.trim())
+        ? window.API_BASE_URL
+        : 'https://api-daja3h3cva-rj.a.run.app').replace(/\/$/, '');
       const resp = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -89,7 +91,9 @@ async function carregarFuncionariosSecretaria() {
   if (!selectEl) return;
   
   try {
-    const API_BASE = ((window.API_BASE_URL && window.API_BASE_URL.trim()) ? window.API_BASE_URL : '/api').replace(/\/$/, '');
+    const API_BASE = ((window.API_BASE_URL && window.API_BASE_URL.trim())
+      ? window.API_BASE_URL
+      : 'https://api-daja3h3cva-rj.a.run.app').replace(/\/$/, '');
     
     // Buscar funcionários (endpoint público ou com token temporário)
     const resp = await fetch(`${API_BASE}/funcionarios/secretaria`, {
@@ -224,7 +228,9 @@ async function processarResultadoGoogle() {
     const firebaseToken = await user.getIdToken();
     
     // Enviar para backend validar
-    const API_BASE = ((window.API_BASE_URL && window.API_BASE_URL.trim()) ? window.API_BASE_URL : '/api').replace(/\/$/, '');
+    const API_BASE = ((window.API_BASE_URL && window.API_BASE_URL.trim())
+      ? window.API_BASE_URL
+      : 'https://api-daja3h3cva-rj.a.run.app').replace(/\/$/, '');
     
     const resp = await fetch(`${API_BASE}/auth/google-login`, {
       method: 'POST',

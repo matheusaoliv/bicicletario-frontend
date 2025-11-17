@@ -6,7 +6,11 @@
 
   // Pequena ajuda: base de API - SEMPRE usar produção
   // const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-  const API_BASE = 'https://api-daja3h3cva-rj.a.run.app'.replace(/\/$/, '');
+  const API_BASE = (
+    (window.API_BASE_URL && window.API_BASE_URL.trim())
+      ? window.API_BASE_URL.trim()
+      : 'https://api-daja3h3cva-rj.a.run.app'
+  ).replace(/\/$/, '');
 
   // Utilitário: obter token
   function getToken(){
@@ -364,6 +368,22 @@
         return true;
       });
     }
+    async function enriquecerComBicicletas(lista, limite){
+      const res = Array.isArray(lista) ? lista.slice() : [];
+      const max = Math.min(limite || 10, res.length);
+      for(let i=0;i<max;i++){
+        const p = res[i];
+        const pid = p && p.id;
+        if(!pid) continue;
+        try{
+          const bikes = await apiFetch(`/proprietarios/${encodeURIComponent(pid)}/bicicletas`, { method: 'GET' });
+          if(Array.isArray(bikes) && bikes.length){
+            p.bicicleta = bikes[0];
+          }
+        }catch(_){ }
+      }
+      return res;
+    }
     async function realizarBusca(){
       const termo = (ui.termoPesquisa && ui.termoPesquisa.value || '').trim();
       if(!termo){ ui.mensagemStatus.textContent = 'Por favor, digite um termo para a busca.'; return; }
@@ -384,13 +404,24 @@
         if(filters.modelo) params.append('modelo', filters.modelo);
         if(filters.linha) params.append('linha', filters.linha);
         const data = await apiFetch(`/proprietarios?${params.toString()}`, { signal: buscarAborter.signal });
-        const arr = Array.isArray(data) ? data : [];
-        
-        // Usar dados diretos de proprietários por enquanto
-        // TODO: Implementar busca de bicicletas quando endpoint estiver disponível
-        console.log('Dados de proprietários carregados:', arr.length);
-        const todosResultados = arr;
-        
+        let arr = Array.isArray(data) ? data : [];
+
+        // Filtro local extra pelo termo (nome, CPF, contato)
+        const termoNorm = normStr(termo);
+        arr = arr.filter(p => {
+          const nome = normStr(p.nome_completo || '');
+          const cpf = String(p.cpf || '').replace(/\D+/g,'');
+          const contato = String(p.contato || '').replace(/\D+/g,'');
+          return (
+            (!termoNorm || nome.includes(termoNorm)) ||
+            (cpf && cpf.includes(termoNorm.replace(/\D+/g,''))) ||
+            (contato && contato.includes(termoNorm.replace(/\D+/g,'')))
+          );
+        });
+
+        console.log('Dados de proprietários carregados (após filtro local):', arr.length);
+        const todosResultados = await enriquecerComBicicletas(arr, 10);
+
         const filtered = filterResults(todosResultados, filters);
         renderizarResultados(filtered);
       } catch(err){
@@ -467,7 +498,11 @@
           });
 
           // Atualiza o item local para refletir a mudança
-          item.proprietario.numero_lacre = novoLacre;
+          if (isProprietarioDireto) {
+            item.numero_lacre = novoLacre;
+          } else if (item.proprietario) {
+            item.proprietario.numero_lacre = novoLacre;
+          }
           ui.modal.lacre.currentNumber.textContent = novoLacre;
           lacreVerificado = true;
           ui.modal.btnAcaoPrincipal.disabled = false;
@@ -916,8 +951,14 @@
 
     async function executarAcaoPrincipal(){
       if(!itemAtivoNoModal) return;
+
+      // Detectar se é dado de proprietário direto ou de controle de acesso
+      const isProprietarioDireto = !itemAtivoNoModal.proprietario;
+      const proprietario = isProprietarioDireto ? itemAtivoNoModal : itemAtivoNoModal.proprietario;
+      const bicicleta = itemAtivoNoModal.bicicleta || null;
+
       // Priorizar status da bicicleta
-      const status = itemAtivoNoModal.bicicleta?.status || itemAtivoNoModal.status || (itemAtivoNoModal.registro_entrada_atual || itemAtivoNoModal.bicicleta?.open_registro_id ? 'DENTRO' : (itemAtivoNoModal.bicicleta?.id ? 'FORA' : 'SEM_BICICLETA'));
+      const status = bicicleta?.status || itemAtivoNoModal.status || (itemAtivoNoModal.registro_entrada_atual || bicicleta?.open_registro_id ? 'DENTRO' : (bicicleta?.id ? 'FORA' : 'SEM_BICICLETA'));
       const estaDentro = status === 'DENTRO';
 
       try {
@@ -925,9 +966,9 @@
           // Checkout requer controle_acesso_id
           const controleId = itemAtivoNoModal._selectedOpenRegistroId || itemAtivoNoModal.registro_entrada_atual?.id;
           if(!controleId){
-            const nome = itemAtivoNoModal.proprietario?.nome_completo || '-';
-            const cpf = itemAtivoNoModal.proprietario?.cpf || '';
-            const numeroId = itemAtivoNoModal.bicicleta?.numero_identificacao || String(itemAtivoNoModal.bicicleta?.id || '');
+            const nome = proprietario?.nome_completo || '-';
+            const cpf = proprietario?.cpf || '';
+            const numeroId = bicicleta?.numero_identificacao || String(bicicleta?.id || '');
             const details = `
               <div class="op-detail-row"><strong>Proprietário:</strong> ${escapeHtml(nome)} ${cpf?`(CPF: ${escapeHtml(cpf)})`:''}</div>
               <div class="op-detail-row"><strong>Bicicleta:</strong> ${escapeHtml(numeroId || '-')}</div>`;
@@ -951,9 +992,10 @@
           // Sucesso: mostrar popup de checkout
           // Captura o contexto ANTES de fechar o modal
           const ctx = itemAtivoNoModal;
-          fecharModal();
-          const nome = ctx?.proprietario?.nome_completo || '-';
-          const cpf = ctx?.proprietario?.cpf || '';
+          const ctxIsDireto = !ctx.proprietario;
+          const ctxProp = ctxIsDireto ? ctx : ctx.proprietario;
+          const nome = ctxProp?.nome_completo || '-';
+          const cpf = ctxProp?.cpf || '';
           const marca = ctx?.bicicleta?.marca || '';
           const modelo = ctx?.bicicleta?.modelo || '';
           const numeroId = ctx?.bicicleta?.numero_identificacao || String(ctx?.bicicleta?.id || '');
@@ -964,10 +1006,11 @@
             <div class="op-detail-row"><strong>Local:</strong> ${escapeHtml(local)}</div>
             <div class="op-detail-row"><strong>Data/Hora:</strong> ${escapeHtml(formatarDataHora(new Date()))}</div>`;
           showOpPopup('Checkout Realizado!', 'A sua saída foi registrada com sucesso.', { mode: 'success', detailsHtml: details, autoCloseMs: 2600 });
+          fecharModal();
         } else {
           // Checkin requer bicicleta_id, proprietario_id, local
-          const bicicletaId = itemAtivoNoModal.bicicleta?.id;
-          const proprietarioId = itemAtivoNoModal.proprietario?.id;
+          const bicicletaId = bicicleta?.id;
+          const proprietarioId = proprietario?.id;
           if(!bicicletaId || !proprietarioId){
             const nome = itemAtivoNoModal.proprietario?.nome_completo || '-';
             const cpf = itemAtivoNoModal.proprietario?.cpf || '';
@@ -982,7 +1025,7 @@
             return;
           }
           // Buscar número do lacre do proprietário (já foi salvo quando clicou em "Sim" ou "Salvar")
-          const lacreProprietario = itemAtivoNoModal.proprietario?.numero_lacre || '';
+          const lacreProprietario = proprietario?.numero_lacre || '';
           const lacre = String(lacreProprietario).replace(/\D+/g, ''); // mantém apenas dígitos
           
           console.log('🔍 Debug Check-in:', {
@@ -1021,9 +1064,10 @@
           // Sucesso: mostrar popup de check-in
           // Captura o contexto ANTES de fechar o modal
           const ctx2 = itemAtivoNoModal;
-          fecharModal();
-          const nome2 = ctx2?.proprietario?.nome_completo || '-';
-          const cpf2 = ctx2?.proprietario?.cpf || '';
+          const ctx2IsDireto = !ctx2.proprietario;
+          const ctx2Prop = ctx2IsDireto ? ctx2 : ctx2.proprietario;
+          const nome2 = ctx2Prop?.nome_completo || '-';
+          const cpf2 = ctx2Prop?.cpf || '';
           const marca2 = ctx2?.bicicleta?.marca || '';
           const modelo2 = ctx2?.bicicleta?.modelo || '';
           const numeroId2 = ctx2?.bicicleta?.numero_identificacao || String(ctx2?.bicicleta?.id || '');
@@ -1042,8 +1086,8 @@
           setTimeout(()=>{ window.location.href = 'login.html'; }, 1400);
           return;
         }
-        const nome = itemAtivoNoModal?.proprietario?.nome_completo || '';
-        const cpf = itemAtivoNoModal?.proprietario?.cpf || '';
+        const nome = proprietario?.nome_completo || '';
+        const cpf = proprietario?.cpf || '';
         const details = nome ? `<div class="op-detail-row"><strong>Proprietário:</strong> ${escapeHtml(nome)} ${cpf?`(CPF: ${escapeHtml(cpf)})`:''}</div>` : '';
         showOpPopup('Erro na operação', err.message || 'Tente novamente.', { mode: 'error', detailsHtml: details, autoCloseMs: 3200 });
       }
