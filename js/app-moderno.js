@@ -423,8 +423,10 @@
     }
 
     function gerenciarLogicaLacre(item) {
-      const proprietario = item.proprietario;
-      const lacreAtual = proprietario.numero_lacre || null;
+      // Detectar se é dado de proprietário direto ou de controle de acesso
+      const isProprietarioDireto = !item.proprietario;
+      const proprietario = isProprietarioDireto ? item : item.proprietario;
+      const lacreAtual = proprietario?.numero_lacre || null;
       lacreVerificado = false; // Reseta a verificação a cada abertura do modal
 
       ui.modal.lacre.currentNumber.textContent = lacreAtual || 'Nenhum';
@@ -578,13 +580,19 @@
       itemAtivoNoModal = item;
       isModalOpen = true;
       lastFocusedEl = document.activeElement;
+      
+      // Detectar se é dado de proprietário direto ou de controle de acesso
+      const isProprietarioDireto = !item.proprietario;
+      const proprietarioData = isProprietarioDireto ? item : item.proprietario;
+      const bicicletaData = item.bicicleta;
+      
       // Priorizar status da bicicleta
-      const status = item.bicicleta?.status || item.status || (item.registro_entrada_atual || item.bicicleta?.open_registro_id ? 'DENTRO' : (item.bicicleta?.id ? 'FORA' : 'SEM_BICICLETA'));
-      const nome = item.proprietario?.nome_completo || '-';
-      const cpf = item.proprietario?.cpf || '-';
-      const bikeMarca = item.bicicleta?.marca || '-';
-      const bikeModelo = item.bicicleta?.modelo || '';
-      const numeroId = item.bicicleta?.numero_identificacao || '-';
+      const status = bicicletaData?.status || item.status || (item.registro_entrada_atual || bicicletaData?.open_registro_id ? 'DENTRO' : (bicicletaData?.id ? 'FORA' : 'SEM_BICICLETA'));
+      const nome = proprietarioData?.nome_completo || '-';
+      const cpf = proprietarioData?.cpf || '-';
+      const bikeMarca = bicicletaData?.marca || '-';
+      const bikeModelo = bicicletaData?.modelo || '';
+      const numeroId = bicicletaData?.numero_identificacao || '-';
 
       if(ui.modal.titulo) ui.modal.titulo.textContent = `Ação para: ${nome}`;
       if(ui.modal.nomeProprietario) setTextAndTooltip(ui.modal.nomeProprietario, `${nome} (CPF: ${cpf})`);
@@ -599,8 +607,8 @@
       ui.modal.btnAcaoPrincipal.addEventListener('click', executarAcaoPrincipal);
 
       // Fotos
-      if (ui.modal.fotoPrincipal) ui.modal.fotoPrincipal.src = item.proprietario?.foto_proprietario_url || 'imagens/image.png';
-      if (ui.modal.fotoExtra) ui.modal.fotoExtra.src = item.proprietario?.foto_proprietario_extra_url || 'imagens/avatar-placeholder.png';
+      if (ui.modal.fotoPrincipal) ui.modal.fotoPrincipal.src = proprietarioData?.foto_proprietario_url || 'imagens/image.png';
+      if (ui.modal.fotoExtra) ui.modal.fotoExtra.src = proprietarioData?.foto_proprietario_extra_url || 'imagens/avatar-placeholder.png';
 
       // Local (bicicletário)
       popularLocais();
@@ -624,7 +632,8 @@
       gerenciarLogicaLacre(item);
 
       // Carregar todas as bicicletas do proprietário e permitir seleção
-      carregarBicicletas(item.proprietario?.id, item.bicicleta?.id);
+      const proprietarioId = isProprietarioDireto ? item.id : item.proprietario?.id;
+      carregarBicicletas(proprietarioId, bicicletaData?.id);
 
       setBackgroundInert(true);
       ui.modal.overlay && ui.modal.overlay.classList.add('visivel');
