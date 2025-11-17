@@ -1409,11 +1409,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Health check backend
-        // Usa o api-client (base já inclui /api) quando disponível, senão cai para localhost:5050
-        const DEFAULT_LOCAL_API = 'http://localhost:5050/api';
-        if (!window.API_BASE_URL) { window.API_BASE_URL = DEFAULT_LOCAL_API; }
-        const API_BASE_FOR_HEALTH = (window.API_BASE_URL || DEFAULT_LOCAL_API);
+        // Health check backend - SEMPRE usar produção
+        const DEFAULT_PROD_API = 'https://api-daja3h3cva-rj.a.run.app';
+        if (!window.API_BASE_URL) { window.API_BASE_URL = DEFAULT_PROD_API; }
+        const API_BASE_FOR_HEALTH = (window.API_BASE_URL || DEFAULT_PROD_API);
         const HEALTH_URL = API_BASE_FOR_HEALTH.replace(/\/$/, '') + '/health';
         let healthTimer = null;
         const HEALTH_INTERVAL_MS = 15000; // 15s
