@@ -19,6 +19,7 @@
         <button onclick="testAPI()">Testar API Base</button>
         <button onclick="testProprietarios()">Testar Proprietários</button>
         <button onclick="testBusca()">Testar Busca</button>
+        <button onclick="testBuscaCombinada()">Testar Busca Combinada</button>
         <button onclick="testAuth()">Testar Auth</button>
     </div>
     
@@ -103,6 +104,16 @@
                         log(`✅ Busca: ${Array.isArray(data) ? data.length : 'não é array'} proprietários encontrados`, 'success');
                         if (Array.isArray(data) && data.length > 0) {
                             log(`📄 Primeiro resultado: ${data[0].nome_completo || 'Nome não encontrado'}`, 'info');
+                            log(`🔍 Estrutura dos dados:`, 'info');
+                            log(`   - CPF: ${data[0].cpf || 'não encontrado'}`, 'info');
+                            log(`   - Contato: ${data[0].contato || 'não encontrado'}`, 'info');
+                            log(`   - Bicicleta: ${data[0].bicicleta ? 'objeto encontrado' : 'não encontrado'}`, 'info');
+                            if (data[0].bicicleta) {
+                                log(`   - Bicicleta.marca: ${data[0].bicicleta.marca || 'não encontrado'}`, 'info');
+                                log(`   - Bicicleta.numero_identificacao: ${data[0].bicicleta.numero_identificacao || 'não encontrado'}`, 'info');
+                            }
+                            log(`📋 Dados completos do primeiro item:`, 'info');
+                            console.log('Primeiro item completo:', data[0]);
                         }
                     } else {
                         const responseText = await response.text();
@@ -142,6 +153,52 @@
                 }
             } catch (error) {
                 log(`❌ Erro auth: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testBuscaCombinada() {
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                log(`❌ Token não encontrado. Faça login primeiro.`, 'error');
+                return;
+            }
+            
+            const endpoints = [
+                '/controle-acesso/buscar',
+                '/proprietarios/buscar', 
+                '/search/proprietarios',
+                '/bicicletas/buscar',
+                '/cadastros/buscar'
+            ];
+            
+            log('🔍 Testando endpoints alternativos de busca...', 'info');
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${API_BASE}${endpoint}?termo=a`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log(`✅ ${endpoint}: ${Array.isArray(data) ? data.length : 'não é array'} resultados`, 'success');
+                        if (Array.isArray(data) && data.length > 0) {
+                            const first = data[0];
+                            if (first.proprietario && first.bicicleta) {
+                                log(`   🎯 ENCONTRADO! Dados combinados: proprietário + bicicleta`, 'success');
+                            } else if (first.nome_completo && first.bicicleta) {
+                                log(`   🎯 ENCONTRADO! Proprietário direto + bicicleta`, 'success');
+                            }
+                        }
+                    } else {
+                        log(`❌ ${endpoint}: ${response.status} - ${response.statusText}`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ ${endpoint}: ${error.message}`, 'error');
+                }
             }
         }
         

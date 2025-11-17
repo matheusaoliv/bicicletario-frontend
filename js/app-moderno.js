@@ -385,7 +385,26 @@
         if(filters.linha) params.append('linha', filters.linha);
         const data = await apiFetch(`/proprietarios?${params.toString()}`, { signal: buscarAborter.signal });
         const arr = Array.isArray(data) ? data : [];
-        const filtered = filterResults(arr, filters);
+        
+        // Para os primeiros 10 resultados, buscar as bicicletas associadas
+        const arrayComBicicletas = await Promise.all(arr.slice(0, 10).map(async (proprietario) => {
+          try {
+            const bicicletas = await apiFetch(`/proprietarios/${proprietario.id}/bicicletas`, { signal: buscarAborter.signal });
+            if (Array.isArray(bicicletas) && bicicletas.length > 0) {
+              // Pegar a primeira bicicleta como principal
+              return { ...proprietario, bicicleta: bicicletas[0] };
+            }
+          } catch (err) {
+            console.warn(`Erro ao buscar bicicletas para proprietário ${proprietario.id}:`, err);
+          }
+          return proprietario;
+        }));
+        
+        // Manter o resto dos proprietários sem buscar bicicletas (para performance)
+        const proprietariosRestantes = arr.slice(10);
+        const todosResultados = [...arrayComBicicletas, ...proprietariosRestantes];
+        
+        const filtered = filterResults(todosResultados, filters);
         renderizarResultados(filtered);
       } catch(err){
         if(err.name === 'AbortError') return; // ignorar buscas canceladas
