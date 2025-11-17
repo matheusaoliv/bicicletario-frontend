@@ -6,16 +6,20 @@
     <title>Debug API - Bicicletário</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; font-size: 14px; }
         .success { background: #d4edda; }
         .error { background: #f8d7da; }
+        .info { background: #e9ecef; }
+        .warn { background: #fff3cd; }
         button { margin: 5px; padding: 10px; }
+        #results { max-height: 70vh; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
     </style>
 </head>
 <body>
     <h1>🔍 Debug API - Bicicletário</h1>
     
     <div>
+        <button onclick="runFullDiagnostics()">Diagnóstico Completo</button>
         <button onclick="testAPI()">Testar API Base</button>
         <button onclick="testProprietarios()">Testar Proprietários</button>
         <button onclick="testBusca()">Testar Busca</button>
@@ -27,21 +31,36 @@
     <div id="results"></div>
 
     <script>
-        const API_BASE = 'https://api-daja3h3cva-rj.a.run.app';
+        const DEFAULT_API_BASE = 'https://api-daja3h3cva-rj.a.run.app';
+
+        function getApiBase(){
+            try {
+                const fromWindow = (window.API_BASE_URL && window.API_BASE_URL.trim()) || '';
+                const base = fromWindow || DEFAULT_API_BASE;
+                return base.replace(/\/$/, '');
+            } catch (e) {
+                return DEFAULT_API_BASE;
+            }
+        }
+
+        const API_BASE = getApiBase();
         
         function log(message, type = 'info') {
             const div = document.createElement('div');
             div.className = `result ${type}`;
             div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
-            document.getElementById('results').appendChild(div);
+            const resultsEl = document.getElementById('results');
+            resultsEl.appendChild(div);
+            resultsEl.scrollTop = resultsEl.scrollHeight;
         }
         
         async function testAPI() {
             try {
-                log('🔌 Testando conectividade da API...', 'info');
+                log(`🔌 Testando conectividade da API em: ${API_BASE}/health`, 'info');
                 const response = await fetch(`${API_BASE}/health`);
                 const data = await response.text();
-                log(`✅ API respondeu: ${response.status} - ${data}`, 'success');
+                const type = response.ok ? 'success' : 'error';
+                log(`API respondeu: ${response.status} - ${data}`, type);
             } catch (error) {
                 log(`❌ Erro na API: ${error.message}`, 'error');
             }
@@ -101,8 +120,15 @@
                     log(`📋 Endpoint testado: /proprietarios?termo=a`, 'info');
                     
                     if (response.ok) {
-                        const data = await response.json();
-                        log(`✅ Busca: ${Array.isArray(data) ? data.length : 'não é array'} proprietários encontrados`, 'success');
+                        let data;
+                        try {
+                            const text = await response.text();
+                            data = JSON.parse(text);
+                            log(`✅ Busca: ${Array.isArray(data) ? data.length : 'não é array'} proprietários encontrados`, 'success');
+                        } catch (e) {
+                            log(`❌ Erro parse JSON da busca: ${e.message}`, 'error');
+                            return;
+                        }
                         if (Array.isArray(data) && data.length > 0) {
                             log(`📄 Primeiro resultado: ${data[0].nome_completo || 'Nome não encontrado'}`, 'info');
                             log(`🔍 Estrutura dos dados:`, 'info');
@@ -184,7 +210,14 @@
                     });
                     
                     if (response.ok) {
-                        const data = await response.json();
+                        let data;
+                        try {
+                            const text = await response.text();
+                            data = JSON.parse(text);
+                        } catch (e) {
+                            log(`❌ ${endpoint}: erro ao parsear JSON (${e.message})`, 'error');
+                            continue;
+                        }
                         log(`✅ ${endpoint}: ${Array.isArray(data) ? data.length : 'não é array'} resultados`, 'success');
                         if (Array.isArray(data) && data.length > 0) {
                             const first = data[0];
@@ -195,7 +228,8 @@
                             }
                         }
                     } else {
-                        log(`❌ ${endpoint}: ${response.status} - ${response.statusText}`, 'error');
+                        const txt = await response.text().catch(() => '');
+                        log(`❌ ${endpoint}: ${response.status} - ${response.statusText} - ${txt}`, 'error');
                     }
                 } catch (error) {
                     log(`❌ ${endpoint}: ${error.message}`, 'error');
@@ -269,10 +303,24 @@
             }
         }
         
+        async function runFullDiagnostics(){
+            log(`🚀 Iniciando diagnóstico completo... (API_BASE = ${API_BASE})`, 'info');
+            try {
+                await testAPI();
+                await testAuth();
+                await testProprietarios();
+                await testBusca();
+                await testBuscaCombinada();
+                await testBicicletasPorProprietario();
+                log('✅ Diagnóstico completo finalizado.', 'success');
+            } catch (e) {
+                log(`❌ Erro inesperado no diagnóstico completo: ${e.message}`, 'error');
+            }
+        }
+
         // Teste automático ao carregar
         window.onload = () => {
-            log('🚀 Iniciando diagnóstico automático...', 'info');
-            testAPI();
+            runFullDiagnostics();
         };
     </script>
 </body>
